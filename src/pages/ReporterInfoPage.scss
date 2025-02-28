@@ -1,0 +1,172 @@
+.reporter-info-page {
+  height: 100vh;
+  background-color: #fe2f0d;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+
+  .breaking-news-logo {
+    width: 300px;
+    height: auto;
+    margin: 40px 0 80px;
+    
+    img {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .newspaper {
+    position: relative;
+    width: min(90%, 1200px);
+    min-height: 70vh;
+    background-color: #E9E1DF;
+    padding: 40px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    margin-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+
+    &::before {
+      content: 'Global Daily Courier';
+      position: absolute;
+      top: 40px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: 'Pixelify Sans', cursive;
+      font-weight: bold;
+      font-size: 85px;
+      color: #1a1a1a;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    &::after {
+      content: 'WEDNESDAY, MARCH 19, 2025';
+      position: absolute;
+      top: 140px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: 'Pixelify Sans', cursive;
+      font-size: 24px;
+      color: #1a1a1a;
+      border-top: 2px solid #000;
+      border-bottom: 2px solid #000;
+      padding: 8px 0;
+      margin: 0 40px;
+    }
+
+    .headline-input {
+      margin-top: 220px;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.05);
+
+      input {
+        width: 100%;
+        font-family: 'Jersey 15', sans-serif;
+        font-size: 70px;
+        padding: 20px;
+        border: none;
+        background: transparent;
+        text-align: center;
+        color: #000;
+        caret-shape: block;
+
+        &::placeholder {
+          color: rgba(0, 0, 0, 0.3);
+        }
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+
+    .story-preview {
+      flex: 1;
+      padding: 20px 40px;
+      columns: 2;
+      column-gap: 40px;
+      font-family: 'Times New Roman', serif;
+      font-size: 16px;
+      line-height: 1.6;
+      text-align: justify;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .reporter-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      margin-bottom: 60px;
+
+      .reporter-section {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        span {
+          font-family: 'Jersey 15', sans-serif;
+          font-size: 45px;
+          color: #000;
+        }
+
+        input {
+          font-family: 'Jersey 15', sans-serif;
+          font-size: 45px;
+          padding: 8px 16px;
+          border: none;
+          background: transparent;
+          border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+          width: 300px;
+
+          &::placeholder {
+            color: rgba(0, 0, 0, 0.3);
+          }
+
+          &:focus {
+            outline: none;
+          }
+        }
+      }
+
+      .date {
+        font-family: 'Jersey 15', sans-serif;
+        font-size: 45px;
+        color: #000;
+      }
+    }
+
+    .submit-button {
+      align-self: center;
+      padding: 12px 24px;
+      font-family: 'Pixelify Sans', cursive;
+      font-size: 18px;
+      color: white;
+      background-color: #fe2f0d;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+
+      &:hover:not(:disabled) {
+        transform: scale(1.05);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+} 

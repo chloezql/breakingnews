@@ -1,0 +1,78 @@
+.audio-transcription-page {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-family: 'Pixelify Sans', cursive;
+    color: #1a1a1a;
+  }
+
+  .drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: border-color 0.3s;
+
+    &:hover {
+      border-color: #fe2f0d;
+    }
+
+    p {
+      margin: 0;
+      color: #666;
+    }
+  }
+
+  .loader {
+    margin-top: 20px;
+    color: #fe2f0d;
+    font-weight: bold;
+  }
+
+  .error {
+    color: #fe2f0d;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    background-color: rgba(254, 47, 13, 0.1);
+  }
+
+  .result {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+
+    h2 {
+      margin-top: 0;
+      color: #1a1a1a;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      background-color: white;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+
+    .copy-button {
+      background-color: #fe2f0d;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.2s;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
+} 

@@ -1,0 +1,77 @@
+.intro-page {
+  height: 100vh;
+  background-color: #fe2f0d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+
+  .logo-container {
+    margin-top: 40px;
+    
+    img {
+      width: 400px;
+      height: auto;
+    }
+  }
+
+  .audio-visualizer {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 40px 0;
+
+    .bar {
+      width: 12px;
+      height: 100px;
+      background-color: white;
+      border-radius: 6px;
+
+      &.playing {
+        animation: soundBounce 1s infinite;
+      }
+
+      @for $i from 1 through 10 {
+        &.bar#{$i} {
+          animation-delay: $i * 0.1s;
+        }
+      }
+    }
+  }
+
+  .next-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 40px;
+    transition: transform 0.2s;
+    
+    .next-text {
+      color: white;
+      font-family: 'Pixelify Sans', cursive;
+      font-size: 48px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 
+        2px 2px 0 #000,
+        -2px -2px 0 #000,
+        2px -2px 0 #000,
+        -2px 2px 0 #000;
+    }
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+@keyframes soundBounce {
+  0%, 100% {
+    height: 100px;
+  }
+  50% {
+    height: 40px;
+  }
+} 

@@ -1,0 +1,122 @@
+.rating-page {
+  min-height: 100vh;
+  background-color: #fe2f0d;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  h1 {
+    color: white;
+    font-family: 'Pixelify Sans', cursive;
+    font-size: 48px;
+    margin-bottom: 60px;
+    text-align: center;
+  }
+
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #fe2f0d;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+  }
+
+  .scores-container {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+
+  .score-card {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease-out;
+
+    &.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-family: 'Pixelify Sans', cursive;
+    }
+
+    .score-circle {
+      position: relative;
+      width: 150px;
+      height: 150px;
+    }
+
+    .circular-chart {
+      width: 150px;
+      height: 150px;
+      transform: rotate(-90deg);
+    }
+
+    .score-value {
+      stroke-dasharray: 0, 100;
+      transition: stroke-dasharray 1s ease-out;
+    }
+
+    .percentage {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+  }
+
+  .feedback {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 800px;
+    width: 90%;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease-out 0.5s;
+
+    &.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-family: 'Pixelify Sans', cursive;
+    }
+
+    p {
+      color: #666;
+      line-height: 1.6;
+      font-family: 'Jersey 15', sans-serif;
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+} 
