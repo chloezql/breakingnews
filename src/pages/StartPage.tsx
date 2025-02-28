@@ -1,5 +1,5 @@
 import React from 'react';
-import { useGame } from '../context/GameContext';
+import { useGame } from './GameContext';
 import './StartPage.scss';
 
 // Start page with Play button

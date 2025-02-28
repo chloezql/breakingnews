@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useGame } from '../context/GameContext';
+import { useGame } from './GameContext';
 import './ReporterInfoPage.scss';
 
 export function ReporterInfoPage() {

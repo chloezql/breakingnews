@@ -1,4 +1,4 @@
-import { useGame } from '../context/GameContext';
+import { useGame } from './GameContext';
 import { GameStage } from '../types/GameTypes';
 import { StartPage } from './StartPage';
 import { IntroPage } from './IntroPage';

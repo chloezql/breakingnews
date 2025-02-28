@@ -12,7 +12,7 @@ const LOCAL_RELAY_SERVER_URL: string =
   process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useGame } from '../context/GameContext';
+import { useGame } from './GameContext';
 import { AVAILABLE_EVIDENCE, AVAILABLE_WITNESSES } from '../constants/evidence';
 import OpenAI from 'openai';
 import './AngleGenerationPage.scss';

@@ -16,13 +16,13 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
-import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
+import { WavRecorder, WavStreamPlayer } from '../utils/wavtools/index.js';
 import { WavRenderer} from '../utils/wav_renderer';
-import { supectAgentsJson} from '../game-metadata/agents_suspect';
+import { suspectProfiles } from '../agentJsons/suspectData.js';
 import { Button } from '../components/button/Button';
 
 import './SuspectInterviewPage.scss';
-import { useGame } from '../context/GameContext';
+import { useGame } from './GameContext.js';
 import { AVAILABLE_EVIDENCE, AVAILABLE_WITNESSES, AVAILABLE_SUSPECTS } from '../constants/evidence';
 
 
@@ -287,7 +287,7 @@ export function SuspectInterviewPage() {
       }
   
       // Update currentAgentIndex
-      setCurrentAgentIndex((prevIndex) => (prevIndex + 1) % supectAgentsJson.length);
+      setCurrentAgentIndex((prevIndex) => (prevIndex + 1) % suspectProfiles.length);
     }, [disconnectConversation]);
   
 
@@ -717,7 +717,7 @@ export function SuspectInterviewPage() {
     const client = clientRef.current;
 
     // Get the current agent
-    const currentAgent = supectAgentsJson[currentAgentIndex];
+    const currentAgent = suspectProfiles[currentAgentIndex];
     // Set base instructions with agent name and current player
     const instructions = `You are ${currentAgent.name}, ${currentAgent.promptInstructions}`;
     console.log('Setting instructions for:', currentAgent.name);

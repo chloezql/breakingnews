@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useGame } from '../context/GameContext';
+import { useGame } from './GameContext';
 import './IntroPage.scss';
 
 // Intro page with audio

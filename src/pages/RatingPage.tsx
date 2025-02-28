@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useGame } from '../context/GameContext';
+import { useGame } from './GameContext';
 import OpenAI from 'openai';
 import './RatingPage.scss';
 
@@ -32,7 +32,7 @@ export function RatingPage() {
               content: `You are an expert news editor who evaluates stories based on:
                 1. Viral Potential (how likely the story is to go viral)
                 2. Truth Score (how close to the actual events the story seems)
-                3. Creativity Score (how creative and engaging the writing is)
+                3. Creativity Score (how creative and engaging the story and its perspective is)
                 
                 Rate each category from 0-100 and provide brief feedback.
                 Return as JSON with format: {
@@ -41,6 +41,7 @@ export function RatingPage() {
                   creativity: number,
                   feedback: string
                 }`
+                
             },
             {
               role: "user", 

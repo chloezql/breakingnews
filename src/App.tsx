@@ -1,6 +1,6 @@
 import './App.scss';
 import { useState } from 'react';
-import { GameProvider } from './context/GameContext';
+import { GameProvider } from './pages/GameContext';
 import { GameContainer } from './pages/GameContainer';
 import { AudioTranscriptionPage } from './pages/AudioTranscriptionPage';
 import { SuspectInterviewPage } from './pages/SuspectInterviewPage';

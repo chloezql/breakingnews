@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useGame } from '../context/GameContext';
+import { useGame } from './GameContext';
 import { AVAILABLE_WITNESSES } from '../constants/evidence';  
 import './WitnessSelectionPage.scss';
 import { Witness } from '../types/GameTypes';
