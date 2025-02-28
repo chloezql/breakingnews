@@ -2,6 +2,7 @@
 
 An immersive journalism investigation game where you play as a reporter investigating the mysterious death of Erin Carter, a promising young artist found dead at AAA Academy. Interview suspects, gather evidence, and uncover the truth behind this tragic event.
 
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -34,6 +35,29 @@ npm start
 
 The game will launch in your browser at `http://localhost:3000`
 
+
+## 📁 Project Structure
+
+```
+src/
+├── agentJsons/           # AI agent configurations and data
+│   └── suspectData.js    # Suspect profiles and prompts
+├── components/           # Reusable UI components
+│   ├── button/          # Button components
+│   └── ...
+├── constants/           # Game constants and data
+│   └── evidence.ts     # Evidence and suspect information
+├── pages/              # Game page components
+│   ├── IntroPage/     # Game introduction
+│   ├── SuspectInterviewPage/ # Suspect interviews
+│   └── ...
+├── utils/              # Utility functions and tools
+│   ├── wavtools/      # Audio processing utilities
+│   └── wav_renderer   # Audio visualization
+└── types/             # TypeScript type definitions
+```
+
+
 ## 🎮 Game Features
 
 - **Interactive Interviews**: Use voice or text to interview suspects and witnesses
@@ -57,10 +81,3 @@ If you encounter issues:
 2. Ensure all dependencies are installed (`npm install`)
 3. Check that your browser's microphone permissions are enabled
 4. Clear browser cache and reload if needed
-
-## 🛠 Technical Requirements
-
-- Modern web browser (Chrome, Firefox, Safari)
-- Microphone access (for voice interactions)
-- Stable internet connection
-- Valid OpenAI API key with sufficient credits
