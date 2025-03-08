@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './EvidenceSelectionPage.scss';
-import { Evidence, EVIDENCE_ITEMS } from '../types/evidence';
-import { updatePlayerEvidence, fetchPlayerData } from '../services/api';
+import { EVIDENCE_ITEMS } from '../types/evidence';
+import { updatePlayerEvidence } from '../services/api';
 
-interface EvidenceSelectionPageProps {}
+interface EvidenceSelectionPageProps {
+  playerId: string;
+}
 
 interface EvidencePosition {
   offsetX: string;
@@ -12,10 +14,7 @@ interface EvidencePosition {
   scale: number;
 }
 
-export function EvidenceSelectionPage({}: EvidenceSelectionPageProps) {
-  const [playerId, setPlayerId] = useState<string | null>(null);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+export function EvidenceSelectionPage({ playerId }: EvidenceSelectionPageProps) {
   const [selectedEvidence, setSelectedEvidence] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -25,11 +24,9 @@ export function EvidenceSelectionPage({}: EvidenceSelectionPageProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
   const resetState = () => {
-    setPlayerId(null);
     setSelectedEvidence([]);
     setIsCompleted(false);
     setError(null);
-    setLoginError(null);
     initializePositions();
   };
 
@@ -54,6 +51,10 @@ export function EvidenceSelectionPage({}: EvidenceSelectionPageProps) {
   };
 
   useEffect(() => {
+    console.log('EvidenceSelectionPage received playerId:', playerId);
+  }, [playerId]);
+
+  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
@@ -62,49 +63,22 @@ export function EvidenceSelectionPage({}: EvidenceSelectionPageProps) {
     initializePositions();
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
-
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const id = formData.get('playerId') as string;
-
-    if (!id.trim()) {
-      setLoginError('Please enter a player ID');
-      return;
-    }
-
-    setIsLoggingIn(true);
-    setLoginError(null);
-
-    try {
-      const player = await fetchPlayerData(id);
-      if (player) {
-        setPlayerId(id);
-      } else {
-        setLoginError('Player not found. Please check your ID and try again.');
-      }
-    } catch (err) {
-      setLoginError('An error occurred. Please try again.');
-      console.error(err);
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
   
   const handleContinue = async () => {
-    if (selectedEvidence.length > 0 && playerId) {
+    if (selectedEvidence.length > 0) {
       setIsSubmitting(true);
       setError(null);
+      console.log('Submitting evidence for player:', playerId);
       
       try {
         await updatePlayerEvidence(playerId, selectedEvidence);
+        console.log('Evidence submitted successfully for player:', playerId);
         setIsCompleted(true);
         // Auto-reset after 5 seconds
         setTimeout(resetState, 5000);
       } catch (err) {
+        console.error('Failed to submit evidence for player:', playerId, err);
         setError('Failed to save your evidence selection. Please try again.');
-        console.error(err);
       } finally {
         setIsSubmitting(false);
       }
@@ -121,34 +95,6 @@ export function EvidenceSelectionPage({}: EvidenceSelectionPageProps) {
     }
   };
 
-  const renderLoginOverlay = () => (
-    <div className="overlay">
-      <div className="overlay-content">
-        <h2>Enter Player ID</h2>
-        <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <input
-              type="text"
-              name="playerId"
-              placeholder="Enter your Player ID"
-              disabled={isLoggingIn}
-            />
-          </div>
-          
-          {loginError && <div className="error-message">{loginError}</div>}
-          
-          <button 
-            type="submit" 
-            className="submit-button"
-            disabled={isLoggingIn}
-          >
-            {isLoggingIn ? 'Checking...' : 'Continue'}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-
   const renderCompletionOverlay = () => (
     <div className="overlay completion-overlay">
       <div className="overlay-content">
@@ -161,7 +107,7 @@ export function EvidenceSelectionPage({}: EvidenceSelectionPageProps) {
             ))}
           </ul>
         </div>
-        <p>Returning to login in a few seconds...</p>
+        <p>Returning to selection in a few seconds...</p>
       </div>
     </div>
   );
@@ -250,10 +196,9 @@ export function EvidenceSelectionPage({}: EvidenceSelectionPageProps) {
         disabled={selectedEvidence.length === 0 || isSubmitting}
         onClick={handleContinue}
       >
-        {isSubmitting ? 'Saving...' : 'Continue to Witness Selection'}
+        {isSubmitting ? 'Saving...' : 'Submit Evidence'}
       </button>
 
-      {!playerId && renderLoginOverlay()}
       {isCompleted && renderCompletionOverlay()}
     </div>
   );

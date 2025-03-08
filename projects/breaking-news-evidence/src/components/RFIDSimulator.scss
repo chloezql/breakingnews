@@ -1,0 +1,101 @@
+.rfid-simulator {
+  padding: 1.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin: 1rem;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    .status-light {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+
+      &.connected {
+        background-color: #28a745;
+        box-shadow: 0 0 8px rgba(40, 167, 69, 0.5);
+      }
+
+      &.disconnected {
+        background-color: #dc3545;
+        box-shadow: 0 0 8px rgba(220, 53, 69, 0.5);
+      }
+    }
+
+    span {
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+
+    button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #007bff;
+      border-radius: 4px;
+      background-color: #fff;
+      color: #007bff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background-color: #007bff;
+        color: #fff;
+      }
+
+      &:disabled {
+        border-color: #ccc;
+        color: #999;
+        cursor: not-allowed;
+      }
+
+      &.active {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: #fff;
+
+        &:hover {
+          background-color: #c82333;
+          border-color: #bd2130;
+        }
+      }
+    }
+  }
+
+  .last-scan {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid #eee;
+
+    p {
+      margin: 0;
+      color: #666;
+    }
+
+    code {
+      background-color: #e9ecef;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      color: #333;
+      font-family: monospace;
+    }
+  }
+} 

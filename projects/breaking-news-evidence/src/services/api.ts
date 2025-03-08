@@ -1,14 +1,36 @@
 // API service for Xano database interactions
 export interface Player {
   id: string;
-  name?: string;
-  email?: string;
-  created_at?: string;
+  player_name?: string;
+  id_card_no?: string;
 }
 
+const API_BASE_URL = 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
+
+export const findPlayerByCardId = async (cardId: string): Promise<Player[] | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/player_by_card_id/${encodeURIComponent(cardId)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Player not found');
+    }
+
+    const data = await response.json();
+    console.log('Found player by card ID:', data); // Log the found player data
+    return data;
+  } catch (error) {
+    console.error('Error finding player:', error);
+    return null;
+  }
+};
 
 export const fetchPlayerData = async (playerId: string) => {
-  const url = `https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA/players/${playerId}`;
+  const url = `${API_BASE_URL}/players/${playerId}`;
 
   try {
     const response = await fetch(url, {
@@ -34,8 +56,7 @@ export const fetchPlayerData = async (playerId: string) => {
 
 // Update this function to use PATCH instead of POST
 export const updatePlayerEvidence = async (playerId: string, evidenceIds: number[]) => {
-  // Real API call
-  const url = `https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA/players/${playerId}`;
+  const url = `${API_BASE_URL}/players/${playerId}`;
 
   try {
     const response = await fetch(url, {
