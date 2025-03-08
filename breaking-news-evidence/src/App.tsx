@@ -13,7 +13,7 @@ function App() {
   return (
     <div className="App">
       {playerId ? (
-        <EvidenceSelectionPage playerId={playerId} />
+        <EvidenceSelectionPage />
       ) : (
         <PlayerLoginPage onPlayerLogin={handlePlayerLogin} />
       )}

@@ -262,4 +262,138 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.4);
     }
   }
+
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+
+    .overlay-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.3s ease;
+
+      h2 {
+        color: #333;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+        
+        label {
+          display: block;
+          margin-bottom: 0.5rem;
+          color: #666;
+        }
+
+        input {
+          width: 100%;
+          padding: 0.8rem;
+          border: 2px solid #ddd;
+          border-radius: 4px;
+          font-size: 1.1rem;
+          text-align: center;
+          
+          &:focus {
+            border-color: #ff2400;
+            outline: none;
+          }
+        }
+      }
+
+      .error-message {
+        color: #ff2400;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+      }
+
+      .submit-button {
+        background: #ff2400;
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 4px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: darken(#ff2400, 10%);
+        }
+
+        &:disabled {
+          background: #999;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    &.completion-overlay {
+      .overlay-content {
+        background: rgba(255, 255, 255, 0.95);
+        max-width: 500px;
+
+        h2 {
+          color: #ff2400;
+          font-size: 2rem;
+          margin-bottom: 1rem;
+        }
+
+        .evidence-summary {
+          margin: 1.5rem 0;
+          padding: 1rem;
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 4px;
+
+          h3 {
+            color: #333;
+            margin-bottom: 1rem;
+          }
+
+          ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+
+            li {
+              padding: 0.5rem;
+              background: white;
+              border-radius: 4px;
+              font-size: 0.9rem;
+              color: #666;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }

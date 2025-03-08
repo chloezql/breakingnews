@@ -4,6 +4,13 @@ import './EvidenceSelectionPage.scss';
 import { Evidence } from '../types/GameTypes';
 import { AVAILABLE_EVIDENCE } from '../constants/evidence';
 
+// Define a type for the evidence items from constants
+interface AvailableEvidence {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export function EvidenceSelectionPage() {
   const { gameState, updateGameState, moveToNextStage } = useGame();
   const introAudioRef = useRef<HTMLAudioElement>(null);
@@ -23,24 +30,34 @@ export function EvidenceSelectionPage() {
     }
   };
 
-  const toggleEvidence = (evidence: Evidence) => {
+  const toggleEvidence = (evidence: AvailableEvidence) => {
     handlePageInteraction(); // Stop intro audio when selecting evidence
     
-    const currentSelection = gameState.selectedEvidence;
-    const isSelected = currentSelection.some(e => e.id === evidence.id);
+    const currentSelection = gameState?.selectedEvidence || [];
+    
+    // Convert the evidence to match the Evidence type
+    const evidenceItem: Evidence = {
+      id: Number(evidence.id),
+      name: evidence.name,
+      description: evidence.description,
+      image: '', // Default empty string since it's not in AVAILABLE_EVIDENCE
+      type: 'document' // Default type since it's not in AVAILABLE_EVIDENCE
+    };
+    
+    const isSelected = currentSelection.some(e => e.id === Number(evidence.id));
     
     if (!isSelected && currentSelection.length >= 4) {
       return;
     }
     
     const newSelection = isSelected 
-      ? currentSelection.filter(e => e.id !== evidence.id)
-      : [...currentSelection, evidence];
+      ? currentSelection.filter(e => e.id !== Number(evidence.id))
+      : [...currentSelection, evidenceItem];
     
     updateGameState({ selectedEvidence: newSelection });
   };
 
-  const canProceed = gameState.selectedEvidence.length >= 1;
+  const canProceed = (gameState?.selectedEvidence?.length || 0) >= 1;
 
   return (
     <div className="evidence-page" onClick={handlePageInteraction}>
@@ -58,7 +75,7 @@ export function EvidenceSelectionPage() {
           <div 
             key={evidence.id}
             className={`evidence-item ${
-              gameState.selectedEvidence.some(e => e.id === evidence.id) ? 'selected' : ''
+              gameState?.selectedEvidence?.some(e => e.id === Number(evidence.id)) ? 'selected' : ''
             }`}
             onClick={() => toggleEvidence(evidence)}
           >
