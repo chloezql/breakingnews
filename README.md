@@ -1,83 +1,54 @@
-# Breaking News - Interactive Investigation Game
+# Breaking News Game
 
-An immersive journalism investigation game where you play as a reporter investigating the mysterious death of Erin Carter, a promising young artist found dead at AAA Academy. Interview suspects, gather evidence, and uncover the truth behind this tragic event.
+A collection of interactive game modules for the Breaking News experience.
 
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js (v16 or higher)
-- npm
-- OpenAI API key
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone [repository-url]
-cd breaking-news
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Create a `.env` file in the root directory and add your OpenAI API key:
-```
-REACT_APP_OPENAI_API_KEY=your_openai_api_key_here
-```
-
-4. Start the game:
-```bash
-npm start
-```
-
-The game will launch in your browser at `http://localhost:3000`
-
-
-## 📁 Project Structure
+## Project Structure
 
 ```
-src/
-├── agentJsons/           # AI agent configurations and data
-│   └── suspectData.js    # Suspect profiles and prompts
-├── components/           # Reusable UI components
-│   ├── button/          # Button components
-│   └── ...
-├── constants/           # Game constants and data
-│   └── evidence.ts     # Evidence and suspect information
-├── pages/              # Game page components
-│   ├── IntroPage/     # Game introduction
-│   ├── SuspectInterviewPage/ # Suspect interviews
-│   └── ...
-├── utils/              # Utility functions and tools
-│   ├── wavtools/      # Audio processing utilities
-│   └── wav_renderer   # Audio visualization
-└── types/             # TypeScript type definitions
+breaking-news/
+├── projects/
+│   ├── breaking-news-evidence/    # Evidence collection module
+│   ├── breaking-news-finale/      # Game finale module
+│   ├── breaking-news-interview/   # Suspect interview module
+│   └── breaking-news-start/       # Game start module
+├── deprecated/                    # Old root-level React app
+└── readme/                        # Documentation assets
 ```
 
+## Getting Started
 
-## 🎮 Game Features
+1. Install dependencies for all projects:
 
-- **Interactive Interviews**: Use voice or text to interview suspects and witnesses
-- **Evidence Collection**: Gather and analyze crucial evidence
-- **Strategic Questioning**: Choose your questions wisely - you only get 3 questions per suspect
-- **Real-time AI Conversations**: Powered by OpenAI's advanced language models
-- **Dynamic Story Progression**: Your choices influence the investigation
+   ```bash
+   npm run install:all
+   ```
 
-## 🎯 Gameplay Tips
+2. Start individual modules:
+   - Evidence Collection: `npm run start:evidence`
+   - Game Finale: `npm run start:finale`
+   - Suspect Interview: `npm run start:interview`
+   - Game Start: `npm run start:start`
 
-- Each suspect can only be interviewed once with a maximum of 3 questions
-- Pay attention to contradictions in suspect statements
-- Take notes on important details
-- Consider the relationships between different pieces of evidence
+Each module runs on a different port, allowing them to run simultaneously if needed.
 
-## 🔧 Troubleshooting
+## Module Descriptions
 
-If you encounter issues:
+### Evidence Collection (breaking-news-evidence)
 
-1. Verify your OpenAI API key is correctly set in `.env`
-2. Ensure all dependencies are installed (`npm install`)
-3. Check that your browser's microphone permissions are enabled
-4. Clear browser cache and reload if needed
+Module for collecting and managing evidence in the game.
+
+### Game Finale (breaking-news-finale)
+
+The final stage of the game where players conclude their investigation.
+
+### Suspect Interview (breaking-news-interview)
+
+Interactive module for interviewing suspects and gathering information.
+
+### Game Start (breaking-news-start)
+
+The initial module where players begin their investigation.
+
+## Development
+
+Each module is a standalone React application with its own dependencies and configuration. Navigate to individual project directories for specific development instructions.
