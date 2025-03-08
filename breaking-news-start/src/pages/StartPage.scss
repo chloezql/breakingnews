@@ -1,0 +1,52 @@
+.start-page {
+  height: 100vh;
+  background-color: #fe2f0d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  .logo-container {
+    margin-bottom: 60px;
+    
+    img {
+      width: 400px;
+      height: auto;
+    }
+  }
+
+  .play-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    animation: bounce 1s infinite;
+    
+    .play-text {
+      color: white;
+      font-family: 'Pixelify Sans', cursive;
+      font-size: 64px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 
+        2px 2px 0 #000,
+        -2px -2px 0 #000,
+        2px -2px 0 #000,
+        -2px 2px 0 #000;
+    }
+
+    &:hover {
+      animation: none;
+      transform: scale(1.1);
+    }
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+} 
