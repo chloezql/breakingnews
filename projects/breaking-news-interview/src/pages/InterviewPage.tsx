@@ -36,7 +36,7 @@ const getClient = (() => {
 const InterviewPage: React.FC = () => {
   const [scanMode, setScanMode] = useState<'input' | 'call'>('input');
   const [suspectId, setSuspectId] = useState<string>('');
-  const [playerId, setPlayerId] = useState<string>('26817d84-2ccd-41bc-b5cf-e55c59649de0');
+  const [playerId, setPlayerId] = useState<string>('');
   const [interrogatedSuspects, setInterrogatedSuspects] = useState<string[]>([]);
   
   const [messages, setMessages] = useState<Message[]>([]);
@@ -44,13 +44,14 @@ const InterviewPage: React.FC = () => {
   const [wsConnected, setWsConnected] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const currentResponseRef = useRef<string>('');
   const currentItemIdRef = useRef<string | null>(null);
   const processingRef = useRef<boolean>(false);
   const isEndingRef = useRef<boolean>(false);
 
   // Audio handling setup
-  const wavRecorderRef = useRef<WavRecorder>(
+  const wavRecorderRef =useRef<WavRecorder>(
     new WavRecorder({ sampleRate: 24000 })
   );
   const wavStreamPlayerRef = useRef<WavStreamPlayer>(
@@ -63,6 +64,11 @@ const InterviewPage: React.FC = () => {
     const savedInterrogatedSuspects = localStorage.getItem('interrogatedSuspects');
     if (savedInterrogatedSuspects) {
       setInterrogatedSuspects(JSON.parse(savedInterrogatedSuspects));
+    }
+    
+    // Focus the input on component mount
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   }, []);
 
@@ -83,6 +89,12 @@ const InterviewPage: React.FC = () => {
         if (playerData && playerData[0]?.id) {
           setPlayerId(playerData[0].id);
           console.log('Setting player ID:', playerData[0].id);
+          
+          // Only disconnect WebSocket if we're in production mode
+          // This allows for easier debugging in development
+          // if (process.env.NODE_ENV === 'production') {
+            disconnectWebSocket();
+          // }
         } else {
           console.log('No valid player data received');
           setLoginError('No player found for this card');
@@ -113,6 +125,14 @@ const InterviewPage: React.FC = () => {
     
     // Check if this is a suspect ID scan with confirmation (ends with .)
     if (value.endsWith('.')) {
+      // if player only pressed 5 and then ., play an intro audio
+      if (value === '5.') {
+        const introAudio = new Audio('/suspect-intro.mp3');
+        setSuspectId('');
+        introAudio.play();
+        return;
+      }
+      
       const suspectId = value.slice(0, -1);
       if (validateSuspectId(suspectId)) {
         // Only allow starting a call if player ID has been set via RFID
@@ -160,6 +180,8 @@ const InterviewPage: React.FC = () => {
               setPlayerId('');
               setSuspectId('');
               setLoginError(null);
+              console.log('Reconnecting WebSocket after call ended');
+              reconnectWebSocket();
             };
             audio.play();
             
@@ -243,6 +265,8 @@ const InterviewPage: React.FC = () => {
     instructions: `You are ${suspect.name} You are currently detained in a police station as a suspect in the death of Erin Carter. Here is your personality and background:
 
 Here is your personality and background:
+
+relationship: ${suspect.relationship}
       
 Personality:
 ${suspect.personality.map(trait => '- ' + trait).join('\n')}
@@ -256,12 +280,16 @@ ${suspect.timeline.map(event => `${event.time}: ${event.event}`).join('\n')}
 Secret Motives (these influence your behavior but you won't admit to them directly):
 ${suspect.secretMotives.map(motive => '- ' + motive).join('\n')}
 
+${worldBackground}
+
 You are being interrogated by a reporter at the police office about Erin's death. Stay in character and be consistent with your personality traits, background, and timeline. If asked about specific times, refer to your timeline but be evasive or defensive if the times involve suspicious activities. Keep responses concise - no more than 2-3 sentences.`,
       temperature: 0.9,
       input_audio_transcription: { model: 'whisper-1' },
       turn_detection: { type: 'server_vad' },
-      voice: suspect.voice as 'alloy' | 'shimmer' | 'echo'
     });
+    
+    // @ts-expect-error voice is not in the type definition
+    client.updateSession({ voice: suspect.voice }); // Modified this line
 
     // Start recording with VAD
     await wavRecorder.record((data: { mono: Int16Array }) => {
@@ -283,9 +311,23 @@ You are being interrogated by a reporter at the police office about Erin's death
       setInterrogatedSuspects(prev => [...prev, suspectId]);
     }
     // Set a flag to indicate we're in the ending sequence
+    // Disconnect from the OpenAI client
+    console.log('Disconnecting OpenAI client');
+    client.disconnect();
     isEndingRef.current = true;
     wavStreamPlayerRef.current.interrupt();
-
+    
+    // Reset to input mode and clear suspect ID
+    setScanMode('input');
+    setSuspectId('');
+    
+    // Focus the input after a short delay to ensure DOM is updated
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 100);
+    
     // 1. Disconnect the client first to prevent further user input
     // This stops the microphone but allows audio output to continue
     const wavRecorder = wavRecorderRef.current;
@@ -326,12 +368,14 @@ You are being interrogated by a reporter at the police office about Erin's death
         setMessages([]);
         setSuspectId('');
         currentResponseRef.current = '';
+        wavStreamPlayerRef.current.interrupt();
         isEndingRef.current = false;
+   
+        processingRef.current = false;
+        currentItemIdRef.current = null;
 
         // After the guard audio finishes, reconnect the WebSocket
         setTimeout(() => {
-          console.log('Reconnecting WebSocket after call ended');
-          reconnectWebSocket();
           setScanMode('input');
           setIsSessionActive(false);
         }, 1000); // Small delay to ensure everything is reset
@@ -431,10 +475,51 @@ You are being interrogated by a reporter at the police office about Erin's death
     };
   }, []);
 
+  // Focus input field whenever we're in input mode and playerId is set
+  useEffect(() => {
+    if (scanMode === 'input' && inputRef.current && playerId) {
+      inputRef.current.focus();
+    }
+  }, [scanMode, playerId]);
+
+  // Ensure input is focused after component updates
+  useEffect(() => {
+    const focusTimer = setTimeout(() => {
+      if (scanMode === 'input' && inputRef.current && playerId) {
+        inputRef.current.focus();
+      }
+    }, 100); // Small delay to ensure DOM is ready
+    
+    return () => clearTimeout(focusTimer);
+  });
+
+  // Add global keyboard event listener to focus input when any key is pressed
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle key events when in input mode and not already focused on the input
+      if (scanMode === 'input' && 
+          playerId && 
+          inputRef.current && 
+          document.activeElement !== inputRef.current) {
+        
+        // Ignore modifier keys and function keys
+        if (!e.ctrlKey && !e.altKey && !e.metaKey && 
+            !/^(F\d|Tab|Escape|Control|Alt|Shift|Meta)$/.test(e.key)) {
+          inputRef.current.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [scanMode, playerId]);
+
   return (
     <Box className="interview-page">
       {scanMode === 'input' && (
-        <Box className="input-section">
+        <Box className=" input-section">
           
           {/* Player ID display */}
           {playerId ? (
@@ -444,33 +529,11 @@ You are being interrogated by a reporter at the police office about Erin's death
               </Typography>
             </Box>
           ) : (
-            <>
-              <Typography variant="body2" className="faded-text">
-                {wsConnected 
-                  ? 'Please scan your reporter ID card'
-                  : 'RFID Scanner disconnected. Please check connection.'}
-              </Typography>
-              
-              {/* Manual player ID input for testing */}
-              {!wsConnected && (
-                <Box sx={{ mt: 2, mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Enter player ID manually:
-                  </Typography>
-                  <input 
-                    type="text" 
-                    placeholder="Enter player ID" 
-                    onChange={(e) => setPlayerId(e.target.value)}
-                    style={{ 
-                      padding: '8px', 
-                      marginTop: '8px',
-                      width: '100%',
-                      maxWidth: '300px'
-                    }}
-                  />
-                </Box>
-              )}
-            </>
+            <Typography variant="body2" className="faded-text">
+              {wsConnected 
+                ? 'Please scan your reporter ID card'
+                : 'RFID Scanner disconnected. Please check connection.'}
+            </Typography>
           )}
           
           {loginError && (
@@ -489,6 +552,7 @@ You are being interrogated by a reporter at the police office about Erin's death
             autoFocus
             placeholder="Suspect ID..."
             disabled={!playerId}
+            ref={inputRef}
           />
           
           {!playerId && (
@@ -509,7 +573,7 @@ You are being interrogated by a reporter at the police office about Erin's death
             <img 
               src={`/suspect-shadow/${suspectId === '1234' ? 'hart.png' : 
                     suspectId === '5678' ? 'kevin.png' : 
-                    suspectId === '9876' ? 'lucy_marlow.png' : 'hart.png'}`}
+                    suspectId === '9876' ? 'lucy_marlow.png' : ''}`}
               alt="Suspect Shadow"
               className="suspect-shadow"
             />
@@ -540,9 +604,9 @@ You are being interrogated by a reporter at the police office about Erin's death
           <Box className="timer-container">
             <CountdownCircleTimer
               isPlaying={isSessionActive}
-              duration={300}
+              duration={30}
               colors={['#00C853', '#FFC107', '#FF5722', '#F44336']}
-              colorsTime={[300, 180, 60, 0]}
+              colorsTime={[30, 18, 6, 0]}
               onComplete={endCall}
               size={80}
             >

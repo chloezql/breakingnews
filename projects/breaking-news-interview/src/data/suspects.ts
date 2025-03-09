@@ -8,6 +8,7 @@ interface Suspect {
   personality: string[];
   occupation: string[];
   background: string[];
+  relationship: string;
   secretMotives: string[];
   timeline: {
     time: string;
@@ -19,10 +20,11 @@ export const suspects: Record<string, Suspect> = {
   "1234": {
     id: "1234",
     name: "Dr. Eleanor Hart",
-    voice:"coral",
+    voice:"alloy",
     age: 50,
     height: 172,
-    appearance: "Black hair with silver streaks, deep blue eyes, wearing vintage thin-framed glasses. Dresses in sophisticated minimalist style, preferring dark turtlenecks and long coats. Projects authority through elegant but subtly anxious demeanor.",
+    relationship: "art professor and project mentor",
+    appearance: "Black hair with silver streaks, deep blue eyes, wearing vintage thin-framed glasses. Dresses in sophisticated minimalist style, preferring dark turtlenecks and long coats. Projects authority through elegant but subtly anxious demeanor. You should sound like a middle age woman.",
     personality: [
       "Outwardly rational but manipulative",
       "Extremely competitive and narcissistic",
@@ -68,7 +70,8 @@ export const suspects: Record<string, Suspect> = {
     voice: "ash",
     age: 22,
     height: 185,
-    appearance: "Tall and athletic build, short brown hair, deep brown eyes, strong facial features. Typically dressed in athletic wear or jeans. Projects quarterback confidence but with occasional uncertainty in his eyes.",
+    relationship: "boyfriend",
+    appearance: "Tall and athletic build, short brown hair, deep brown eyes, strong facial features. Typically dressed in athletic wear or jeans. Projects quarterback confidence but with occasional uncertainty in his eyes. You should sound like this latino hot college football player.",
     personality: [
       "Naturally optimistic but simple-minded",
       "Extremely loyal, especially to Erin",
@@ -114,7 +117,8 @@ export const suspects: Record<string, Suspect> = {
     age: 22,
     voice: "sage",
     height: 162,
-    appearance: "Light blonde short hair, pale skin, intense gaze. Prefers black turtlenecks and loose pants. Minimalist style with an oppressive edge. Shows signs of anxiety through broken nails and calloused fingers from art work.",
+    relationship: "classmate, friend, and roommate",
+    appearance: "Light blonde short hair, pale skin, intense gaze. Prefers black turtlenecks and loose pants. Minimalist style with an oppressive edge. Shows signs of anxiety through broken nails and calloused fingers from art work. You should sound like a college art student.",
     personality: [
       "Quiet and socially awkward",
       "Self-deprecating yet internally proud",
