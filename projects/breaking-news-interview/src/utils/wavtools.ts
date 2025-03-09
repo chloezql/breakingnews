@@ -133,14 +133,21 @@ export class WavStreamPlayer {
   public analyser: AnalyserNode | null = null;
   private trackId: string | null = null;
   private sampleOffset = 0;
+  private audioQueue: { data: Float32Array, trackId: string }[] = [];
+  private isPlaying = false;
+  private scheduledTime = 0;
+  private bufferSize = 4096;
+  private sampleRate: number;
 
   constructor({ sampleRate = 24000 }) {
+    this.sampleRate = sampleRate;
     this.audioContext = new AudioContext({ sampleRate });
     this.gainNode = this.audioContext.createGain();
     this.analyser = this.audioContext.createAnalyser();
     this.analyser.fftSize = 2048;
     this.gainNode.connect(this.analyser);
     this.analyser.connect(this.audioContext.destination);
+    this.scheduledTime = this.audioContext.currentTime;
   }
 
   async connect() {
@@ -153,6 +160,8 @@ export class WavStreamPlayer {
     const trackInfo = this.trackId ? { trackId: this.trackId, offset: this.sampleOffset } : null;
     this.trackId = null;
     this.sampleOffset = 0;
+    this.audioQueue = [];
+    this.scheduledTime = this.audioContext?.currentTime || 0;
     return trackInfo;
   }
 
@@ -160,23 +169,66 @@ export class WavStreamPlayer {
     if (!this.audioContext || !this.gainNode) return;
 
     if (this.trackId !== trackId) {
+      // New track, reset state
       this.trackId = trackId;
       this.sampleOffset = 0;
+      this.scheduledTime = this.audioContext.currentTime;
     }
 
-    const buffer = this.audioContext.createBuffer(1, data.length, this.audioContext.sampleRate);
-    const channel = buffer.getChannelData(0);
-    
+    // Convert Int16Array to Float32Array
+    const floatData = new Float32Array(data.length);
     for (let i = 0; i < data.length; i++) {
-      channel[i] = data[i] / 32768;
+      floatData[i] = data[i] / 32768;
     }
 
+    // Add to queue
+    this.audioQueue.push({ data: floatData, trackId });
+    this.sampleOffset += data.length;
+
+    // Start playing if not already
+    if (!this.isPlaying) {
+      this.playNextChunk();
+    }
+  }
+
+  private playNextChunk() {
+    if (!this.audioContext || !this.gainNode || this.audioQueue.length === 0) {
+      this.isPlaying = false;
+      return;
+    }
+
+    this.isPlaying = true;
+    const { data, trackId } = this.audioQueue.shift()!;
+    
+    // Create buffer and fill with data
+    const buffer = this.audioContext.createBuffer(1, data.length, this.audioContext.sampleRate);
+    buffer.getChannelData(0).set(data);
+    
+    // Create source and schedule playback
     const source = this.audioContext.createBufferSource();
     source.buffer = buffer;
     source.connect(this.gainNode);
-    source.start();
-
-    this.sampleOffset += data.length;
+    
+    // Calculate duration of this chunk
+    const duration = data.length / this.sampleRate;
+    
+    // Schedule this chunk to play at the scheduled time
+    source.start(this.scheduledTime);
+    
+    // Update scheduled time for next chunk
+    this.scheduledTime += duration;
+    
+    // When this chunk is done, play the next one
+    source.onended = () => {
+      this.playNextChunk();
+    };
+    
+    // If there's more in the queue and we're close to the end of this chunk,
+    // schedule the next chunk immediately to avoid gaps
+    if (this.audioQueue.length > 0 && 
+        this.audioContext.currentTime + 0.1 >= this.scheduledTime) {
+      setTimeout(() => this.playNextChunk(), 0);
+    }
   }
 
   getFrequencies(type: 'voice') {

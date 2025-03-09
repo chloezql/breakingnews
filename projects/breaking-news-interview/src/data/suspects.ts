@@ -46,7 +46,8 @@ export const suspects: Record<string, Suspect> = {
       "Secretly replaced Erin's melatonin with strong sleeping pills",
       "Deeply jealous of Erin's talent but refuses to admit it",
       "Desperate for recognition in the broader art world",
-      "Uses students' work to validate her artistic theories"
+      "Uses students' work to validate her artistic theories",
+      "Hate Erin for abandoning her during important award"
     ],
     timeline: [
       { time: "08:00-09:00", event: "Had breakfast while reading latest art magazines" },
@@ -107,8 +108,8 @@ export const suspects: Record<string, Suspect> = {
       { time: "00:30", event: "Slept through Erin's breathing difficulties" }
     ]
   },
-  "9012": {
-    id: "9012",
+  "9876": {
+    id: "9876",
     name: "Lucy Marlow",
     age: 22,
     voice: "sage",
@@ -163,3 +164,16 @@ export const getSuspect = (id: string): Suspect | undefined => {
 export const validateSuspectId = (id: string): boolean => {
   return id in suspects;
 }; 
+
+
+export const worldBackground = `
+In the vibrant yet competitive world of a prestigious Astra Academy of Art, Erin Carter stood out as a beacon of talent and controversy. At just 22 years old, she had already made a name for herself through her provocative artwork and her fiery persona. Known for her golden waves and cutting-edge fashion sense, Erin was not just a student but a burgeoning icon in the art community.
+
+World Setting: The academy serves as a microcosm of the larger art world, full of ambitious young artists vying for recognition and success. It is a place where creativity meets critique, and every student's work can be the next big conversation starter. The environment is charged with the intensity of young talents pushing the boundaries of art and personal expression, often under the watchful eyes of influential mentors like Dr. Eleanor Hart.
+
+World Background:
+Erin Carter died last night at about 12:30 AM. The police started the investigation this morning after Kevin Sanchez found her dead in bed. Now, the police detained three suspects: Dr. Eleanor Hart, Kevin Sanchez, and Lucy Marlow. 
+Kevin is Erin's boyfriend and a star quarterback of the university football team. He found Erin dead in bed and called the police.
+Dr. Eleanor Hart is Erin's mentor and a professor at the academy. She is known for her strict teaching methods and her controversial theories about art.
+Lucy Marlow is Erin's classmate and a senior art student. She is known for her abstract expressionism and her provocative artwork. She had a fight with Erin last night and left the dorm.
+`;
