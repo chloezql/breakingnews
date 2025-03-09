@@ -1,11 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './EvidenceSelectionPage.scss';
 import { EVIDENCE_ITEMS } from '../types/evidence';
-import { updatePlayerEvidence } from '../services/api';
-
-interface EvidenceSelectionPageProps {
-  playerId: string;
-}
+import { updatePlayerEvidence, findPlayerByCardId } from '../services/api';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 interface EvidencePosition {
   offsetX: string;
@@ -14,7 +11,7 @@ interface EvidencePosition {
   scale: number;
 }
 
-export function EvidenceSelectionPage({ playerId }: EvidenceSelectionPageProps) {
+export function EvidenceSelectionPage() {
   const [selectedEvidence, setSelectedEvidence] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -22,8 +19,60 @@ export function EvidenceSelectionPage({ playerId }: EvidenceSelectionPageProps) 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [evidencePositions, setEvidencePositions] = useState<Map<number, EvidencePosition>>(new Map());
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Login state
+  const [playerId, setPlayerId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [lastCardId, setLastCardId] = useState<string | null>(null);
+  const [wsConnected, setWsConnected] = useState(false);
+
+  const handleWebSocketMessage = useCallback(async (data: any) => {
+    if (data.type === 'rfid_scan' && !playerId) {
+      console.log('RFID card scanned:', data.cardId);
+      setLastCardId(data.cardId);
+      setLoginError(null);
+      setIsLoading(true);
+      
+      try {
+        const playerData = await findPlayerByCardId(data.cardId);
+        console.log('Player data received:', playerData);
+        if (playerData && playerData[0]?.id) {
+          setPlayerId(playerData[0].id);
+          console.log('Setting player ID:', playerData[0].id);
+        } else {
+          console.log('No valid player data received');
+          setLoginError('No player found for this card');
+        }
+      } catch (err) {
+        setLoginError('Error finding player');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, []);
+
+  const handleWebSocketConnect = useCallback(() => {
+    setWsConnected(true);
+  }, []);
+
+  const handleWebSocketDisconnect = useCallback(() => {
+    setWsConnected(false);
+  }, []);
+
+  useWebSocket({
+    onMessage: handleWebSocketMessage,
+    onConnect: handleWebSocketConnect,
+    onDisconnect: handleWebSocketDisconnect,
+  });
   
-  const resetState = () => {
+  const resetAllState = () => {
+    setPlayerId(null);
+    setLastCardId(null);
+    setLoginError(null);
+    setIsLoading(false);
+
     setSelectedEvidence([]);
     setIsCompleted(false);
     setError(null);
@@ -51,10 +100,6 @@ export function EvidenceSelectionPage({ playerId }: EvidenceSelectionPageProps) 
   };
 
   useEffect(() => {
-    console.log('EvidenceSelectionPage received playerId:', playerId);
-  }, [playerId]);
-
-  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
@@ -65,7 +110,7 @@ export function EvidenceSelectionPage({ playerId }: EvidenceSelectionPageProps) 
   }, []);
   
   const handleContinue = async () => {
-    if (selectedEvidence.length > 0) {
+    if (selectedEvidence.length > 0 && playerId) {
       setIsSubmitting(true);
       setError(null);
       console.log('Submitting evidence for player:', playerId);
@@ -74,8 +119,7 @@ export function EvidenceSelectionPage({ playerId }: EvidenceSelectionPageProps) 
         await updatePlayerEvidence(playerId, selectedEvidence);
         console.log('Evidence submitted successfully for player:', playerId);
         setIsCompleted(true);
-        // Auto-reset after 5 seconds
-        setTimeout(resetState, 5000);
+        setTimeout(resetAllState, 5000);
       } catch (err) {
         console.error('Failed to submit evidence for player:', playerId, err);
         setError('Failed to save your evidence selection. Please try again.');
@@ -111,6 +155,16 @@ export function EvidenceSelectionPage({ playerId }: EvidenceSelectionPageProps) 
       </div>
     </div>
   );
+
+  const renderLoginOverlay = () => (
+    <div className="login-overlay">
+      <div className="login-card">
+        <h2>SCAN YOUR ID CARD</h2>
+        {isLoading && <div className="loading">CHECKING CARD...</div>}
+        {loginError && <div className="error">{loginError}</div>}
+      </div>
+    </div>
+  );
   
   const renderSlots = (start: number, end: number) => {
     return Array.from({ length: end - start + 1 }, (_, i) => {
@@ -125,10 +179,15 @@ export function EvidenceSelectionPage({ playerId }: EvidenceSelectionPageProps) 
         >
           <div className="slot-number">{slotNumber}</div>
           {evidence && (
-            <img
-              src={`${process.env.PUBLIC_URL}/${evidence.image}`}
-              alt={evidence.name}
-            />
+            <div className="evidence-item">
+              <img
+                src={`${process.env.PUBLIC_URL}/${evidence.image}`}
+                alt={evidence.name}
+              />
+              <div className="evidence-description">
+                {evidence.hint}
+              </div>
+            </div>
           )}
         </div>
       );
@@ -137,69 +196,78 @@ export function EvidenceSelectionPage({ playerId }: EvidenceSelectionPageProps) 
   
   return (
     <div className="evidence-page">
-      <div className="page-title">
-        <img src={`${process.env.PUBLIC_URL}/breaking-news-logo.png`} alt="Breaking News" />
-      </div>
-
-      <div className="game-container">
-        <div className="slots-container">
-          {renderSlots(1, 3)}
+      <p>player id: {playerId}</p>
+      <div className={`game-content ${!playerId ? 'blurred' : ''}`}>
+        <div className="page-header">
+          <div className="page-title">
+            <img src={`${process.env.PUBLIC_URL}/breaking-news-logo.png`} alt="Breaking News" />
+          </div>
+          {playerId && (
+            <button 
+              className="continue-button"
+              disabled={selectedEvidence.length === 0 || isSubmitting}
+              onClick={handleContinue}
+            >
+              {selectedEvidence.length === 0 ? 'Select at least 1 evidence' : isSubmitting ? 'Collecting...' : 'Collect Evidence!'} 
+            </button>
+          )}
         </div>
 
-        <div className="evidence-board">
-          <div 
-            className="spotlight"
-            style={{
-              left: mousePosition.x,
-              top: mousePosition.y,
-            }}
-          />
-          
-          <div className="evidence-container" ref={containerRef}>
-            {EVIDENCE_ITEMS.map(item => {
-              const position = evidencePositions.get(item.id);
-              return position ? (
-                <div
-                  key={item.id}
-                  className={`evidence-item ${selectedEvidence.includes(item.id) ? 'selected' : ''}`}
-                  onClick={() => toggleEvidence(item.id)}
-                >
-                  <div 
-                    className="evidence-wrapper"
-                    style={{
-                      '--offsetX': position.offsetX,
-                      '--offsetY': position.offsetY,
-                      '--rotation': `${position.rotation}deg`,
-                      '--scale': position.scale
-                    } as React.CSSProperties}
+        <div className="game-container">
+          <div className="slots-container">
+            {renderSlots(1, 3)}
+          </div>
+
+          <div className="evidence-board">
+            <div 
+              className="spotlight"
+              style={{
+                left: mousePosition.x,
+                top: mousePosition.y,
+              }}
+            />
+            
+            <div className="evidence-container" ref={containerRef}>
+              {EVIDENCE_ITEMS.map(item => {
+                const position = evidencePositions.get(item.id);
+                return position ? (
+                  <div
+                    key={item.id}
+                    className={`evidence-item ${selectedEvidence.includes(item.id) ? 'selected' : ''}`}
+                    onClick={() => toggleEvidence(item.id)}
                   >
-                    <img
-                      src={`${process.env.PUBLIC_URL}/${item.image}`}
-                      alt={item.name}
-                    />
+                    <div 
+                      className="evidence-wrapper"
+                      style={{
+                        '--offsetX': position.offsetX,
+                        '--offsetY': position.offsetY,
+                        '--rotation': `${position.rotation}deg`,
+                        '--scale': position.scale
+                      } as React.CSSProperties}
+                    >
+                      <img
+                        src={`${process.env.PUBLIC_URL}/${item.image}`}
+                        alt={item.name}
+                      />
+                      <div className="evidence-description">
+                        {item.hint}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ) : null;
-            })}
+                ) : null;
+              })}
+            </div>
+          </div>
+
+          <div className="slots-container">
+            {renderSlots(4, 6)}
           </div>
         </div>
 
-        <div className="slots-container">
-          {renderSlots(4, 6)}
-        </div>
+        {error && <div className="error-message">{error}</div>}
+        {isCompleted && renderCompletionOverlay()}
       </div>
-
-      {error && <div className="error-message">{error}</div>}
-
-      <button 
-        className="continue-button"
-        disabled={selectedEvidence.length === 0 || isSubmitting}
-        onClick={handleContinue}
-      >
-        {isSubmitting ? 'Saving...' : 'Submit Evidence'}
-      </button>
-
-      {isCompleted && renderCompletionOverlay()}
+      {!playerId && renderLoginOverlay()}
     </div>
   );
 } 

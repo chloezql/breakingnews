@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { GameProvider } from './pages/GameContext';
 import { GameContainer } from './pages/GameContainer';
 import { AudioTranscriptionPage } from './pages/AudioTranscriptionPage';
-import { SuspectInterviewPage } from './pages/SuspectInterviewPage';
 
 function App() {
   const [showTranscribe, setShowTranscribe] = useState(false);

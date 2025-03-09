@@ -1,15 +1,12 @@
 import React from 'react';
-import { GameProvider } from './context/GameContext';
-import { SuspectInterviewPage } from './pages/SuspectInterviewPage';
 import './App.scss';
+import InterviewPage from './pages/InterviewPage';
 
 function App() {
   return (
-    <GameProvider>
-      <div className="App">
-        <SuspectInterviewPage />
-      </div>
-    </GameProvider>
+    <div className="App">
+      <InterviewPage />
+    </div>
   );
 }
 
