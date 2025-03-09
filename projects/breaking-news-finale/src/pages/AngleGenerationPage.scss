@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Jersey+15&family=Pixelify+Sans:wght@400..700&display=swap');
+
+[data-component='AngleGenerationPage'] {
+  font-family: 'Jersey 15', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 16px;
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0px 0px;
+  background-color: #fe2f0d;
+  background-repeat: repeat;
+  
+  .content-top {
+    padding: 20px;
+    text-align: center;
+    
+    .breaking-news-title {
+      width: 300px;
+      height: auto;
+      margin: 0 auto;
+    }
+    
+    .player-info {
+      margin-top: 10px;
+      color: white;
+      font-family: 'Pixelify Sans', cursive;
+      text-align: center;
+      
+      p {
+        margin: 5px 0;
+        font-size: 18px;
+      }
+      
+      .card-id {
+        font-size: 14px;
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .content-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0 40px;
+    position: relative;
+  }
+
+  .story-input {
+    width: 80%;
+    margin: 40px auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
+    textarea {
+      width: 100%;
+      min-height: 300px;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      resize: none;
+      line-height: 1.5;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      transition: border-color 0.2s;
+      margin-bottom: 80px; // Space for controls
+
+      &:focus {
+        border-color: rgba(255, 255, 255, 0.6);
+        outline: none;
+      }
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+
+    .input-controls {
+      position: fixed;
+      bottom: 40px;
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+
+      button {
+        position: relative;
+        background: white;
+        color: #fe2f0d;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-family: 'Pixelify Sans', cursive;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &.recording {
+          animation: pulse 1s infinite;
+        }
+
+        &:hover {
+          transform: scale(1.05);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+
+          &:hover::after {
+            content: 'Please limit your story to 90 words!';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background: white;
+            color: #fe2f0d;
+            border-radius: 4px;
+            font-size: 14px;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            pointer-events: none;
+          }
+        }
+      }
+    }
+
+    .word-count {
+      position: absolute;
+      top: -30px;
+      right: 0;
+      color: white;
+      font-family: 'Pixelify Sans', cursive;
+    }
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes printLine {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+} 

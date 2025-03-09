@@ -3,6 +3,16 @@ const WebSocket = require('ws');
 const http = require('http');
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+// Add player module for audio
+const player = require('play-sound')(opts = {});
+
+// Configuration
+const config = {
+    port: process.env.PORT || 8080,
+    enableSound: process.env.ENABLE_SOUND !== 'false', // Enable sound by default
+};
 
 // Create Express app
 const app = express();
@@ -36,6 +46,9 @@ wss.on('connection', (ws) => {
                 // Store the card ID and forward to all React clients
                 lastCardId = data.cardId;
 
+                // Play a buzz sound when RFID is scanned
+                playBuzzSound();
+
                 // Broadcast to all React clients
                 clients.forEach((id, client) => {
                     if (client !== ws && client.readyState === WebSocket.OPEN) {
@@ -43,7 +56,7 @@ wss.on('connection', (ws) => {
                             type: 'rfid_scan',
                             cardId: data.cardId,
                             deviceId: data.deviceId,
-                            timestamp: new Date().toISOString()
+                            timestamp: new Date().toISOString(),
                         }));
                     }
                 });
@@ -71,6 +84,27 @@ wss.on('connection', (ws) => {
     });
 });
 
+// Function to play a buzz sound
+function playBuzzSound() {
+    // Skip if sound is disabled
+    if (!config.enableSound) {
+        console.log('Sound is disabled. Skipping buzz sound.');
+        return;
+    }
+
+    const soundPath = path.join(__dirname, 'sounds', 'buzz.mp3');
+
+    // Check if the sound file exists
+    if (fs.existsSync(soundPath)) {
+        console.log('Playing buzz sound...');
+        player.play(soundPath, (err) => {
+            if (err) console.error('Error playing sound:', err);
+        });
+    } else {
+        console.warn(`Sound file not found: ${soundPath}`);
+    }
+}
+
 // Simple test endpoint
 app.get('/api/status', (req, res) => {
     res.json({
@@ -78,6 +112,17 @@ app.get('/api/status', (req, res) => {
         clients: clients.size,
         lastCardId: lastCardId
     });
+});
+
+// Simple test endpoint
+app.get('/ping', (req, res) => {
+    res.send('pong');
+});
+
+// Endpoint to test the sound
+app.get('/test-sound', (req, res) => {
+    playBuzzSound();
+    res.send('Playing buzz sound...');
 });
 
 // Get your local IP address to share with other devices
@@ -97,11 +142,13 @@ const getLocalIP = () => {
 };
 
 // Start the server
-const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => {
+server.listen(config.port, () => {
     const localIP = getLocalIP();
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Local Address: http://localhost:${PORT}`);
-    console.log(`Network Address: http://${localIP}:${PORT}`);
-    console.log(`WebSocket URL: ws://${localIP}:${PORT}`);
+    console.log(`Server is running on port ${config.port}`);
+    console.log(`Local Address: http://localhost:${config.port}`);
+    console.log(`Network Address: http://${localIP}:${config.port}`);
+    console.log(`WebSocket URL: ws://${localIP}:${config.port}`);
+    console.log(`Sound: ${config.enableSound ? 'Enabled' : 'Disabled'}`);
+    console.log(`Test Sound: http://localhost:${config.port}/test-sound`);
+    console.log(`To disable sound: ENABLE_SOUND=false node server.js`);
 });

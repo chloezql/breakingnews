@@ -1,0 +1,261 @@
+@import url('https://fonts.googleapis.com/css2?family=Jersey+15&family=Pixelify+Sans:wght@400..700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Jersey 15', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+.App {
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+button {
+  cursor: pointer;
+  font-family: 'Jersey 15', sans-serif;
+}
+
+input, textarea {
+  font-family: 'Jersey 15', sans-serif;
+}
+
+/* User ID Badge */
+.user-id-badge {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-family: 'Pixelify Sans', cursive;
+  font-size: 14px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.user-id-label {
+  opacity: 0.8;
+}
+
+.user-id-value {
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+/* Code Input Screen */
+.code-input-screen {
+  min-height: 100vh;
+  background-color: #fe2f0d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.logo-container {
+  margin-bottom: 40px;
+}
+
+.logo-container img {
+  width: 300px;
+  height: auto;
+}
+
+.code-form-container {
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+}
+
+.code-form-container h2 {
+  font-family: 'Pixelify Sans', cursive;
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: #fe2f0d;
+}
+
+.code-form-container p {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.code-form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.code-form-container input {
+  padding: 15px;
+  font-size: 24px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.code-form-container button {
+  padding: 15px;
+  background-color: #fe2f0d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  font-family: 'Pixelify Sans', cursive;
+  transition: transform 0.2s;
+}
+
+.code-form-container button:hover {
+  transform: scale(1.05);
+}
+
+.error-message {
+  color: #fe2f0d;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.code-help {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Common styles for all pages */
+.page-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Utility classes */
+.text-center {
+  text-align: center;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-in-out;
+}
+
+.loading-screen, .error-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #fe2f0d;
+  color: white;
+  font-family: 'Pixelify Sans', cursive;
+  font-size: 24px;
+  text-align: center;
+  padding: 20px;
+
+  &::after {
+    content: '';
+    width: 50px;
+    height: 50px;
+    margin-top: 20px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+  }
+}
+
+.error-screen {
+  background-color: #d32f2f;
+
+  &::after {
+    content: '❌';
+    width: auto;
+    height: auto;
+    border: none;
+    animation: none;
+    font-size: 48px;
+    margin-top: 20px;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+} 

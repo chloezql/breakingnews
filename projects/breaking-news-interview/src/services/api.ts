@@ -3,6 +3,19 @@ export interface Player {
   id: string;
   player_name?: string;
   id_card_no?: string;
+  headline?: string;
+  evidence_list?: number[];
+  tape?: string;
+  selected_suspect?: string;
+  story_angle?: string;
+  full_article_generated?: string;
+  ratings?: {
+    viral: number;
+    truth: number;
+    creativity: number;
+    overall: number;
+    feedback: string;
+  }
 }
 const API_BASE_URL = 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
 

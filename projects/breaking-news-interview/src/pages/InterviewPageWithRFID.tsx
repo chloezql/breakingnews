@@ -4,9 +4,9 @@ import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { WavRecorder, WavStreamPlayer } from '../utils/wavtools';
 import { getSuspect, validateSuspectId, worldBackground } from '../data/suspects';
+import { useWebSocket } from '../hooks/useWebSocket';
 import { findPlayerByCardId, updateSelectedSuspect } from '../services/api';
 import '../styles/InterviewPage.scss';
-import { codeToCardId } from '../types/codeToCardId';
 
 const LOCAL_RELAY_SERVER_URL = process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
@@ -38,10 +38,10 @@ const InterviewPage: React.FC = () => {
   const [suspectId, setSuspectId] = useState<string>('');
   const [playerId, setPlayerId] = useState<string>('');
   const [interrogatedSuspects, setInterrogatedSuspects] = useState<string[]>([]);
-  const [codeInput, setCodeInput] = useState<string>('');
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSessionActive, setIsSessionActive] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,51 +77,42 @@ const InterviewPage: React.FC = () => {
     localStorage.setItem('interrogatedSuspects', JSON.stringify(interrogatedSuspects));
   }, [interrogatedSuspects]);
 
-  // Handle code input and convert to card ID
-  const handleCodeInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setCodeInput(value);
-    
-    // Check if this is a code with confirmation (ends with .)
-    if (value.endsWith('.')) {
-      const code = value.slice(0, -1);
-      const cardId = codeToCardId[code as keyof typeof codeToCardId];
+  // WebSocket handler for RFID card scanning
+  const handleWebSocketMessage = useCallback(async (data: any) => {
+    if (data.type === 'rfid_scan' && !playerId) {
+      console.log('RFID card scanned:', data.cardId);
+      setLoginError(null);
       
-      if (cardId) {
-        setLoginError(null);
-        try {
-          const playerData = await findPlayerByCardId(cardId);
-          console.log('Player data received:', playerData);
-          if (playerData && playerData[0]?.id) {
-            setPlayerId(playerData[0].id);
-            console.log('Setting player ID:', playerData[0].id);
-            // Clear the code input after successful login
-            setCodeInput('');
-          } else {
-            console.log('No valid player data received');
-            setLoginError('No player found for this code');
-            setTimeout(() => {
-              setLoginError(null);
-              setCodeInput('');
-            }, 3000);
-          }
-        } catch (err) {
-          setLoginError('Error finding player');
-          console.error(err);
-          setTimeout(() => {
-            setLoginError(null);
-            setCodeInput('');
-          }, 3000);
+      try {
+        const playerData = await findPlayerByCardId(data.cardId);
+        console.log('Player data received:', playerData);
+        if (playerData && playerData[0]?.id) {
+          setPlayerId(playerData[0].id);
+          console.log('Setting player ID:', playerData[0].id);
+          
+          // Only disconnect WebSocket if we're in production mode
+          // This allows for easier debugging in development
+          // if (process.env.NODE_ENV === 'production') {
+            disconnectWebSocket();
+          // }
+        } else {
+          console.log('No valid player data received');
+          setLoginError('No player found for this card');
         }
-      } else {
-        setLoginError('Invalid code');
-        setTimeout(() => {
-          setLoginError(null);
-          setCodeInput('');
-        }, 3000);
+      } catch (err) {
+        setLoginError('Error finding player');
+        console.error(err);
+      } finally {
       }
     }
-  };
+  }, []);
+
+  // Set up WebSocket connection
+  const { sendMessage, disconnect: disconnectWebSocket, reconnect: reconnectWebSocket } = useWebSocket({
+    onMessage: handleWebSocketMessage,
+    onConnect: () => setWsConnected(true),
+    onDisconnect: () => setWsConnected(false)
+  });
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -144,7 +135,7 @@ const InterviewPage: React.FC = () => {
       
       const suspectId = value.slice(0, -1);
       if (validateSuspectId(suspectId)) {
-        // Only allow starting a call if player ID has been set
+        // Only allow starting a call if player ID has been set via RFID
         if (playerId) {
           setSuspectId(suspectId);
           
@@ -156,7 +147,7 @@ const InterviewPage: React.FC = () => {
             await startCall(suspectId);
           }
         } else {
-          setLoginError('Please enter your reporter code first');
+          setLoginError('Please scan your reporter ID card first');
           setTimeout(() => setLoginError(null), 3000);
         }
       } else {
@@ -168,7 +159,7 @@ const InterviewPage: React.FC = () => {
     else if (value.endsWith('0')) {
       const suspectId = value.slice(0, -1);
       if (validateSuspectId(suspectId)) {
-        // Only allow selecting a suspect if player ID has been set
+        // Only allow selecting a suspect if player ID has been set via RFID
         if (playerId) {
           setSuspectId(suspectId);
           
@@ -189,6 +180,8 @@ const InterviewPage: React.FC = () => {
               setPlayerId('');
               setSuspectId('');
               setLoginError(null);
+              console.log('Reconnecting WebSocket after call ended');
+              reconnectWebSocket();
             };
             audio.play();
             
@@ -198,7 +191,7 @@ const InterviewPage: React.FC = () => {
             setTimeout(() => setLoginError(null), 3000);
           }
         } else {
-          setLoginError('Please enter your reporter code first');
+          setLoginError('Please scan your reporter ID card first');
           setTimeout(() => setLoginError(null), 3000);
         }
       } else {
@@ -247,6 +240,10 @@ const InterviewPage: React.FC = () => {
     const suspect = getSuspect(id);
     console.log('Found suspect:', suspect);
     if (!suspect) return;
+
+    // Disconnect WebSocket before starting the call to avoid conflicts
+    console.log('Disconnecting WebSocket before starting call');
+    disconnectWebSocket();
 
     const wavRecorder = wavRecorderRef.current;
     const wavStreamPlayer = wavStreamPlayerRef.current;
@@ -377,7 +374,7 @@ You are being interrogated by a reporter at the police office about Erin's death
         processingRef.current = false;
         currentItemIdRef.current = null;
 
-        // After the guard audio finishes, reset the UI
+        // After the guard audio finishes, reconnect the WebSocket
         setTimeout(() => {
           setScanMode('input');
           setIsSessionActive(false);
@@ -522,33 +519,21 @@ You are being interrogated by a reporter at the police office about Erin's death
   return (
     <Box className="interview-page">
       {scanMode === 'input' && (
-        <Box className="input-section">
-          
-          {/* Player ID input section - only show if no player ID yet */}
-          {!playerId && (
-            <Box className="code-input-container">
-              <Typography variant="body1" className="info-text">
-                Enter your 2-digit reporter code, and then press enter (e.g., "11 enter")
-              </Typography>
-              <input
-                type="text"
-                value={codeInput}
-                onChange={handleCodeInput}
-                className="suspect-input"
-                autoFocus
-                placeholder="Reporter code..."
-                ref={inputRef}
-              />
-            </Box>
-          )}
+        <Box className=" input-section">
           
           {/* Player ID display */}
-          {playerId && (
+          {playerId ? (
             <Box className="info-box success">
               <Typography variant="body1" className="info-text">
                 Reporter ID: {playerId} ✓
               </Typography>
             </Box>
+          ) : (
+            <Typography variant="body2" className="faded-text">
+              {wsConnected 
+                ? 'Please scan your reporter ID card'
+                : 'RFID Scanner disconnected. Please check connection.'}
+            </Typography>
           )}
           
           {loginError && (
@@ -559,23 +544,21 @@ You are being interrogated by a reporter at the police office about Erin's death
             </Box>
           )}
           
-          {/* Suspect ID input - only show if player ID is set */}
-          {playerId && (
-            <>
-              <input
-                type="text"
-                value={suspectId}
-                onChange={handleInput}
-                className="suspect-input"
-                autoFocus
-                placeholder="Suspect ID..."
-                ref={inputRef}
-              />
-              <Typography variant="body2" sx={{ marginTop: '10px', opacity: 0.7 }}>
-                To call a suspect: Enter suspect ID and then press enter (e.g., "1234 enter")
-                To select a suspect: Enter suspect ID and then press Select (e.g., "1234 Select")
-              </Typography>
-            </>
+          <input
+            type="text"
+            value={suspectId}
+            onChange={handleInput}
+            className="suspect-input"
+            autoFocus
+            placeholder="Suspect ID..."
+            disabled={!playerId}
+            ref={inputRef}
+          />
+          
+          {!playerId && (
+            <Typography variant="body2" sx={{ marginTop: '10px', opacity: 0.7 }}>
+              You must scan your reporter ID card before interviewing a suspect
+            </Typography>
           )}
         </Box>
       )}
