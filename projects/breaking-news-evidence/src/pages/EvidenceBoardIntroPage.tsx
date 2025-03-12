@@ -1,163 +1,108 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './EvidenceBoardIntroPage.scss';
-import { findPlayerByCardId } from '../services/api';
-import { useWebSocket } from '../hooks/useWebSocket';
 
 interface EvidenceBoardIntroPageProps {
-  playerId: string | null;
   onComplete: () => void;
-  onLogin: (id: string) => void;
+  playerId: string | null;
 }
 
-export function EvidenceBoardIntroPage({ playerId, onComplete, onLogin }: EvidenceBoardIntroPageProps) {
+function EvidenceBoardIntroPage({ onComplete, playerId }: EvidenceBoardIntroPageProps) {
   const [audioEnded, setAudioEnded] = useState(false);
-  const [audioStarted, setAudioStarted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
+  const [isTalking, setIsTalking] = useState(false);
+  const talkingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Login state
-  const [isLoading, setIsLoading] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [lastCardId, setLastCardId] = useState<string | null>(null);
-  const [wsConnected, setWsConnected] = useState(false);
-  const [idScanned, setIdScanned] = useState(!!playerId);
-
-  // Handle WebSocket messages for RFID scan
-  const handleWebSocketMessage = useCallback(async (data: any) => {
-    if (data.type === 'rfid_scan' && !currentPlayerId) {
-      console.log('RFID card scanned:', data.cardId);
-      setLastCardId(data.cardId);
-      setLoginError(null);
-      setIsLoading(true);
-      
-      try {
-        const playerData = await findPlayerByCardId(data.cardId);
-        console.log('Player data received:', playerData);
-        if (playerData && playerData[0]?.id) {
-          const newPlayerId = playerData[0].id;
-          setCurrentPlayerId(newPlayerId);
-          setIdScanned(true);
-          console.log('Setting player ID:', newPlayerId);
-          
-          // Call onLogin callback to update parent component
-          onLogin(newPlayerId);
-          
-          // Don't auto-play audio - wait for user interaction
-          // Instead, prepare the audio element
-          playIntroAudio();
-        //   prepareAudio();
-        } else {
-          console.log('No valid player data received');
-          setLoginError('No player found for this card');
-        }
-      } catch (err) {
-        setLoginError('Error finding player');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  }, [currentPlayerId, onLogin]);
-
-  const handleWebSocketConnect = useCallback(() => {
-    setWsConnected(true);
-  }, []);
-
-  const handleWebSocketDisconnect = useCallback(() => {
-    setWsConnected(false);
-  }, []);
-
-  useWebSocket({
-    onMessage: handleWebSocketMessage,
-    onConnect: handleWebSocketConnect,
-    onDisconnect: handleWebSocketDisconnect,
-  });
-
-  // Prepare audio element but don't play it yet
-  const playIntroAudio = () => {
-    // Create audio element
-    const audio = new Audio('/Station2_Tony_01.wav');
-    audioRef.current = audio;
+  // Animation for the talking cop
+  const startTalkingAnimation = useCallback(() => {
+    if (talkingIntervalRef.current) return;
     
-    // // Set up event listener for when audio finishes playing
-    // audio.addEventListener('ended', () => {
-    //   console.log('Intro audio finished playing');
-    //   setAudioEnded(true);
-    // });
-
-        
-    // Play audio
-    audio.play().catch(error => {
-        console.error('Error playing intro audio:', error);
-        // If audio fails to play, still allow progress
-        setAudioEnded(true);
-      });
+    // Toggle between arm up and arm down every 300ms to create talking effect
+    let isArmUp = false;
+    talkingIntervalRef.current = setInterval(() => {
+      isArmUp = !isArmUp;
+      setIsTalking(isArmUp);
+    }, 1000);
+    
+    // Initially set to talking state
+    setIsTalking(true);
+  }, []);
   
-  };
-  
-  // Start playing audio on user interaction
-  const startAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.play()
-        .then(() => {
-          setAudioStarted(true);
-          console.log('Audio started playing successfully');
-        })
-        .catch(error => {
-          console.error('Error playing intro audio:', error);
-          // If audio fails to play, still allow progress
-          setAudioEnded(true);
-        });
-    } else {
-      // If no audio element exists yet, create one and play it
-      const audio = new Audio('/Station2_Tony_01.wav');
-      audioRef.current = audio;
-      
-      audio.addEventListener('ended', () => {
-        console.log('Intro audio finished playing');
-        setAudioEnded(true);
-      });
-      
-      audio.play()
-        .then(() => {
-          setAudioStarted(true);
-          console.log('Audio started playing successfully');
-        })
-        .catch(error => {
-          console.error('Error playing intro audio:', error);
-          setAudioEnded(true);
-        });
+  const stopTalkingAnimation = useCallback(() => {
+    if (talkingIntervalRef.current) {
+      clearInterval(talkingIntervalRef.current);
+      talkingIntervalRef.current = null;
     }
-  };
-
-  // Cleanup when component unmounts
+  }, []);
+  
+  // Handle audio ended event correctly
+  const handleAudioEnded = useCallback(() => {
+    console.log('Intro audio finished playing');
+    setAudioEnded(true);
+    stopTalkingAnimation();
+  }, [stopTalkingAnimation]);
+  
+  // Use the autoplay approach since we've already had user interaction from the tutorial page
   useEffect(() => {
-    if (playerId) {
-      setCurrentPlayerId(playerId);
-      setIdScanned(true);
-      // Just prepare the audio but don't play
-      playIntroAudio();
-    }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.removeEventListener('ended', () => setAudioEnded(true));
+    let mounted = true;
+    let audio: HTMLAudioElement | null = null;
+    
+    const setupAudio = () => {
+      if (playerId && mounted) {
+        // Create audio element
+        audio = new Audio('/Station2_Tony_01.wav');
+        audioRef.current = audio;
+        
+        // Set up event listener for when audio finishes playing
+        const onEnded = () => {
+          if (mounted) {
+            handleAudioEnded();
+          }
+        };
+        
+        audio.addEventListener('ended', onEnded);
+        
+        // Start the talking animation when audio starts
+        startTalkingAnimation();
+        
+        // Try to play the audio automatically
+        audio.play()
+          .then(() => {
+            if (mounted) {
+              console.log('Audio started playing successfully');
+            }
+          })
+          .catch(error => {
+            console.error('Error playing intro audio:', error);
+            // If auto-play still fails, still allow progress
+            if (mounted) {
+              handleAudioEnded();
+            }
+          });
       }
     };
-  }, []);
+    
+    // Small delay to ensure component is fully mounted before playing audio
+    const timerId = setTimeout(setupAudio, 100);
 
-  // Update current player ID when prop changes
-  useEffect(() => {
-    console.log('playerId', playerId);
-    console.log('currentPlayerId', currentPlayerId);
-    if (playerId && !currentPlayerId) {
-      setCurrentPlayerId(playerId);
-      setIdScanned(true);
-      // Just prepare the audio but don't play
-      playIntroAudio();
-    }
-  }, [playerId, currentPlayerId]);
+    return () => {
+      mounted = false;
+      
+      // Clean up audio
+      if (audioRef.current) {
+        const currentAudio = audioRef.current;
+        currentAudio.pause();
+        currentAudio.src = ''; // Empty source to fully unload
+        currentAudio.load(); // Force reload to clear any resources
+        audioRef.current = null;
+      }
+      
+      // Clear any interval for the talking animation
+      stopTalkingAnimation();
+      
+      // Clear the delayed setup
+      clearTimeout(timerId);
+    };
+  }, [playerId, handleAudioEnded, startTalkingAnimation, stopTalkingAnimation]);
 
   // Auto advance after audio ends
   useEffect(() => {
@@ -170,31 +115,22 @@ export function EvidenceBoardIntroPage({ playerId, onComplete, onLogin }: Eviden
     }
   }, [audioEnded, onComplete]);
 
-  // Render login overlay for ID scan
-  const renderLoginOverlay = () => (
-    <div className="login-overlay">
-      <div className="login-card">
-        <h2>SCAN YOUR ID CARD</h2>
-        {isLoading && <div className="loading">CHECKING CARD...</div>}
-        {loginError && <div className="error">{loginError}</div>}
-      </div>
-    </div>
-  );
+  if (!playerId) {
+    return <div className="loading-screen">Loading...</div>;
+  }
 
   return (
     <div className="evidence-board-intro-page">
-      <div className={`game-content ${!idScanned ? 'blurred' : ''}`}>
-        <div className="page-header">
-          <h1>Evidence Board</h1>
-        </div>
-        
+      <div className="game-content">
         <div className="game-container">
           <div className="evidence-board">
-            {idScanned && (
-              <div className="cop-container">
-                <img src="/police-officer.png" alt="Police Officer" className="cop-image" />
-              </div>
-            )}
+            <div className="cop-container">
+              <img 
+                src={isTalking ? "/police-arm-up.png" : "/police-arm-down.png"} 
+                alt="Police Officer" 
+                className="cop-image" 
+              />
+            </div>
             
             <div className="board-content">
               <div className="board-message">
@@ -203,21 +139,9 @@ export function EvidenceBoardIntroPage({ playerId, onComplete, onLogin }: Eviden
             </div>
           </div>
         </div>
-        
-        {idScanned && !audioStarted && (
-          <button className="start-button" onClick={startAudio}>
-            Start Briefing
-          </button>
-        )}
-        
-        {audioEnded && idScanned && (
-          <button className="continue-button" onClick={onComplete}>
-            Continue
-          </button>
-        )}
       </div>
-      
-      {!idScanned && renderLoginOverlay()}
     </div>
   );
-} 
+}
+
+export default EvidenceBoardIntroPage; 
