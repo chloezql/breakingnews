@@ -29,6 +29,7 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
   const [error, setError] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [evidencePositions, setEvidencePositions] = useState<Map<number, EvidencePosition>>(new Map());
+  const [zoomedEvidence, setZoomedEvidence] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Add timer state - 5 minutes in seconds
@@ -277,7 +278,61 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
     </div>
   );
 
-  // Render suspect with their evidence
+  // Handle evidence click for zoom
+  const handleEvidenceZoom = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event from bubbling up
+    setZoomedEvidence(id === zoomedEvidence ? null : id);
+  };
+
+  // New function to render zoomed evidence view
+  const renderZoomedEvidence = () => {
+    if (zoomedEvidence === null) return null;
+    
+    const evidence = EVIDENCE_ITEMS.find(item => item.id === zoomedEvidence);
+    if (!evidence) return null;
+    
+    return (
+      <div className="zoomed-evidence-container">
+        <div className="zoomed-evidence-content">
+          <div className="zoomed-image-container">
+            <img 
+              src={`${process.env.PUBLIC_URL}/${evidence.image}`} 
+              alt={evidence.name} 
+              className="zoomed-image"
+            />
+            {selectedEvidence.includes(evidence.id) && 
+              <div className="selected-indicator large">✓</div>
+            }
+          </div>
+          <div className="zoomed-description">
+            {evidence.hint}
+          </div>
+          <div className="zoomed-actions">
+            <button 
+              className={`select-btn ${selectedEvidence.includes(evidence.id) ? 'selected' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleEvidence(evidence.id);
+              }}
+            >
+              {selectedEvidence.includes(evidence.id) ? 'Deselect' : 'Select Evidence'}
+            </button>
+            <button 
+              className="close-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setZoomedEvidence(null);
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Updated render suspect evidence function
   const renderSuspect = (suspect: SuspectEvidence) => (
     <div key={suspect.id} className="suspect-section">
       <div className="suspect-header">
@@ -293,11 +348,12 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
           .filter(item => suspect.evidenceIds.includes(item.id))
           .map(evidence => {
             const position = evidencePositions.get(evidence.id);
+            
             return position ? (
               <div
                 key={evidence.id}
                 className={`evidence-item ${selectedEvidence.includes(evidence.id) ? 'selected' : ''}`}
-                onClick={() => toggleEvidence(evidence.id)}
+                onClick={(e) => handleEvidenceZoom(evidence.id, e)}
               >
                 <div className="evidence-wrapper">
                   <img
@@ -318,18 +374,19 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
     </div>
   );
 
-  // Render general evidence (not specific to a suspect)
+  // Updated render general evidence function
   const renderGeneralEvidence = () => (
     <div className="general-evidence">
       {EVIDENCE_ITEMS
         .filter(item => item.id <= 7) // First 7 items are general evidence
         .map(evidence => {
           const position = evidencePositions.get(evidence.id);
+          
           return position ? (
             <div
               key={evidence.id}
               className={`evidence-item ${selectedEvidence.includes(evidence.id) ? 'selected' : ''}`}
-              onClick={() => toggleEvidence(evidence.id)}
+              onClick={(e) => handleEvidenceZoom(evidence.id, e)}
             >
               <div className="evidence-wrapper">
                 <img
@@ -349,9 +406,26 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
     </div>
   );
   
+  // Close zoomed view when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (zoomedEvidence !== null) {
+        setZoomedEvidence(null);
+      }
+    };
+    
+    // Add event listener to document
+    document.addEventListener('click', handleClickOutside);
+    
+    // Remove event listener on cleanup
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [zoomedEvidence]);
+  
   return (
     <div className="evidence-page">
-      <div className="game-content">
+      <div className={`game-content ${zoomedEvidence ? 'blurred' : ''}`}>
         {/* Timer bar */}
         <div className="timer-container">
           <div className="timer-bar">
@@ -409,10 +483,16 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
             {selectedEvidence.length === 0 ? 'Select at least 1 evidence' : isSubmitting ? 'Collecting...' : 'Confirm Selection'} 
           </button>
         </div>
-
-        {error && <div className="error-message">{error}</div>}
-        {isCompleted && renderCompletionOverlay()}
       </div>
+      
+      {/* Semi-transparent overlay for when evidence is being viewed */}
+      <div className={`evidence-overlay ${zoomedEvidence ? 'visible' : ''}`}></div>
+      
+      {/* Render zoomed evidence view */}
+      {zoomedEvidence && renderZoomedEvidence()}
+      
+      {error && <div className="error-message">{error}</div>}
+      {isCompleted && renderCompletionOverlay()}
     </div>
   );
 } 
