@@ -12,6 +12,7 @@
 
   .game-content {
     width: 100%;
+    max-width: 1600px;
     transition: filter 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -26,7 +27,7 @@
   // Timer container that replaces the logo
   .timer-container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -66,9 +67,10 @@
     align-items: stretch;
     justify-content: center;
     width: 100%;
+    max-width: 1600px;
     margin: 0 auto;
     position: relative;
-    gap: 1rem;
+    gap: 1.5rem;
   }
 
   // Slots container for evidence selection
@@ -123,14 +125,15 @@
 
   .evidence-board {
     flex: 1;
-    max-width: 1200px;
+    max-width: 1400px;
     aspect-ratio: 16/9;
-    min-height: 600px;
-    background-color: #8f6351;
+    min-height: 700px;
+    background-color: #e5d5b5; // Tan cork board color
     border: 20px solid #5d3a2a;
     border-radius: 4px;
     position: relative;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden; // Changed from auto to hidden to prevent scrolling
     
     &::before {
       content: '';
@@ -140,11 +143,12 @@
       right: 0;
       bottom: 0;
       background: radial-gradient(
-        circle at center,
-        rgba(0,0,0,0.4) 0%,
-        rgba(0,0,0,0.6) 70%,
-        rgba(0,0,0,0.8) 100%
-      );
+                    circle at center,
+                    rgba(0,0,0,0.1) 0%,
+                    rgba(0,0,0,0.3) 70%,
+                    rgba(0,0,0,0.4) 100%
+                  );
+      opacity: 0.8;
       pointer-events: none;
       z-index: 1;
     }
@@ -155,6 +159,261 @@
       height: 100%;
       margin: 0;
       z-index: 3;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box; // Add box-sizing to prevent padding from expanding the container
+      overflow: hidden; // Add overflow hidden to contain children
+    }
+
+    // Timeline styles
+    .timeline-container {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      overflow: hidden; // Contain children
+      
+      // Timeline date headers
+      .timeline-dates {
+        display: flex;
+        justify-content: space-between;
+        background-color: #cc0000;
+        height: 30px;
+        color: white;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 14px;
+        position: relative;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          height: 100%;
+          width: 2px;
+          background-color: rgba(255, 255, 255, 0.5);
+          transform: translateX(-50%);
+        }
+        
+        .timeline-date {
+          padding: 5px 15px;
+          display: flex;
+          align-items: center;
+          
+          &.left {
+            justify-content: flex-start;
+          }
+          
+          &.right {
+            justify-content: flex-end;
+          }
+        }
+      }
+      
+      // Timeline events
+      .timeline-events-container {
+        background-color: #e2d1a7;
+        padding: 10px;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden; // Contain children
+        
+        .timeline-events {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          
+          .event-item {
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px 8px;
+            border-radius: 0;
+            width: calc(20% - 8px);
+            box-sizing: border-box;
+            border-bottom: 2px solid rgba(204, 0, 0, 0.3);
+            
+            .event-time {
+              font-weight: bold;
+              font-size: 11px;
+              white-space: nowrap;
+            }
+            
+            .event-description {
+              font-size: 11px;
+              line-height: 1.3;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+        }
+      }
+    }
+
+    // Victim connections styles
+    .victim-connections {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      margin-bottom: 5px;
+      height: 150px;
+      max-height: 260px;
+      width: 100%;
+      box-sizing: border-box;
+
+      .victims-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 5;
+        margin-top: 5px;
+        height: 80px;
+        width: 100%;
+      }
+
+      .victim-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-right: 0;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+
+        .victim-image {
+          width: 80px;
+          height: 80px;
+          border-radius: 0;
+          border: 2px solid #cc0000;
+          background-color: white;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+          object-fit: cover;
+        }
+
+        .victim-label {
+          background-color: #cc0000;
+          color: white;
+          padding: 5px 10px;
+          font-size: 12px;
+          font-weight: bold;
+          margin-top: 5px;
+          width: fit-content;
+          text-align: center;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+      }
+
+      .victim-info {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        border-radius: 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        width: 30%; // Using the wider percentage for better readability
+        margin-top: 0;
+        position: absolute;
+        left: 55%;
+        top: 10px;
+
+        // Nested styles for victim info content
+        .victim-name {
+          font-weight: bold;
+          font-size: 16px;
+          color: #cc0000;
+          margin-bottom: 5px;
+          font-family: 'Press Start 2P', monospace;
+          text-align: center;
+        }
+
+        .victim-tod {
+          font-size: 14px;
+        }
+      }
+
+      .connection-lines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+        
+        .connection-line {
+          stroke: #cc0000;
+          stroke-width: 3;
+          stroke-dasharray: 6 2;
+          filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+        }
+      }
+    }
+
+    // Suspects container styles
+    .suspects-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: -45px;
+      overflow: hidden;
+    }
+
+    // Suspect section styles
+    .suspect-section {
+      width: 30%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .suspect-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 15px;
+
+        .suspect-image {
+          width: 60px;
+          height: 60px;
+          border-radius: 0;
+          border: 2px solid #333;
+          background-color: white;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+          object-fit: cover;
+        }
+
+        .suspect-name {
+          background-color: #8b3a3a;
+          color: white;
+          padding: 5px 10px;
+          font-size: 12px;
+          font-weight: bold;
+          margin-top: 5px;
+          text-align: center;
+          width: 100%;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+      }
+
+      .suspect-evidence {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+    }
+
+    // General evidence styles
+    .general-evidence {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      border-top: 2px dashed rgba(0, 0, 0, 0.3);
+      overflow: visible;
     }
   }
 
@@ -206,8 +465,8 @@
 
   // Evidence item styling similar to tutorial
   .evidence-item {
-    width: 200px;
-    height: 200px;
+    width: 100px;
+    height: 100px;
     background-color: #333;
     border: 3px solid #555;
     border-radius: 8px;
@@ -218,8 +477,8 @@
     transition: all 0.3s ease;
     overflow: visible;
     z-index: 3;
-    position: absolute;
-    transform: translate(-50%, -50%);
+    position: relative;
+    margin: 5px;
 
     .evidence-wrapper {
       width: 100%;
@@ -240,8 +499,8 @@
         position: absolute;
         top: 5px;
         right: 5px;
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
         background-color: #28a745;
         color: white;
         border-radius: 50%;
@@ -249,7 +508,7 @@
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 14px;
+        font-size: 12px;
         z-index: 4;
       }
     }
@@ -261,7 +520,7 @@
     &.selected {
       border-color: #28a745;
       box-shadow: 0 0 15px rgba(40, 167, 69, 0.7);
-      transform: translate(-50%, -50%) scale(1.05);
+      transform: scale(1.05);
       z-index: 10;
 
       .evidence-wrapper {
@@ -271,35 +530,34 @@
 
     .evidence-description {
       position: absolute;
-      right: -230px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 220px;
+      top: -60px;
+      left: 0;
+      width: 100px;
       background-color: rgba(0, 0, 0, 0.8);
       color: white;
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 15px;
-      text-align: left;
-      font-size: 16px;
+      padding: 8px;
+      text-align: center;
+      font-size: 12px;
       animation: fadeIn 0.2s ease-in;
       border-radius: 5px;
       font-family: 'Press Start 2P', 'Courier New', monospace;
-      font-size: 12px;
+      font-size: 8px;
       line-height: 1.5;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
       z-index: 5;
       
-      &::before {
+      &::after {
         content: '';
         position: absolute;
-        left: -10px;
-        top: 50%;
-        transform: translateY(-50%);
-        border-width: 10px 10px 10px 0;
+        left: 50%;
+        bottom: -10px;
+        transform: translateX(-50%);
+        border-width: 10px 10px 0 10px;
         border-style: solid;
-        border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
+        border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
       }
     }
 
@@ -311,7 +569,7 @@
   // Confirm button container 
   .confirm-button-container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px;
     display: flex;
     justify-content: center;
     margin-top: 2rem;
@@ -319,7 +577,7 @@
   }
   
   .confirm-button {
-    padding: 16px 32px;
+    padding: 24px 32px;
     background-color: #ffcc00; 
     color: #000;
     border: 4px solid #ff4800;

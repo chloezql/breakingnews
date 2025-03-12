@@ -14,6 +14,14 @@ interface EvidenceSelectionPageProps {
   initialPlayerId?: string | null;
 }
 
+// Categories for evidence by suspect
+interface SuspectEvidence {
+  id: string;
+  name: string;
+  image: string;
+  evidenceIds: number[];
+}
+
 export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPageProps) {
   const [selectedEvidence, setSelectedEvidence] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,11 +32,52 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Add timer state - 5 minutes in seconds
-  const [timeRemaining, setTimeRemaining] = useState(50 * 60);
+  const [timeRemaining, setTimeRemaining] = useState(5 * 60);
   const [timerStarted, setTimerStarted] = useState(false);
   
   // Player ID state - we now expect this to be passed from parent
   const [playerId, setPlayerId] = useState<string | null>(initialPlayerId || null);
+
+  // Define suspects with their related evidence
+  const suspects: SuspectEvidence[] = [
+    {
+      id: 'kevin',
+      name: 'Kevin Sanchez',
+      image: '/character-photos/kevin.png',
+      evidenceIds: [12, 13, 14, 15]  // IDs that correspond to Kevin's evidence
+    },
+    {
+      id: 'dr-hart',
+      name: 'Dr. Hart',
+      image: '/character-photos/dr.hart.png',
+      evidenceIds: [8, 9, 10, 11]  // IDs that correspond to Dr. Hart's evidence
+    },
+    {
+      id: 'lucy',
+      name: 'Lucy Marlow',
+      image: '/character-photos/lucy.png',
+      evidenceIds: [16, 17, 18, 19]  // IDs that correspond to Lucy's evidence
+    }
+  ];
+
+  // Timeline events
+  const timelineEvents = [
+    {
+      date: 'June 5',
+      events: [
+        { time: '3:30pm', description: 'Meet with Dr. Hart @Café' },
+        { time: '7:10pm', description: 'Fight with Lucy @Erin\'s dorm' },
+        { time: '9pm', description: 'Stayed with Kevin @Kevin\'s House' }
+      ]
+    },
+    {
+      date: 'June 6',
+      events: [
+        { time: '8am', description: 'Report Death' },
+        { time: '10am', description: 'Exhibition Grand Opening @Museum' }
+      ]
+    }
+  ];
 
   // Update playerId when initialPlayerId changes
   useEffect(() => {
@@ -53,39 +102,24 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
     };
   }, [timerStarted, timeRemaining]);
   
-  // TODO: Implement what happens when timer reaches zero
-  
   const resetAllState = () => {
     setSelectedEvidence([]);
     setIsCompleted(false);
     setError(null);
     setTimeRemaining(5 * 60);
-    initializePositions();
+    initializeEvidencePositions();
   };
 
-  const initializePositions = () => {
+  const initializeEvidencePositions = () => {
     const newPositions = new Map<number, EvidencePosition>();
-    const centerX = 50;
-    const centerY = 50;
-    const radius = 40;
     
-    // Create fixed positions in a circular pattern
-    EVIDENCE_ITEMS.forEach((item, index) => {
-      const angle = (index / EVIDENCE_ITEMS.length) * 2 * Math.PI;
-      const adjustedRadius = radius * (0.8 + Math.random() * 0.4); // Slight randomness in radius
-      
-      // Calculate position using a mix of circular layout and some randomness
-      const left = `${centerX + Math.cos(angle) * adjustedRadius * (0.8 + Math.random() * 0.4)}%`;
-      const top = `${centerY + Math.sin(angle) * adjustedRadius * (0.8 + Math.random() * 0.4)}%`;
-      
-      const rotation = Math.random() * 40 - 20;
-      const scale = 0.85 + Math.random() * 0.3;
-
+    // Initialize positions without rotation
+    EVIDENCE_ITEMS.forEach((item) => {
       newPositions.set(item.id, {
-        left,
-        top,
-        rotation,
-        scale
+        left: '0',
+        top: '0',
+        rotation: 0, // No rotation
+        scale: 1 // Consistent scale
       });
     });
 
@@ -98,7 +132,7 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    initializePositions();
+    initializeEvidencePositions();
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
   
@@ -185,11 +219,140 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
       );
     });
   };
+
+  // Render the timeline
+  const renderTimeline = () => (
+    <div className="timeline-container">
+      {/* Date headers */}
+      <div className="timeline-dates">
+        <div className="timeline-date left">June 5</div>
+        <div className="timeline-date right">June 6</div>
+      </div>
+      
+      {/* Events list */}
+      <div className="timeline-events-container">
+        <div className="timeline-events">
+          <div className="event-item">
+            <div className="event-time">3:30pm Meet with Dr. Hart</div>
+          </div>
+          <div className="event-item">
+            <div className="event-time">7:10pm Fight with Lucy</div>
+          </div>
+          <div className="event-item">
+            <div className="event-time">9pm At Kevin's House</div>
+          </div>
+          <div className="event-item">
+                <div className="event-time">8am Report Death</div>
+          </div>
+          <div className="event-item">
+            <div className="event-time">10am Exhibition Opening</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render victim with connections to suspects
+  const renderVictimWithConnections = () => (
+    <div className="victim-connections">
+      <svg className="connection-lines" width="100%" height="100%" viewBox="0 0 1400 300" preserveAspectRatio="none">
+        <line className="connection-line" x1="700" y1="70" x2="250" y2="250" />
+        <line className="connection-line" x1="700" y1="70" x2="700" y2="250" />
+        <line className="connection-line" x1="700" y1="70" x2="1150" y2="250" />
+      </svg>
+      <div className="victims-section">
+        <div className="victim-info">
+          <div className="victim-name">Erin Carter</div>
+          <div className="victim-tod">Time of Death: Between 12 AM - 1 AM on June 6th</div>
+        </div>
+        <div className="victim-center">
+          <img 
+            src={`${process.env.PUBLIC_URL}/character-photos/erin.png`} 
+            alt="Erin Carter" 
+            className="victim-image"
+          />
+          {/* <div className="victim-label">Erin Carter</div> */}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render suspect with their evidence
+  const renderSuspect = (suspect: SuspectEvidence) => (
+    <div key={suspect.id} className="suspect-section">
+      <div className="suspect-header">
+        <img 
+          src={`${process.env.PUBLIC_URL}${suspect.image}`} 
+          alt={suspect.name} 
+          className="suspect-image"
+        />
+        <div className="suspect-name">{suspect.name}</div>
+      </div>
+      <div className="suspect-evidence">
+        {EVIDENCE_ITEMS
+          .filter(item => suspect.evidenceIds.includes(item.id))
+          .map(evidence => {
+            const position = evidencePositions.get(evidence.id);
+            return position ? (
+              <div
+                key={evidence.id}
+                className={`evidence-item ${selectedEvidence.includes(evidence.id) ? 'selected' : ''}`}
+                onClick={() => toggleEvidence(evidence.id)}
+              >
+                <div className="evidence-wrapper">
+                  <img
+                    src={`${process.env.PUBLIC_URL}/${evidence.image}`}
+                    alt={evidence.name}
+                  />
+                  {selectedEvidence.includes(evidence.id) && 
+                    <div className="selected-indicator">✓</div>
+                  }
+                </div>
+                <div className="evidence-description">
+                  {evidence.hint}
+                </div>
+              </div>
+            ) : null;
+          })}
+      </div>
+    </div>
+  );
+
+  // Render general evidence (not specific to a suspect)
+  const renderGeneralEvidence = () => (
+    <div className="general-evidence">
+      {EVIDENCE_ITEMS
+        .filter(item => item.id <= 7) // First 7 items are general evidence
+        .map(evidence => {
+          const position = evidencePositions.get(evidence.id);
+          return position ? (
+            <div
+              key={evidence.id}
+              className={`evidence-item ${selectedEvidence.includes(evidence.id) ? 'selected' : ''}`}
+              onClick={() => toggleEvidence(evidence.id)}
+            >
+              <div className="evidence-wrapper">
+                <img
+                  src={`${process.env.PUBLIC_URL}/${evidence.image}`}
+                  alt={evidence.name}
+                />
+                {selectedEvidence.includes(evidence.id) && 
+                  <div className="selected-indicator">✓</div>
+                }
+              </div>
+              <div className="evidence-description">
+                {evidence.hint}
+              </div>
+            </div>
+          ) : null;
+        })}
+    </div>
+  );
   
   return (
     <div className="evidence-page">
       <div className="game-content">
-        {/* Timer bar replaces the logo */}
+        {/* Timer bar */}
         <div className="timer-container">
           <div className="timer-bar">
             <div 
@@ -215,39 +378,19 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
             />
             
             <div className="evidence-container" ref={containerRef}>
-              {EVIDENCE_ITEMS.map(item => {
-                const position = evidencePositions.get(item.id);
-                return position ? (
-                  <div
-                    key={item.id}
-                    className={`evidence-item ${selectedEvidence.includes(item.id) ? 'selected' : ''}`}
-                    onClick={() => toggleEvidence(item.id)}
-                    style={{
-                      position: 'absolute',
-                      left: position.left,
-                      top: position.top,
-                    }}
-                  >
-                    <div 
-                      className="evidence-wrapper"
-                      style={{
-                        transform: `rotate(${position.rotation}deg) scale(${position.scale})`,
-                      }}
-                    >
-                      <img
-                        src={`${process.env.PUBLIC_URL}/${item.image}`}
-                        alt={item.name}
-                      />
-                      {selectedEvidence.includes(item.id) && 
-                        <div className="selected-indicator">✓</div>
-                      }
-                    </div>
-                    <div className="evidence-description">
-                      {item.hint}
-                    </div>
-                  </div>
-                ) : null;
-              })}
+              {/* Timeline */}
+              {renderTimeline()}
+              
+              {/* Victim with connections to suspects (includes victim info) */}
+              {renderVictimWithConnections()}
+              
+              {/* Suspect sections */}
+              <div className="suspects-container">
+                {suspects.map(suspect => renderSuspect(suspect))}
+              </div>
+              
+              {/* General evidence */}
+              {renderGeneralEvidence()}
             </div>
           </div>
 
