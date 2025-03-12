@@ -44,7 +44,8 @@ const InterviewPage: React.FC = () => {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const codeInputRef = useRef<HTMLInputElement>(null);
+  const suspectInputRef = useRef<HTMLInputElement>(null);
   const currentResponseRef = useRef<string>('');
   const currentItemIdRef = useRef<string | null>(null);
   const processingRef = useRef<boolean>(false);
@@ -67,8 +68,8 @@ const InterviewPage: React.FC = () => {
     }
     
     // Focus the input on component mount
-    if (inputRef.current) {
-      inputRef.current.focus();
+    if (suspectInputRef.current) {
+      suspectInputRef.current.focus();
     }
   }, []);
 
@@ -97,6 +98,12 @@ const InterviewPage: React.FC = () => {
             console.log('Setting player ID:', playerData[0].id);
             // Clear the code input after successful login
             setCodeInput('');
+            // Focus on the suspect input after a short delay to allow for rendering
+            setTimeout(() => {
+              if (suspectInputRef.current) {
+                suspectInputRef.current.focus();
+              }
+            }, 100);
           } else {
             console.log('No valid player data received');
             setLoginError('No player found for this code');
@@ -162,6 +169,7 @@ const InterviewPage: React.FC = () => {
       } else {
         setLoginError('Invalid suspect ID');
         setTimeout(() => setLoginError(null), 3000);
+        setSuspectId('');
       }
     } 
     // Check if this is a suspect selection with confirmation (ends with 0)
@@ -326,8 +334,8 @@ You are being interrogated by a reporter at the police office about Erin's death
     
     // Focus the input after a short delay to ensure DOM is updated
     setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
+      if (suspectInputRef.current) {
+        suspectInputRef.current.focus();
       }
     }, 100);
     
@@ -480,16 +488,16 @@ You are being interrogated by a reporter at the police office about Erin's death
 
   // Focus input field whenever we're in input mode and playerId is set
   useEffect(() => {
-    if (scanMode === 'input' && inputRef.current && playerId) {
-      inputRef.current.focus();
+    if (scanMode === 'input' && suspectInputRef.current && playerId) {
+      suspectInputRef.current.focus();
     }
   }, [scanMode, playerId]);
 
   // Ensure input is focused after component updates
   useEffect(() => {
     const focusTimer = setTimeout(() => {
-      if (scanMode === 'input' && inputRef.current && playerId) {
-        inputRef.current.focus();
+      if (scanMode === 'input' && suspectInputRef.current && playerId) {
+        suspectInputRef.current.focus();
       }
     }, 100); // Small delay to ensure DOM is ready
     
@@ -499,16 +507,23 @@ You are being interrogated by a reporter at the police office about Erin's death
   // Add global keyboard event listener to focus input when any key is pressed
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only handle key events when in input mode and not already focused on the input
-      if (scanMode === 'input' && 
-          playerId && 
-          inputRef.current && 
-          document.activeElement !== inputRef.current) {
-        
+      // Only handle key events when in input mode and not already focused on an input
+      if (scanMode === 'input') {
         // Ignore modifier keys and function keys
         if (!e.ctrlKey && !e.altKey && !e.metaKey && 
             !/^(F\d|Tab|Escape|Control|Alt|Shift|Meta)$/.test(e.key)) {
-          inputRef.current.focus();
+          
+          // If player ID is not set, focus on code input
+          if (!playerId && codeInputRef.current && 
+              document.activeElement !== codeInputRef.current) {
+            codeInputRef.current.focus();
+          }
+          
+          // If player ID is set, focus on suspect input
+          if (playerId && suspectInputRef.current && 
+              document.activeElement !== suspectInputRef.current) {
+            suspectInputRef.current.focus();
+          }
         }
       }
     };
@@ -537,7 +552,7 @@ You are being interrogated by a reporter at the police office about Erin's death
                 className="suspect-input"
                 autoFocus
                 placeholder="Reporter code..."
-                ref={inputRef}
+                ref={codeInputRef}
               />
             </Box>
           )}
@@ -569,7 +584,7 @@ You are being interrogated by a reporter at the police office about Erin's death
                 className="suspect-input"
                 autoFocus
                 placeholder="Suspect ID..."
-                ref={inputRef}
+                ref={suspectInputRef}
               />
               <Typography variant="body2" sx={{ marginTop: '10px', opacity: 0.7 }}>
                 To call a suspect: Enter suspect ID and then press enter (e.g., "1234 enter")
@@ -621,9 +636,9 @@ You are being interrogated by a reporter at the police office about Erin's death
           <Box className="timer-container">
             <CountdownCircleTimer
               isPlaying={isSessionActive}
-              duration={30}
+              duration={90}
               colors={['#00C853', '#FFC107', '#FF5722', '#F44336']}
-              colorsTime={[30, 18, 6, 0]}
+              colorsTime={[90, 60, 30, 0]}
               onComplete={endCall}
               size={80}
             >

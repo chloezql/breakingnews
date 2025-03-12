@@ -196,7 +196,16 @@ export function ResultPage() {
 
   // Handle printing the newspaper
   const handlePrint = () => {
-    window.print();
+     // Optional: Add a class to the body to trigger print-specific styles
+      document.body.classList.add('printing');
+      
+      // Print the page
+      window.print();
+      
+      // Remove the class after printing
+      setTimeout(() => {
+        document.body.classList.remove('printing');
+      }, 500);
   };
 
   // Navigate to the rating page
@@ -220,20 +229,8 @@ export function ResultPage() {
           {gameState.headline || "Breaking News Headline"}
         </div>
         
-        <div className="main-image">
-          {evidenceImages.length > 0 && (
-            <img 
-              src={`/${evidenceImages[0]}`} 
-              alt="Evidence" 
-              className="evidence-img"
-              onError={(e) => {
-                // e.currentTarget.style.display = 'none';
-                if (e.currentTarget.parentElement) {
-                  e.currentTarget.parentElement.classList.add('no-image');
-                }
-              }}
-            />
-          )}
+        <div className="byline">
+          Reported By: {gameState.player_name || "Anonymous Reporter"} &nbsp;&nbsp;&nbsp;Date: {new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
         </div>
         
         <div className="story-content">
@@ -246,49 +243,72 @@ export function ResultPage() {
               </div>
             </div>
           ) : (
-            full.split('\n\n').map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))
-          )}
-          
-          {/* Second evidence image */}
-          {evidenceImages.length > 1 && (
-            <div className="evidence-inline">
-              <img 
-                src={`/${evidenceImages[1]}`} 
-                alt="Evidence" 
-                className="evidence-img"
-                onError={(e) => {
-                  // e.currentTarget.style.display = 'none';
-                  if (e.currentTarget.parentElement) {
-                    e.currentTarget.parentElement.classList.add('no-image');
-                  }
-                }}
-              />
-            </div>
-          )}
-          
-          {/* Third evidence image (if available) */}
-          {evidenceImages.length > 2 && (
-            <div className="evidence-inline">
-              <img 
-                src={`/${evidenceImages[2]}`} 
-                alt="Evidence" 
-                className="evidence-img"
-                onError={(e) => {
-                  // e.currentTarget.style.display = 'none';
-                  if (e.currentTarget.parentElement) {
-                    e.currentTarget.parentElement.classList.add('no-image');
-                  }
-                }}
-              />
-            </div>
+            <>
+              {/* Main story content */}
+              <div className="main-column">
+                {evidenceImages.length > 0 && (
+                  <div className="main-image">
+                    <img 
+                      src={`/${evidenceImages[0]}`} 
+                      alt="Evidence" 
+                      className="evidence-img"
+                      onError={(e) => {
+                        if (e.currentTarget.parentElement) {
+                          e.currentTarget.parentElement.classList.add('no-image');
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+                {full.split('\n\n').map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))}
+              </div>
+              
+              {/* Additional content and images */}
+              <div className="secondary-content">
+                {evidenceImages.slice(1).map((image, index) => (
+                  <div key={index} className="evidence-inline">
+                    <img 
+                      src={`/${image}`} 
+                      alt={`Evidence ${index + 2}`}
+                      className="evidence-img"
+                      onError={(e) => {
+                        if (e.currentTarget.parentElement) {
+                          e.currentTarget.parentElement.classList.add('no-image');
+                        }
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
         
-        <div className="reporter-info">
-          <div>By: {gameState.player_name || "Anonymous Reporter"}</div>
-          <div>March 19, 2025</div>
+        {/* Additional stories section */}
+        <div className="additional-stories">
+          <div className="story-box">
+          <div className="mini-headline">Level Up: GDC Invades the City!</div>
+            <div className="mini-content">
+              Gamers and developers unite! The city is buzzing as the Game Developer Conference rolls into town, transforming every pixel and polygon into a playground of possibility. From indie to AAA, our streets are now live levels waiting to be explored. Don’t blink—you might just miss a secret side quest!
+            </div>
+
+          </div>
+          <div className="story-box">
+            <div className="price-comparison">
+              <div className="price-item">
+                <span className="price">$Scan the QR code to keep track of the leaderboard</span>
+                <span className="item"></span>
+              </div>
+              <div className="price-item">
+                {/* place a qr code placeholder here */}
+                <img src="/qr_placeholder.png" alt='' className="qr-code" style={{ width: '120px', height: '120px',  marginTop: '10px' }} />
+                <span className="price"></span>
+                <span className="item"></span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       

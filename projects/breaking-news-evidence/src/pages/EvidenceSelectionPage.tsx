@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './EvidenceSelectionPage.scss';
 import { EVIDENCE_ITEMS } from '../types/evidence';
-import { updatePlayerEvidence, findPlayerByCardId } from '../services/api';
-import { useWebSocket } from '../hooks/useWebSocket';
+import { updatePlayerEvidence } from '../services/api';
 
 interface EvidencePosition {
   offsetX: string;
@@ -11,7 +10,11 @@ interface EvidencePosition {
   scale: number;
 }
 
-export function EvidenceSelectionPage() {
+interface EvidenceSelectionPageProps {
+  initialPlayerId?: string | null;
+}
+
+export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPageProps) {
   const [selectedEvidence, setSelectedEvidence] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -20,59 +23,17 @@ export function EvidenceSelectionPage() {
   const [evidencePositions, setEvidencePositions] = useState<Map<number, EvidencePosition>>(new Map());
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Login state
-  const [playerId, setPlayerId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [lastCardId, setLastCardId] = useState<string | null>(null);
-  const [wsConnected, setWsConnected] = useState(false);
+  // Player ID state - we now expect this to be passed from parent
+  const [playerId, setPlayerId] = useState<string | null>(initialPlayerId || null);
 
-  const handleWebSocketMessage = useCallback(async (data: any) => {
-    if (data.type === 'rfid_scan' && !playerId) {
-      console.log('RFID card scanned:', data.cardId);
-      setLastCardId(data.cardId);
-      setLoginError(null);
-      setIsLoading(true);
-      
-      try {
-        const playerData = await findPlayerByCardId(data.cardId);
-        console.log('Player data received:', playerData);
-        if (playerData && playerData[0]?.id) {
-          setPlayerId(playerData[0].id);
-          console.log('Setting player ID:', playerData[0].id);
-        } else {
-          console.log('No valid player data received');
-          setLoginError('No player found for this card');
-        }
-      } catch (err) {
-        setLoginError('Error finding player');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
+  // Update playerId when initialPlayerId changes
+  useEffect(() => {
+    if (initialPlayerId) {
+      setPlayerId(initialPlayerId);
     }
-  }, []);
-
-  const handleWebSocketConnect = useCallback(() => {
-    setWsConnected(true);
-  }, []);
-
-  const handleWebSocketDisconnect = useCallback(() => {
-    setWsConnected(false);
-  }, []);
-
-  useWebSocket({
-    onMessage: handleWebSocketMessage,
-    onConnect: handleWebSocketConnect,
-    onDisconnect: handleWebSocketDisconnect,
-  });
+  }, [initialPlayerId]);
   
   const resetAllState = () => {
-    setPlayerId(null);
-    setLastCardId(null);
-    setLoginError(null);
-    setIsLoading(false);
-
     setSelectedEvidence([]);
     setIsCompleted(false);
     setError(null);
@@ -155,16 +116,6 @@ export function EvidenceSelectionPage() {
       </div>
     </div>
   );
-
-  const renderLoginOverlay = () => (
-    <div className="login-overlay">
-      <div className="login-card">
-        <h2>SCAN YOUR ID CARD</h2>
-        {isLoading && <div className="loading">CHECKING CARD...</div>}
-        {loginError && <div className="error">{loginError}</div>}
-      </div>
-    </div>
-  );
   
   const renderSlots = (start: number, end: number) => {
     return Array.from({ length: end - start + 1 }, (_, i) => {
@@ -196,21 +147,18 @@ export function EvidenceSelectionPage() {
   
   return (
     <div className="evidence-page">
-      <p>player id: {playerId}</p>
-      <div className={`game-content ${!playerId ? 'blurred' : ''}`}>
+      <div className="game-content">
         <div className="page-header">
           <div className="page-title">
             <img src={`${process.env.PUBLIC_URL}/breaking-news-logo.png`} alt="Breaking News" />
           </div>
-          {playerId && (
-            <button 
-              className="continue-button"
-              disabled={selectedEvidence.length === 0 || isSubmitting}
-              onClick={handleContinue}
-            >
-              {selectedEvidence.length === 0 ? 'Select at least 1 evidence' : isSubmitting ? 'Collecting...' : 'Collect Evidence!'} 
-            </button>
-          )}
+          <button 
+            className="continue-button"
+            disabled={selectedEvidence.length === 0 || isSubmitting}
+            onClick={handleContinue}
+          >
+            {selectedEvidence.length === 0 ? 'Select at least 1 evidence' : isSubmitting ? 'Collecting...' : 'Collect Evidence!'} 
+          </button>
         </div>
 
         <div className="game-container">
@@ -267,7 +215,6 @@ export function EvidenceSelectionPage() {
         {error && <div className="error-message">{error}</div>}
         {isCompleted && renderCompletionOverlay()}
       </div>
-      {!playerId && renderLoginOverlay()}
     </div>
   );
 } 
