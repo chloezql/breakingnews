@@ -127,7 +127,7 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
   const renderLoginOverlay = () => (
     <div className="login-overlay">
       <div className="login-card">
-        <h2>SCAN YOUR ID CARD</h2>
+        <h2>SCAN YOUR ID CARD TO START</h2>
         {isLoading && <div className="loading">CHECKING CARD...</div>}
         {loginError && <div className="error">{loginError}</div>}
       </div>
