@@ -113,17 +113,32 @@ function ResultPage({ onComplete, onReset, playerId, isTimeout, hadSelectedEvide
     }}>
       {/* Breaking News Logo */}
       <div className="breaking-news-logo">
-       <img src={`/breaking-news-logo.png`} alt="Breaking News Logo" />
+       <img src={`${process.env.PUBLIC_URL}/breaking-news-logo.png`} alt="Breaking News Logo" />
       </div>
       
       <div className="game-content">
         {/* Cop Character */}
-        <div className={`cop-container ${copFadeIn ? 'fade-in' : ''}`}>
-         
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '-100px',
+            left: '50%',
+            transform: `translateX(-50%) scale(${copFadeIn ? 1 : 0.8})`,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            opacity: copFadeIn ? 1 : 0,
+            transition: 'all 1s ease-in-out'
+          }}
+        >
           <img 
-            src={`/police-arm-up.png`}
+            src={`${process.env.PUBLIC_URL}/police-arm-up.png`}
             alt="Police Detective"
-            className="cop-image" 
+            style={{
+              maxHeight: '90vh',
+              maxWidth: '100%',
+              objectFit: 'contain'
+            }}
           />
         </div>
       </div>

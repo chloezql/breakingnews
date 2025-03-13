@@ -252,8 +252,24 @@ function EvidenceBoardIntroPage({ onComplete, playerId }: EvidenceBoardIntroPage
   return (
     <div className="evidence-board-intro-page">
       {/* Breaking News Logo at the top */}
-      <div className="breaking-news-logo">
-        <img src="/breaking-news-logo.png" alt="Breaking News" />
+      <div 
+        className="breaking-news-logo"
+        style={{
+          position: 'absolute',
+          alignItems: 'center',
+          width: 'auto',
+          zIndex: 5,
+          margin: 0
+        }}
+      >
+        <img 
+          src="/breaking-news-logo.png" 
+          alt="Breaking News" 
+          style={{
+            maxWidth: '200px',
+            height: 'auto'
+          }}
+        />
       </div>
       
       <div className="game-content">
@@ -276,14 +292,32 @@ function EvidenceBoardIntroPage({ onComplete, playerId }: EvidenceBoardIntroPage
         </div>
       </div>
       
-      
-      
       {/* Cop positioned at the bottom of the screen */}
-      <div className="cop-container">
+      <div 
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          width: '400px'
+        }}
+      >
         <img 
           src={isTalking ? "/police-arm-up.png" : "/police-arm-down.png"} 
           alt="Police Officer" 
-          className="cop-image" 
+          style={{
+            maxHeight: '800px',
+            width: 'auto',
+            height: 'auto',
+            display: 'block',
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 0 10px rgba(0, 0, 0, 0.5))'
+          }}
         />
       </div>
 

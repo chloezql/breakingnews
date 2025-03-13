@@ -159,61 +159,6 @@
     }
   }
   
-  .cop-container {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    z-index: 10;
-    max-width: 60%; // Increased from 50%
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: flex-start;
-    animation: fadeIn 1s ease-in-out;
-
-    .cop-image {
-      max-width: 100%;
-      max-height: 500px; // Increased from 400px
-      object-fit: contain;
-      filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
-    }
-
-    .speech-bubble {
-      background-color: white;
-      color: #333;
-      padding: 15px 20px;
-      border-radius: 10px;
-      position: absolute;
-      top: -120px;
-      left: 200px;
-      max-width: 300px;
-      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
-      z-index: 11;
-
-      &:before {
-        content: '';
-        position: absolute;
-        bottom: -15px;
-        left: 30px;
-        transform: translateX(-50%);
-        border-width: 15px 15px 0;
-        border-style: solid;
-        border-color: white transparent transparent;
-      }
-
-      h3 {
-        margin-top: 0;
-        color: #dc3545;
-        font-weight: bold;
-      }
-
-      p {
-        margin-bottom: 0;
-        line-height: 1.5;
-      }
-    }
-  }
-
   .tutorial-item {
     width: 200px;
     height: 200px;

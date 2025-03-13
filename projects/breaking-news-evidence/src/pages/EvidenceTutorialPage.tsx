@@ -100,6 +100,21 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
     }
   }, [idScanned, selectedItem]);
 
+  // Add a new state to control cop visibility
+  const [showCop, setShowCop] = useState(false);
+
+  // Update the useEffect that handles ID scanning to show the cop after a delay
+  useEffect(() => {
+    if (idScanned) {
+      // Show the cop after a short delay to prevent transition issues
+      const timer = setTimeout(() => {
+        setShowCop(true);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [idScanned]);
+
   const handleItemClick = () => {
     // Toggle selection
     const newSelectedState = !selectedItem;
@@ -153,39 +168,8 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
         
         <div className="game-container">
           <div className="evidence-board">
-            {idScanned && (
-              <div className="cop-container">
-                <img src="/police-arm-up.png" alt="Police Officer" className="cop-image" />
-                <div className="speech-bubble">
-                  {!completedSteps.select && (
-                    <>
-                      <h3>Welcome, Reporter!</h3>
-                      <p>Get familiar with the evidence board by selecting one piece of evidence. Pick up the camera, hover over an item to see its details, and click to select when ready.</p>
-                    </>
-                  )}
-                  
-                  {completedSteps.select && !completedSteps.confirm && (
-                    <>
-                      <h3>Good job!</h3>
-                      <p>Now, click the "Confirm Selection" button at the bottom to proceed.</p>
-                    </>
-                  )}
-                  
-                  {completedSteps.confirm && (
-                    <>
-                      <h3>Excellent!</h3>
-                      <p>
-                        Now you're ready to investigate the real evidence. Let's go!
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-            
             <div className="board-content">
               {idScanned && (
-                // divs within this div shoul algin vertically
                 <div 
                   className={`tutorial-item ${selectedItem ? 'selected' : ''}`}
                   onClick={handleItemClick}
@@ -198,15 +182,100 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
                 </div>
               )}
             </div>
-
-              {/* play a intro gif */}
-            
           </div>
         </div>
+
         {idScanned && (
-        <div className="intro-gif">
-          <img src="/speed-up-tutorial.gif" alt="Intro GIF" />
-         </div>
+          <div className="intro-gif">
+            <img src="/speed-up-tutorial.gif" alt="Intro GIF" />
+          </div>
+        )}
+
+        {/* Only render the cop when showCop is true */}
+        {showCop && (
+          <div 
+            className="cop-container-static" 
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: '10%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              width: '400px',
+              display: 'flex',
+              justifyContent: 'center'
+            }}
+          >
+            <img 
+              src="/police-arm-up.png" 
+              alt="Police Officer" 
+              style={{
+                maxHeight: '800px',
+                width: 'auto',
+                height: 'auto',
+                display: 'block',
+                filter: 'drop-shadow(0 0 10px rgba(0, 0, 0, 0.5))'
+              }}
+            />
+            
+            {/* Speech bubble with inline styles */}
+            <div 
+              style={{
+                backgroundColor: 'white',
+                color: '#333',
+                padding: '15px 20px',
+                borderRadius: '10px',
+                position: 'absolute',
+                top: '100px',
+                right: '-220px',
+                width: '300px',
+                boxShadow: '0 3px 15px rgba(0, 0, 0, 0.2)',
+                zIndex: 11,
+                textAlign: 'left'
+              }}
+            >
+              {/* Speech bubble arrow */}
+              <div 
+                style={{
+                  position: 'absolute',
+                  left: '-15px',
+                  top: '30px',
+                  width: 0,
+                  height: 0,
+                  borderTop: '15px solid transparent',
+                  borderRight: '15px solid white',
+                  borderBottom: '15px solid transparent'
+                }}
+              ></div>
+              
+              {!completedSteps.select && (
+                <>
+                  <h3 style={{ marginTop: 0, color: '#dc3545', fontWeight: 'bold' }}>Welcome, Reporter!</h3>
+                  <p style={{ marginBottom: 0, lineHeight: 1.5 }}>
+                    Get familiar with the evidence board by selecting one piece of evidence. Pick up the camera, hover over an item to see its details, and click to select when ready.
+                  </p>
+                </>
+              )}
+              
+              {completedSteps.select && !completedSteps.confirm && (
+                <>
+                  <h3 style={{ marginTop: 0, color: '#dc3545', fontWeight: 'bold' }}>Good job!</h3>
+                  <p style={{ marginBottom: 0, lineHeight: 1.5 }}>
+                    Now, click the "Confirm Selection" button at the bottom to proceed.
+                  </p>
+                </>
+              )}
+              
+              {completedSteps.confirm && (
+                <>
+                  <h3 style={{ marginTop: 0, color: '#dc3545', fontWeight: 'bold' }}>Excellent!</h3>
+                  <p style={{ marginBottom: 0, lineHeight: 1.5 }}>
+                    Now you're ready to investigate the real evidence. Let's go!
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
         )}
 
         {idScanned && selectedItem && (
