@@ -12,6 +12,7 @@ interface EvidencePosition {
 
 interface EvidenceSelectionPageProps {
   initialPlayerId?: string | null;
+  onEvidenceConfirm?: (timedOut?: boolean) => void;
 }
 
 // Categories for evidence by suspect
@@ -22,7 +23,7 @@ interface SuspectEvidence {
   evidenceIds: number[];
 }
 
-export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPageProps) {
+export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: EvidenceSelectionPageProps) {
   const [selectedEvidence, setSelectedEvidence] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -32,11 +33,14 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Add timer state - 5 minutes in seconds
-  const [timeRemaining, setTimeRemaining] = useState(5 * 60);
+  const [timeRemaining, setTimeRemaining] = useState(5);
   const [timerStarted, setTimerStarted] = useState(false);
   
   // Player ID state - we now expect this to be passed from parent
   const [playerId, setPlayerId] = useState<string | null>(initialPlayerId || null);
+
+  const [isTimedOut, setIsTimedOut] = useState(false);
+  const [guardAudioPlayed, setGuardAudioPlayed] = useState(false);
 
   // Define suspects with their related evidence
   const suspects: SuspectEvidence[] = [
@@ -65,9 +69,9 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
     {
       date: 'June 5',
       events: [
-        { time: '3:30pm', description: 'Meet with Dr. Hart @Café' },
-        { time: '7:10pm', description: 'Fight with Lucy @Erin\'s dorm' },
-        { time: '9pm', description: 'Stayed with Kevin @Kevin\'s House' }
+        { time: 'early afternoon', description: 'Meet with Dr. Hart @Café' },
+        { time: 'evening', description: 'Fight with Lucy @Erin\'s dorm' },
+        { time: 'late night', description: 'Stayed with Kevin @Kevin\'s House' }
       ]
     },
     {
@@ -93,15 +97,47 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
     
     if (timerStarted && timeRemaining > 0) {
       timerInterval = setInterval(() => {
-        setTimeRemaining(prev => Math.max(0, prev - 1));
+        setTimeRemaining(prev => {
+          const newTime = Math.max(0, prev - 1);
+          if (newTime === 0 && !isTimedOut) {
+            setIsTimedOut(true);
+          }
+          return newTime;
+        });
       }, 1000);
     }
     
     return () => {
       if (timerInterval) clearInterval(timerInterval);
     };
-  }, [timerStarted, timeRemaining]);
-  
+  }, [timerStarted, timeRemaining, isTimedOut]);
+
+  // Handle timeout effect
+  useEffect(() => {
+    if (isTimedOut && !guardAudioPlayed) {
+      const audio = new Audio(`/Station2_Guard_01.wav`);
+      
+      const handleAudioEnd = () => {
+        setGuardAudioPlayed(true);
+        if (onEvidenceConfirm) {
+          onEvidenceConfirm(true); // Pass true to indicate timeout
+        }
+      };
+
+      audio.addEventListener('ended', handleAudioEnd);
+      
+      audio.play().catch(error => {
+        console.error('Error playing guard audio:', error);
+        handleAudioEnd(); // Still proceed if audio fails
+      });
+
+      return () => {
+        audio.removeEventListener('ended', handleAudioEnd);
+        audio.pause();
+      };
+    }
+  }, [isTimedOut, guardAudioPlayed, onEvidenceConfirm]);
+
   const resetAllState = () => {
     setSelectedEvidence([]);
     setIsCompleted(false);
@@ -145,8 +181,14 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
       try {
         await updatePlayerEvidence(playerId, selectedEvidence);
         console.log('Evidence submitted successfully for player:', playerId);
-        setIsCompleted(true);
-        setTimeout(resetAllState, 5000);
+        
+        // Call the onEvidenceConfirm prop if provided instead of showing completion overlay
+        if (onEvidenceConfirm) {
+          onEvidenceConfirm();
+        } else {
+          setIsCompleted(true);
+          setTimeout(resetAllState, 5000);
+        }
       } catch (err) {
         console.error('Failed to submit evidence for player:', playerId, err);
         setError('Failed to save your evidence selection. Please try again.');
@@ -233,19 +275,19 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
       <div className="timeline-events-container">
         <div className="timeline-events">
           <div className="event-item">
-            <div className="event-time">3:30pm Meet with Dr. Hart</div>
+            <div className="event-time">2PM: Meet with Dr. Hart</div>
           </div>
           <div className="event-item">
-            <div className="event-time">7:10pm Fight with Lucy</div>
+            <div className="event-time">7PM: Stayed in Dorm with Lucy</div>
           </div>
           <div className="event-item">
-            <div className="event-time">9pm At Kevin's House</div>
+            <div className="event-time">9PM: At Kevin's House</div>
           </div>
           <div className="event-item">
-                <div className="event-time">8am Report Death</div>
+            <div className="event-time">8AM: Report Death</div>
           </div>
           <div className="event-item">
-            <div className="event-time">10am Exhibition Opening</div>
+            <div className="event-time">10AM: Exhibition Opening</div>
           </div>
         </div>
       </div>
@@ -350,7 +392,20 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
         })}
     </div>
   );
-  
+
+  // Render timeout overlay
+  const renderTimeoutOverlay = () => (
+    <div className="timeout-overlay">
+      <div className="guard-container">
+        <img 
+          src={`/placeholder-guard.png`}
+          alt="Security Guard"
+          className="guard-image"
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="evidence-page">
       <div className="game-content">
@@ -358,14 +413,14 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
         <div className="timer-container">
           <div className="timer-bar">
             <div 
-              className="timer-progress" 
+              className={`timer-progress ${timeRemaining < 30 ? 'warning' : ''}`}
               style={{width: `${calculateProgress()}%`}}
             ></div>
           </div>
           <div className="timer-text">{formatTime(timeRemaining)}</div>
         </div>
 
-        <div className="game-container">
+        <div className={`game-container ${isTimedOut ? 'disabled' : ''}`}>
           <div className="slots-container left-slots">
             {renderSlots(1, 3)}
           </div>
@@ -405,16 +460,19 @@ export function EvidenceSelectionPage({ initialPlayerId }: EvidenceSelectionPage
         <div className="confirm-button-container">
           <button 
             className="confirm-button"
-            disabled={selectedEvidence.length === 0 || isSubmitting}
+            disabled={selectedEvidence.length === 0 || isSubmitting || isTimedOut}
             onClick={handleContinue}
           >
-            {selectedEvidence.length === 0 ? 'Select at least 1 evidence' : isSubmitting ? 'Collecting...' : 'Confirm Selection'} 
+            {selectedEvidence.length === 0 ? 'Select at least 1 evidence' : 
+             isSubmitting ? 'Collecting...' : 
+             isTimedOut ? 'Time\'s up!' : 'Confirm Selection'} 
           </button>
         </div>
       </div>
       
       {error && <div className="error-message">{error}</div>}
       {isCompleted && renderCompletionOverlay()}
+      {isTimedOut && renderTimeoutOverlay()}
     </div>
   );
 } 

@@ -406,6 +406,23 @@
         flex-wrap: wrap;
         justify-content: center;
         gap: 10px;
+        
+        // Special override for suspect evidence descriptions
+        .evidence-item .evidence-wrapper .evidence-description {
+          top: 100%; // Position at the bottom of the wrapper
+          left: 0;
+          right: 0;
+          transform: none; // Remove the transform
+          width: 100px; // Same width as the evidence-wrapper
+          margin-top: 5px; // Gap between evidence and description
+          
+          &::before {
+            top: -6px;
+            bottom: auto;
+            border-width: 0 6px 6px 6px;
+            border-color: transparent transparent rgba(0, 0, 0, 0.95) transparent;
+          }
+        }
       }
     }
 
@@ -417,6 +434,23 @@
       gap: 15px;
       border-top: 2px dashed rgba(0, 0, 0, 0.3);
       overflow: visible;
+      
+      // Special style only for general evidence descriptions
+      .evidence-item .evidence-wrapper .evidence-description {
+        position: absolute;
+        top: 0; // Start from the top of the wrapper
+        transform: translateY(-100%) translateX(-50%); // Move up by 100% of its own height 
+        left: 50%;
+        width: 120px; // Slightly wider for better readability
+        margin-bottom: 5px; // Small gap between description and evidence
+        
+        &::before {
+          bottom: -6px; // Point down instead of up
+          top: auto; // Remove top positioning
+          border-width: 6px 6px 0 6px; // Flip the triangle to point down
+          border-color: rgba(0, 0, 0, 0.95) transparent transparent transparent; // Adjust colors for downward triangle
+        }
+      }
     }
   }
 
@@ -518,10 +552,10 @@
       
       .evidence-description {
         position: absolute;
-        top: 100%; // Position at the bottom of the wrapper
-        left: 0;
-        right: 0;
-        width: 100px; // Same width as the evidence-wrapper (100px)
+        top: -90px; // Position above the wrapper instead of below
+        left: 50%;
+        transform: translateX(-50%); // Center horizontally
+        width: 120px; // Slightly wider for better readability
         background-color: rgba(0, 0, 0, 0.95);
         color: white;
         display: none;
@@ -535,17 +569,17 @@
         z-index: 10000;
         pointer-events: none;
         box-sizing: border-box; // To include padding in width calculation
-        margin-top: 5px; // Gap between evidence and description
         
         &::before {
           content: '';
           position: absolute;
           left: 50%;
-          top: -6px;
+          bottom: -6px; // Point down instead of up
+          top: auto; // Remove top positioning
           transform: translateX(-50%);
-          border-width: 0 6px 6px 6px;
+          border-width: 6px 6px 0 6px; // Flip the triangle to point down
           border-style: solid;
-          border-color: transparent transparent rgba(0, 0, 0, 0.95) transparent;
+          border-color: rgba(0, 0, 0, 0.95) transparent transparent transparent; // Adjust colors for downward triangle
         }
       }
     }
@@ -698,6 +732,48 @@
       }
     }
   }
+
+  .game-container.disabled {
+    pointer-events: none;
+    filter: blur(3px);
+    opacity: 0.7;
+  }
+
+  .timer-progress {
+    &.warning {
+      background-color: #ff4444;
+      animation: pulse 1s infinite;
+    }
+  }
+
+  .timeout-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .guard-container {
+    position: fixed;
+    display: flex;
+    bottom: 0px;
+    justify-content: center;
+    align-items: center;
+    animation: slideUp 0.8s ease-out forwards;
+    
+    .guard-image {
+      max-height: 80vh;
+      max-width: 90vw;
+      object-fit: contain;
+    }
+  }
 }
 
 @keyframes button-pulse {
@@ -724,4 +800,21 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
 }
