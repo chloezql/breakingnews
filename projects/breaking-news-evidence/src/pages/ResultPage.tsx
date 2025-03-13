@@ -6,9 +6,10 @@ interface ResultPageProps {
   onReset: () => void;
   playerId: string | null;
   isTimeout?: boolean;
+  hadSelectedEvidence?: boolean;
 }
 
-function ResultPage({ onComplete, onReset, playerId, isTimeout }: ResultPageProps) {
+function ResultPage({ onComplete, onReset, playerId, isTimeout, hadSelectedEvidence }: ResultPageProps) {
   const [audioLoaded, setAudioLoaded] = useState(false);
   const [audioEnded, setAudioEnded] = useState(false);
   const [copFadeIn, setCopFadeIn] = useState(false);
@@ -17,7 +18,10 @@ function ResultPage({ onComplete, onReset, playerId, isTimeout }: ResultPageProp
 
   useEffect(() => {
     let mounted = true;
-    const audioFile = isTimeout ? 'Station2_Tony_03.wav' : 'Station2_Tony_02.wav';
+    const audioFile = isTimeout 
+      ? (hadSelectedEvidence ? 'Station2_Tony_03.wav' : 'Station2_Tony_03A.wav')
+      : 'Station2_Tony_02.wav';
+      
     const audio = new Audio(`${process.env.PUBLIC_URL}/${audioFile}`);
     audioRef.current = audio;
 
@@ -75,7 +79,7 @@ function ResultPage({ onComplete, onReset, playerId, isTimeout }: ResultPageProp
         audioRef.current.removeEventListener('error', handleError);
       }
     };
-  }, [onComplete, onReset, isTimeout]);
+  }, [onComplete, onReset, isTimeout, hadSelectedEvidence]);
 
   // Separate effect for playing audio once it's loaded and cop animation starts
   useEffect(() => {

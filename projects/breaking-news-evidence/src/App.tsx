@@ -13,10 +13,11 @@ enum AppPage {
   RESULT = 'RESULT',
 }
 
-function App() {
+export function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>(AppPage.TUTORIAL);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [isTimeout, setIsTimeout] = useState(false);
+  const [hadSelectedEvidence, setHadSelectedEvidence] = useState(false);
 
   // Handle player login - this will be passed to the pages
   const handleLogin = (newPlayerId: string) => {
@@ -29,11 +30,13 @@ function App() {
     console.log('Resetting player ID');
     setPlayerId(null);
     setIsTimeout(false);
+    setHadSelectedEvidence(false);
   };
 
   // Handle the confirmation of evidence selection - go to results page
-  const handleEvidenceConfirm = (timedOut?: boolean) => {
+  const handleEvidenceConfirm = (timedOut?: boolean, hadEvidence?: boolean) => {
     setIsTimeout(!!timedOut);
+    setHadSelectedEvidence(!!hadEvidence);
     setCurrentPage(AppPage.RESULT);
   };
 
@@ -76,6 +79,7 @@ function App() {
                  onReset={resetPlayerId} 
                  playerId={playerId}
                  isTimeout={isTimeout}
+                 hadSelectedEvidence={hadSelectedEvidence}
                />;
       default:
         return <div>Unknown page</div>;

@@ -12,7 +12,7 @@ interface EvidencePosition {
 
 interface EvidenceSelectionPageProps {
   initialPlayerId?: string | null;
-  onEvidenceConfirm?: (timedOut?: boolean) => void;
+  onEvidenceConfirm?: (timedOut?: boolean, hadEvidence?: boolean) => void;
 }
 
 // Categories for evidence by suspect
@@ -112,15 +112,44 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
     };
   }, [timerStarted, timeRemaining, isTimedOut]);
 
+  // Add helper function to get random evidence
+  const getRandomEvidence = () => {
+    // Get all available evidence IDs
+    const allEvidenceIds = EVIDENCE_ITEMS.map(item => item.id);
+    // Shuffle array
+    const shuffled = [...allEvidenceIds].sort(() => Math.random() - 0.5);
+    // Take first 6 items
+    return shuffled.slice(0, 6);
+  };
+
   // Handle timeout effect
   useEffect(() => {
     if (isTimedOut && !guardAudioPlayed) {
-      const audio = new Audio(`/Station2_Guard_01.wav`);
+      const audio = new Audio(`${process.env.PUBLIC_URL}/Station2_Guard_01.wav`);
       
-      const handleAudioEnd = () => {
+      const handleAudioEnd = async () => {
         setGuardAudioPlayed(true);
+        
+        if (playerId) {
+          try {
+            // If no evidence selected, randomly pick 6
+            const evidenceToSubmit = selectedEvidence.length > 0 
+              ? selectedEvidence 
+              : getRandomEvidence();
+            
+            console.log('Submitting evidence on timeout for player:', playerId, 
+                      selectedEvidence.length === 0 ? '(randomly selected)' : '(player selected)');
+            
+            await updatePlayerEvidence(playerId, evidenceToSubmit);
+            console.log('Evidence submitted successfully on timeout');
+          } catch (err) {
+            console.error('Failed to submit evidence on timeout:', err);
+          }
+        }
+
         if (onEvidenceConfirm) {
-          onEvidenceConfirm(true); // Pass true to indicate timeout
+          // Pass both timeout status and whether player had selected any evidence
+          onEvidenceConfirm(true, selectedEvidence.length > 0);
         }
       };
 
@@ -136,7 +165,7 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
         audio.pause();
       };
     }
-  }, [isTimedOut, guardAudioPlayed, onEvidenceConfirm]);
+  }, [isTimedOut, guardAudioPlayed, onEvidenceConfirm, selectedEvidence, playerId]);
 
   const resetAllState = () => {
     setSelectedEvidence([]);
@@ -182,9 +211,8 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
         await updatePlayerEvidence(playerId, selectedEvidence);
         console.log('Evidence submitted successfully for player:', playerId);
         
-        // Call the onEvidenceConfirm prop if provided instead of showing completion overlay
         if (onEvidenceConfirm) {
-          onEvidenceConfirm();
+          onEvidenceConfirm(false, true); // Not timed out, had evidence
         } else {
           setIsCompleted(true);
           setTimeout(resetAllState, 5000);
