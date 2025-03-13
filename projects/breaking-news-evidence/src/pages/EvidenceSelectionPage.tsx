@@ -33,7 +33,7 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Add timer state - 5 minutes in seconds
-  const [timeRemaining, setTimeRemaining] = useState(5);
+  const [timeRemaining, setTimeRemaining] = useState(5 * 60);
   const [timerStarted, setTimerStarted] = useState(false);
   
   // Player ID state - we now expect this to be passed from parent
