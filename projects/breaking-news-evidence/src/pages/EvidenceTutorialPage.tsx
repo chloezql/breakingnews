@@ -185,6 +185,7 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
             
             <div className="board-content">
               {idScanned && (
+                // divs within this div shoul algin vertically
                 <div 
                   className={`tutorial-item ${selectedItem ? 'selected' : ''}`}
                   onClick={handleItemClick}
@@ -197,9 +198,17 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
                 </div>
               )}
             </div>
+
+              {/* play a intro gif */}
+            
           </div>
         </div>
-        
+        {idScanned && (
+        <div className="intro-gif">
+          <img src="/speed-up-tutorial.gif" alt="Intro GIF" />
+         </div>
+        )}
+
         {idScanned && selectedItem && (
           <button 
             className={`confirm-button ${completedSteps.confirm ? 'clicked' : 'active'}`}

@@ -139,6 +139,26 @@
     }
   }
 
+  .intro-gif {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 15;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    padding: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    max-width: 200px;
+    
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+    }
+  }
+  
   .cop-container {
     position: fixed;
     left: 0;
@@ -216,8 +236,8 @@
     }
 
     &.selected {
-      border-color: #28a745;
-      box-shadow: 0 0 15px rgba(40, 167, 69, 0.7);
+      border-color: #ed2c2c;
+      box-shadow: 0 0 15px rgba(167, 40, 40, 0.7);
       transform: scale(1.05);
     }
 
@@ -231,7 +251,7 @@
       right: 5px;
       width: 24px;
       height: 24px;
-      background-color: #28a745;
+      background-color: #ed2c2c;
       color: white;
       border-radius: 50%;
       display: flex;
@@ -240,6 +260,7 @@
       font-weight: bold;
       font-size: 14px;
     }
+
 
     .evidence-description {
       position: absolute;

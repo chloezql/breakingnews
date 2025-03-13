@@ -9,6 +9,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: visible; // Ensure the page doesn't hide content
 
   .game-content {
     width: 100%;
@@ -17,6 +18,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow: visible; // Ensure content isn't hidden
 
     &.blurred {
       filter: blur(2px);
@@ -71,6 +73,7 @@
     margin: 0 auto;
     position: relative;
     gap: 1.5rem;
+    overflow: visible; // Ensure content isn't hidden
   }
 
   // Slots container for evidence selection
@@ -133,7 +136,7 @@
     border-radius: 4px;
     position: relative;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    overflow: hidden; // Changed from auto to hidden to prevent scrolling
+    overflow: visible; // Changed from hidden to visible to allow evidence items to overflow
     
     &::before {
       content: '';
@@ -163,7 +166,7 @@
       display: flex;
       flex-direction: column;
       box-sizing: border-box; // Add box-sizing to prevent padding from expanding the container
-      overflow: hidden; // Add overflow hidden to contain children
+      overflow: visible; // Changed from hidden to visible to allow evidence items to overflow
     }
 
     // Timeline styles
@@ -173,7 +176,7 @@
       margin-bottom: 10px;
       width: 100%;
       box-sizing: border-box;
-      overflow: hidden; // Contain children
+      overflow: visible; // Changed from hidden to visible
       
       // Timeline date headers
       .timeline-dates {
@@ -218,7 +221,7 @@
         padding: 10px;
         width: 100%;
         box-sizing: border-box;
-        overflow: hidden; // Contain children
+        overflow: visible; // Changed from hidden to visible
         
         .timeline-events {
           display: flex;
@@ -359,7 +362,7 @@
       width: 100%;
       box-sizing: border-box;
       margin-top: -45px;
-      overflow: hidden;
+      overflow: visible; // Changed from hidden to visible
     }
 
     // Suspect section styles
@@ -463,7 +466,7 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
 
-  // Evidence item styling similar to tutorial
+  // Evidence item styling updated to show description on hover and scale to 3x
   .evidence-item {
     width: 100px;
     height: 100px;
@@ -473,12 +476,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease; // Faster transition
+    transition: all 0.2s ease;
     overflow: visible;
     z-index: 3;
     position: relative;
     margin: 5px;
+    cursor: default !important; // No hand cursor
 
     .evidence-wrapper {
       width: 100%;
@@ -487,7 +490,8 @@
       align-items: center;
       justify-content: center;
       transition: all 0.3s ease;
-      filter: brightness(0.6) contrast(1.2);
+      filter: brightness(0.8) contrast(1.2);
+      position: relative; // Added to make it a positioning context
 
       img {
         max-width: 90%;
@@ -501,7 +505,7 @@
         right: 5px;
         width: 20px;
         height: 20px;
-        background-color: #28a745;
+        background-color: #ed2c2c;
         color: white;
         border-radius: 50%;
         display: flex;
@@ -511,60 +515,68 @@
         font-size: 12px;
         z-index: 4;
       }
+      
+      .evidence-description {
+        position: absolute;
+        top: 100%; // Position at the bottom of the wrapper
+        left: 0;
+        right: 0;
+        width: 100px; // Same width as the evidence-wrapper (100px)
+        background-color: rgba(0, 0, 0, 0.95);
+        color: white;
+        display: none;
+        padding: 5px;
+        text-align: center;
+        font-size: 7px; // Even smaller to fit better within scaled view
+        border-radius: 4px;
+        font-family: 'Arial', sans-serif;
+        line-height: 1.2;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        pointer-events: none;
+        box-sizing: border-box; // To include padding in width calculation
+        margin-top: 5px; // Gap between evidence and description
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: 50%;
+          top: -6px;
+          transform: translateX(-50%);
+          border-width: 0 6px 6px 6px;
+          border-style: solid;
+          border-color: transparent transparent rgba(0, 0, 0, 0.95) transparent;
+        }
+      }
     }
 
-    // Add hover effect just for showing evidence is clickable
+    // Updated hover effect to scale to 3x and display description
     &:hover {
-      transform: scale(1.1);
-      box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+      transform: scale(3);
+      z-index: 9999; // Increased z-index to ensure it's always on top
+      box-shadow: 0 0 20px rgba(255, 204, 0, 0.8);
       
       .evidence-wrapper {
-        filter: brightness(0.9) contrast(1.1);
+        filter: brightness(1) contrast(1);
+        
+        .evidence-description {
+          display: block;
+        }
       }
     }
 
     // Keep .selected styling
     &.selected {
-      border-color: #28a745;
-      box-shadow: 0 0 15px rgba(40, 167, 69, 0.7);
-      transform: scale(1.05);
+      border-color: #ed2c2c;
+      box-shadow: 0 0 15px rgba(167, 40, 40, 0.7);
       z-index: 10;
 
       .evidence-wrapper {
         filter: brightness(1) contrast(1);
       }
-    }
-
-    .evidence-description {
-      position: absolute;
-      top: -60px;
-      left: 0;
-      width: 100px;
-      background-color: rgba(0, 0, 0, 0.8);
-      color: white;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 8px;
-      text-align: center;
-      font-size: 12px;
-      animation: fadeIn 0.2s ease-in;
-      border-radius: 5px;
-      font-family: 'Press Start 2P', 'Courier New', monospace;
-      font-size: 8px;
-      line-height: 1.5;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-      z-index: 5;
       
-      &::after {
-        content: '';
-        position: absolute;
-        left: 50%;
-        bottom: -10px;
-        transform: translateX(-50%);
-        border-width: 10px 10px 0 10px;
-        border-style: solid;
-        border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+      &:hover {
+        z-index: 9999; // Make sure selected items also get the high z-index when hovered
       }
     }
   }
@@ -683,140 +695,6 @@
       p {
         color: #666;
         font-style: italic;
-      }
-    }
-  }
-
-  // Add an overlay for when evidence is being viewed in large format
-  .evidence-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.75);
-    z-index: 1000;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    
-    &.visible {
-      display: block;
-      opacity: 1;
-    }
-  }
-
-  // Add completely new styles for zoomed evidence container
-  .zoomed-evidence-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1001;
-    pointer-events: auto;
-    
-    .zoomed-evidence-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: rgba(51, 51, 51, 0.95);
-      border-radius: 10px;
-      padding: 20px;
-      max-width: 90%;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
-      border: 3px solid #ffcc00;
-      
-      .zoomed-image-container {
-        position: relative;
-        margin-bottom: 20px;
-        width: 400px;
-        height: 400px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        
-        .zoomed-image {
-          max-width: 95%;
-          max-height: 95%;
-          object-fit: contain;
-        }
-        
-        .selected-indicator.large {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          width: 40px;
-          height: 40px;
-          background-color: #28a745;
-          color: white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: bold;
-          font-size: 24px;
-          z-index: 1002;
-        }
-      }
-      
-      .zoomed-description {
-        width: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        font-size: 16px;
-        font-family: 'Arial', sans-serif;
-        line-height: 1.5;
-        text-align: center;
-      }
-      
-      .zoomed-actions {
-        display: flex;
-        gap: 15px;
-        
-        button {
-          padding: 10px 20px;
-          border-radius: 5px;
-          font-weight: bold;
-          font-family: 'Press Start 2P', monospace;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          
-          &.select-btn {
-            background-color: #ffcc00;
-            color: #333;
-            border: 2px solid #ff4800;
-            
-            &.selected {
-              background-color: #28a745;
-              color: white;
-              border-color: #28a745;
-            }
-            
-            &:hover {
-              transform: scale(1.05);
-            }
-          }
-          
-          &.close-btn {
-            background-color: #333;
-            color: white;
-            border: 2px solid #666;
-            
-            &:hover {
-              background-color: #555;
-            }
-          }
-        }
       }
     }
   }
