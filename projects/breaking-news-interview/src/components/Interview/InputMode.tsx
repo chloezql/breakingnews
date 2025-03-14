@@ -61,7 +61,7 @@ const InputMode: React.FC<InputModeProps> = ({
             textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)'
           }}
         >
-          Enter suspect ID followed by a dot (.)
+          Enter suspect ID followed [call] key
         </Box>
         <input
           type="text"

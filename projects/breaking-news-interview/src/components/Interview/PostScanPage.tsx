@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button } from '@mui/material';
 
 interface PostScanPageProps {
@@ -20,12 +20,20 @@ const PostScanPage: React.FC<PostScanPageProps> = ({
   isSessionActive,
   onStartInterview
 }) => {
-  // Direct audio test function
-  const testDirectAudio = () => {
-    const audio = new Audio('/guard-audios/Station4_Tony_02.wav');
-    audio.volume = 1.0;
-    audio.play();
-  };
+  // State for police officer arm animation
+  const [isArmUp, setIsArmUp] = useState(true);
+  
+  // Simple animation effect - just switch between images
+  useEffect(() => {
+    // Animate when not in active session and not playing intro audio
+    if (!isSessionActive && !isIntroAudioPlaying) {
+      const toggleInterval = setInterval(() => {
+        setIsArmUp(prevState => !prevState);
+      }, 500); // Switch every second
+      
+      return () => clearInterval(toggleInterval);
+    }
+  }, [isSessionActive, isIntroAudioPlaying]);
 
   return (
     <>
@@ -92,15 +100,17 @@ const PostScanPage: React.FC<PostScanPageProps> = ({
         </Box>
       )}
     </Box>
-     <img 
-     src="/police-arm-up.png" 
-     alt="Police officer with raised arm" 
-     style={{ 
-       maxHeight: '80vh',
-       maxWidth: '100%',
-       bottom: '-100px'
-     }}
-   />
+    
+    {/* Police officer with animated arm - simple image switch */}
+    <img 
+      src={isArmUp ? "/police-arm-up.png" : "/police-arm-down.png"}
+      alt="Police officer"
+      style={{ 
+        maxHeight: '80vh',
+        maxWidth: '100%',
+        bottom: '-100px'
+      }}
+    />
    </>
   );
 };
