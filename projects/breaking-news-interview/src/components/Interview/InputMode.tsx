@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box } from '@mui/material';
 
 interface InputModeProps {
@@ -22,19 +22,38 @@ const InputMode: React.FC<InputModeProps> = ({
   onInputChange,
   inputRef
 }) => {
+  // Ensure input is focused when component mounts or updates
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [inputRef]);
+
+  // Handle clicking anywhere in the container to refocus on input
+  const handleContainerClick = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
   return (
-    <Box className="interview-input-overlay" sx={{ 
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 15
-    }}>
+    <Box 
+      className="interview-input-overlay" 
+      onClick={handleContainerClick}
+      sx={{ 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 15,
+        cursor: 'text' // Show text cursor to indicate typing is possible
+      }}
+    >
       <Box
         component="h2"
         sx={{ 
@@ -71,6 +90,13 @@ const InputMode: React.FC<InputModeProps> = ({
           autoFocus
           placeholder="Suspect ID..."
           ref={inputRef}
+          onBlur={() => inputRef.current?.focus()} // Re-focus if it loses focus
+          onKeyDown={(e) => {
+            // Prevent tabbing out or any other navigation keys
+            if (e.key === 'Tab') {
+              e.preventDefault();
+            }
+          }}
           style={{
             padding: '15px',
             fontSize: '24px',

@@ -329,11 +329,30 @@ const InterviewPage: React.FC = () => {
   
   // Add global keyboard event listener
   useEffect(() => {
+    // First, add the normal keydown handler for specific keys
     window.addEventListener('keydown', handleGlobalKeydown);
+    
+    // Add a focus handler for any keypress when in input mode
+    const handleAnyKeyForFocus = (e: KeyboardEvent) => {
+      // Only handle if we're in input mode and in interview stage
+      if (interactionMode === 'input' && 
+          interviewStage === 'interview' && 
+          inputRef.current &&
+          // Don't interfere with input typing by only handling keys when input is not focused
+          document.activeElement !== inputRef.current) {
+        
+        // Focus the input element
+        inputRef.current.focus();
+      }
+    };
+    
+    window.addEventListener('keydown', handleAnyKeyForFocus);
+    
     return () => {
       window.removeEventListener('keydown', handleGlobalKeydown);
+      window.removeEventListener('keydown', handleAnyKeyForFocus);
     };
-  }, [handleGlobalKeydown]);
+  }, [handleGlobalKeydown, interactionMode, interviewStage]);
 
   // Focus input field whenever we're in input mode and playerId is set
   useEffect(() => {
