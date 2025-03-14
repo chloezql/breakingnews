@@ -67,7 +67,7 @@ export const fetchPlayerData = async (playerId: string) => {
 };
 
 // Update this function to use PATCH instead of POST
-export const updateSelectedSuspect  = async (playerId: string, selectedSuspect: number) => {
+export const updateSelectedSuspect = async (playerId: string, selectedSuspect: number | number[]) => {
   const url = `${API_BASE_URL}/update_selected_suspect/${playerId}`;
 
   try {

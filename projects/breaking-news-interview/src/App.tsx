@@ -1,11 +1,10 @@
 import React from 'react';
 import './App.scss';
-import InterviewPage from './pages/InterviewPage';
-
+import InterviewPageWithRFID from './pages/InterviewPageWithRFID';
 function App() {
   return (
     <div className="App">
-      <InterviewPage />
+      <InterviewPageWithRFID />
     </div>
   );
 }

@@ -45,7 +45,7 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
 
   // Handle WebSocket messages for RFID scan
   const handleWebSocketMessage = useCallback(async (data: any) => {
-    if (data.type === 'rfid_scan' && !playerId) {
+    if (data.type === 'rfid_scan' && data.deviceId === 'esp32-002' && !playerId) {
       console.log('RFID card scanned:', data.cardId);
       setLastCardId(data.cardId);
       setLoginError(null);

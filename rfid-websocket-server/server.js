@@ -68,7 +68,8 @@ wss.on('connection', (ws) => {
                     ws.send(JSON.stringify({
                         type: 'last_rfid_scan',
                         cardId: lastCardId,
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
+                        deviceId: data.deviceId
                     }));
                 }
             }
