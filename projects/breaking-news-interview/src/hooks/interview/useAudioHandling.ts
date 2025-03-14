@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 
 interface UseAudioHandlingProps {
   audioPath: string;
@@ -20,51 +20,76 @@ const useAudioHandling = ({
   autoPlay = false
 }: UseAudioHandlingProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isAudioLoaded, setIsAudioLoaded] = useState(false);
   
   // Initialize audio element
   useEffect(() => {
-    audioRef.current = new Audio(audioPath);
+    // Create new audio element
+    const audio = new Audio();
     
-    // Add event listeners
+    // Set up event listeners before setting source
     if (onAudioEnded) {
-      audioRef.current.addEventListener('ended', onAudioEnded);
+      audio.addEventListener('ended', onAudioEnded);
     }
     
     if (onAudioError) {
-      audioRef.current.addEventListener('error', onAudioError);
+      audio.addEventListener('error', onAudioError);
     }
     
-    // Auto play if needed
-    if (autoPlay) {
-      audioRef.current.play().catch(err => {
-        console.error('Failed to auto-play audio:', err);
-        if (onAudioError) onAudioError(err);
-      });
-    }
+    // Add canplaythrough event to know when audio is loaded
+    const handleCanPlayThrough = () => {
+      setIsAudioLoaded(true);
+      if (autoPlay) {
+        audio.play().catch(err => {
+          if (onAudioError) onAudioError(err);
+        });
+      }
+    };
+    
+    audio.addEventListener('canplaythrough', handleCanPlayThrough);
+    
+    // Set the source last to trigger loading
+    audio.src = audioPath;
+    audio.load();
+    
+    // Store the audio element in ref
+    audioRef.current = audio;
     
     // Cleanup
     return () => {
-      if (audioRef.current) {
+      if (audio) {
+        audio.pause();
         if (onAudioEnded) {
-          audioRef.current.removeEventListener('ended', onAudioEnded);
+          audio.removeEventListener('ended', onAudioEnded);
         }
         if (onAudioError) {
-          audioRef.current.removeEventListener('error', onAudioError);
+          audio.removeEventListener('error', onAudioError);
         }
-        audioRef.current.pause();
+        audio.removeEventListener('canplaythrough', handleCanPlayThrough);
       }
     };
   }, [audioPath, onAudioEnded, onAudioError, autoPlay]);
   
-  // Play audio function
+  // Play audio function with pre-load check
   const playAudio = useCallback(() => {
-    if (audioRef.current) {
+    if (!audioRef.current) return;
+    
+    // If audio isn't loaded yet, force load and add one-time event listener
+    if (!isAudioLoaded) {
+      audioRef.current.load();
+      const playOnceLoaded = () => {
+        audioRef.current?.play();
+        audioRef.current?.removeEventListener('canplaythrough', playOnceLoaded);
+      };
+      audioRef.current.addEventListener('canplaythrough', playOnceLoaded);
+    } else {
+      // If loaded, play directly
+      audioRef.current.currentTime = 0; // Reset to beginning
       audioRef.current.play().catch(err => {
-        console.error('Failed to play audio:', err);
         if (onAudioError) onAudioError(err);
       });
     }
-  }, [onAudioError]);
+  }, [isAudioLoaded, onAudioError]);
   
   // Pause audio function
   const pauseAudio = useCallback(() => {
@@ -85,22 +110,26 @@ const useAudioHandling = ({
   const changeAudioSource = useCallback((newPath: string) => {
     if (audioRef.current) {
       const wasPlaying = !audioRef.current.paused;
+      setIsAudioLoaded(false);
       audioRef.current.src = newPath;
+      audioRef.current.load();
       if (wasPlaying) {
-        audioRef.current.play().catch(err => {
-          console.error('Failed to play new audio source:', err);
-          if (onAudioError) onAudioError(err);
-        });
+        const playWhenLoaded = () => {
+          audioRef.current?.play();
+          audioRef.current?.removeEventListener('canplaythrough', playWhenLoaded);
+        };
+        audioRef.current.addEventListener('canplaythrough', playWhenLoaded);
       }
     }
-  }, [onAudioError]);
+  }, []);
   
   return {
     playAudio,
     pauseAudio,
     resetAudio,
     changeAudioSource,
-    audioElement: audioRef.current
+    audioElement: audioRef.current,
+    isAudioLoaded
   };
 };
 

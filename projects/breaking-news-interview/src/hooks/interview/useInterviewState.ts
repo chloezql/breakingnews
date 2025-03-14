@@ -65,19 +65,40 @@ const useInterviewState = ({ onSessionEnd }: UseInterviewStateProps = {}) => {
 
   // Start the interview session
   const startInterviewSession = useCallback(() => {
-    console.log('Starting interview session');
+    console.log('🚀 Starting interview session');
     setIsIntroAudioPlaying(true);
-  }, []);
+    
+    // Don't transition to interview stage yet - wait for audio to complete
+    console.log('📢 Audio will play now, waiting for onAudioEnded callback');
+    
+    // Initialize session timer but don't activate it yet
+    setSessionTimerKey(prev => prev + 1);
+  }, [setIsIntroAudioPlaying]);
 
   // Handle intro audio ended
   const handleIntroAudioEnded = useCallback(() => {
-    console.log('Audio ended, starting interview session');
+    console.log('🔊 Intro audio ended, completing interview session setup');
+    
+    // First update audio playing state
     setIsIntroAudioPlaying(false);
+    
+    // Then set the interview stage
+    console.log('📝 Setting interview stage to interview');
     setInterviewStageWithSync('interview');
+    
+    // Then activate the session
+    console.log('⏱️ Activating session timer');
     setIsSessionActive(true);
+    
+    // Finally set the interaction mode
+    console.log('📱 Setting interaction mode to input');
     setInteractionModeWithSync('input');
+    
+    // Reset suspect ID to clear any previous values
     setSuspectId('');
-  }, [setInterviewStageWithSync, setInteractionModeWithSync]);
+    
+    console.log('✅ Interview session fully initialized');
+  }, [setInterviewStageWithSync, setInteractionModeWithSync, setSuspectId]);
 
   // Check if all suspects have been called
   const allSuspectsCalled = useCallback(() => {

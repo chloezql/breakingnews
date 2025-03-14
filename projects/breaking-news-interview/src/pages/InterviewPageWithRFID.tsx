@@ -96,7 +96,8 @@ const InterviewPage: React.FC = () => {
     handleIntroAudioEnded,
     handleTimerComplete,
     setIsSessionActive,
-    resetInterviewState
+    resetInterviewState,
+    setIsIntroAudioPlaying
   } = useInterviewState();
   
   // Use our custom hook for call handling
@@ -118,7 +119,16 @@ const InterviewPage: React.FC = () => {
   // Use our custom hook for intro audio
   const { playAudio: playIntroAudio } = useAudioHandling({
     audioPath: '/guard-audios/Station4_Tony_02.wav',
-    onAudioEnded: handleIntroAudioEnded
+    onAudioEnded: handleIntroAudioEnded,
+    onAudioError: (error) => {
+      // If hook-based audio fails, try direct approach as fallback
+      const fallbackAudio = new Audio('/guard-audios/Station4_Tony_02.wav');
+      fallbackAudio.onended = handleIntroAudioEnded;
+      fallbackAudio.play().catch(() => {
+        // If both approaches fail, manually trigger callback to continue flow
+        setTimeout(handleIntroAudioEnded, 500);
+      });
+    }
   });
   
   // Set up WebSocket connection
@@ -203,23 +213,21 @@ const InterviewPage: React.FC = () => {
   // Handle interview session start
   const handleStartInterview = useCallback(() => {
     if (interviewStage === 'post-scan' && !isIntroAudioPlaying) {
-      console.log('Starting interview session from post-scan stage');
-      startInterviewSession();
-      playIntroAudio();
+      // First set the state that audio is playing
+      setIsIntroAudioPlaying(true);
       
-      // Directly move to interview stage after starting the session
-      setIsSessionActive(true);
-      setInterviewStageWithSync('interview');
-      setInteractionModeWithSync('input');
-      console.log('Transitioned to interview stage, input mode');
+      // Then start the interview session
+      startInterviewSession();
+      
+      // Trigger audio playback with proper browser context
+      // This ensures we're in a user-triggered context to avoid autoplay restrictions
+      playIntroAudio();
     }
   }, [
     interviewStage,
     isIntroAudioPlaying,
     startInterviewSession,
-    setIsSessionActive,
-    setInterviewStageWithSync,
-    setInteractionModeWithSync,
+    setIsIntroAudioPlaying,
     playIntroAudio
   ]);
   

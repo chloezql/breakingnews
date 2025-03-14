@@ -20,6 +20,13 @@ const PostScanPage: React.FC<PostScanPageProps> = ({
   isSessionActive,
   onStartInterview
 }) => {
+  // Direct audio test function
+  const testDirectAudio = () => {
+    const audio = new Audio('/guard-audios/Station4_Tony_02.wav');
+    audio.volume = 1.0;
+    audio.play();
+  };
+
   return (
     <>
     <Box className="post-scan-overlay" sx={{
@@ -53,15 +60,15 @@ const PostScanPage: React.FC<PostScanPageProps> = ({
             padding: '20px',
             position: 'absolute',
             width: '100%',
-            bottom: '10%',
+            bottom: isIntroAudioPlaying ? '10%' : '20%',
             fontSize: '2.5rem'
           }}
         >
           {isIntroAudioPlaying 
-            ? "" 
+            ? "Listening to intro..." 
             : isSessionActive 
               ? "Input code to call your suspect" 
-              : "Press 9 on your phone to start"}
+              : "Press 9 on the telephone to start"}
         </Box>
       </Box>
       
