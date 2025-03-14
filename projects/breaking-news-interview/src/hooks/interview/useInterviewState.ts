@@ -90,8 +90,11 @@ const useInterviewState = ({ onSessionEnd }: UseInterviewStateProps = {}) => {
     isEndingRef.current = true;
     
     console.log('Session ending');
+    // Update UI states immediately to prevent further interaction
     setInterviewStage('ending');
     setIsSessionActive(false);
+    setIsCallActive(false);
+    setInteractionMode('input');
     
     // Convert suspect IDs to numbers for API call
     const calledSuspectIds = interviewedSuspects.map(id => parseInt(id));
@@ -108,7 +111,7 @@ const useInterviewState = ({ onSessionEnd }: UseInterviewStateProps = {}) => {
     if (onSessionEnd) {
       onSessionEnd();
     }
-  }, [interviewedSuspects, playerId, onSessionEnd]);
+  }, [interviewedSuspects, playerId, onSessionEnd, setInterviewStage, setIsSessionActive, setIsCallActive, setInteractionMode]);
 
   // Handle timer completion
   const handleTimerComplete = useCallback(() => {

@@ -48,6 +48,9 @@ const useCallHandling = ({ onCallEnded, onCallStarted }: UseCallHandlingProps = 
   const processingRef = useRef<boolean>(false);
   const isEndingRef = useRef<boolean>(false);
   
+  // Create a ref to hold the endCall function to avoid circular dependencies
+  const endCallRef = useRef<() => { shouldRepeat: boolean }>();
+  
   // Get the OpenAI Realtime client
   const client = getClient();
   
@@ -125,9 +128,85 @@ const useCallHandling = ({ onCallEnded, onCallStarted }: UseCallHandlingProps = 
     };
   }, []);
   
+  // End the current call with improved error handling and cleanup
+  const endCall = useCallback(() => {
+    if (isEndingRef.current) {
+      console.log('Call end already in progress, ignoring duplicate request');
+      return { shouldRepeat: false };
+    }
+    
+    console.log('Ending call with complete cleanup');
+    isEndingRef.current = true;
+    
+    try {
+      // Stop audio playback immediately
+      try {
+        console.log('Interrupting audio playback');
+        wavStreamPlayerRef.current.interrupt();
+      } catch (error) {
+        console.error('Error interrupting audio playback:', error);
+      }
+      
+      // Stop recording immediately
+      try {
+        console.log('Stopping recording');
+        const wavRecorder = wavRecorderRef.current;
+        wavRecorder.end();
+      } catch (error) {
+        console.error('Error stopping recording:', error);
+      }
+      
+      // Disconnect from OpenAI
+      if (client.isConnected()) {
+        console.log('Disconnecting OpenAI client');
+        try {
+          client.disconnect();
+        } catch (error) {
+          console.error('Error disconnecting OpenAI client:', error);
+        }
+      }
+      
+      // Reset message state and other UI state
+      setMessages([]);
+      setIsCallActive(false);
+      
+      // Reset refs
+      processingRef.current = false;
+      currentItemIdRef.current = null;
+      currentResponseRef.current = '';
+      
+      // Call the onCallEnded callback if provided
+      if (onCallEnded) {
+        console.log('Calling onCallEnded callback');
+        onCallEnded();
+      }
+    } catch (error) {
+      console.error('Critical error during call cleanup:', error);
+    } finally {
+      // Always make sure the ending flag is reset
+      setTimeout(() => {
+        isEndingRef.current = false;
+        console.log('Call end process complete, reset ending flag');
+      }, 100);
+    }
+    
+    return { shouldRepeat: false };
+  }, [client, onCallEnded]);
+  
+  // Store the latest endCall function in the ref
+  useEffect(() => {
+    endCallRef.current = endCall;
+  }, [endCall]);
+  
   // Start a call with a suspect
   const startCall = useCallback(async (suspectId: string) => {
     console.log('Starting call for suspect:', suspectId);
+    
+    // Already have an active call? Clean it up first
+    if (isCallActive && endCallRef.current) {
+      console.log('Call already active, cleaning up first');
+      endCallRef.current();
+    }
     
     const suspect = getSuspect(suspectId);
     console.log('Found suspect:', suspect);
@@ -186,6 +265,7 @@ const useCallHandling = ({ onCallEnded, onCallStarted }: UseCallHandlingProps = 
       });
   
       // Update state AFTER all initialization is complete
+      console.log('✅ Call setup complete, marking call as active');
       setIsCallActive(true);
       setMessages([{
         role: 'assistant',
@@ -200,69 +280,11 @@ const useCallHandling = ({ onCallEnded, onCallStarted }: UseCallHandlingProps = 
       return true;
     } catch (error) {
       console.error('Error starting call:', error);
+      // Ensure we reset the call state on error
+      setIsCallActive(false);
       return false;
     }
-  }, [client, onCallStarted]);
-  
-  // End the current call
-  const endCall = useCallback(() => {
-    if (isEndingRef.current) return { shouldRepeat: false };
-    
-    console.log('Ending call');
-    isEndingRef.current = true;
-    
-    try {
-      // Only clean up if there's an active client
-      if (client.isConnected()) {
-        console.log('Disconnecting OpenAI client');
-        try {
-          client.disconnect();
-        } catch (error) {
-          console.error('Error disconnecting OpenAI client:', error);
-        }
-      }
-      
-      // Stop any audio playback
-      try {
-        wavStreamPlayerRef.current.interrupt();
-      } catch (error) {
-        console.error('Error interrupting audio playback:', error);
-      }
-      
-      // Reset message state
-      setMessages([]);
-      setIsCallActive(false);
-      
-      // Stop recording
-      try {
-        const wavRecorder = wavRecorderRef.current;
-        wavRecorder.end();
-      } catch (error) {
-        console.error('Error stopping recording:', error);
-      }
-      
-      // Reset refs
-      processingRef.current = false;
-      currentItemIdRef.current = null;
-      currentResponseRef.current = '';
-      
-      // Call the onCallEnded callback if provided
-      if (onCallEnded) {
-        onCallEnded();
-      }
-      
-      // Ensure ending flag is reset after everything else
-      setTimeout(() => {
-        isEndingRef.current = false;
-      }, 100);
-      
-    } catch (error) {
-      console.error('Error during call cleanup:', error);
-      isEndingRef.current = false;
-    }
-    
-    return { shouldRepeat: false };
-  }, [client, onCallEnded]);
+  }, [client, onCallStarted, isCallActive]);
   
   // Clean up when the component unmounts
   useEffect(() => {

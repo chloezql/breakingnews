@@ -333,6 +333,58 @@ const InterviewPage: React.FC = () => {
     startInterviewSession();
   }, [startInterviewSession]);
 
+  // Handle timer expiration - ensure all resources are cleaned up
+  const handleTimerExpiration = useCallback(() => {
+    console.log('⏰ Timer expired - cleaning up all resources');
+    console.log('📊 Current state: ', {
+      interviewStage,
+      interactionMode,
+      isCallActive,
+      isSessionActive,
+      callMessages: messages.length
+    });
+    
+    // Force cleanup regardless of current state, to be extra safe
+    if (interactionMode === 'call') {
+      console.log('📞 Call mode detected during timer expiration - ending call');
+      
+      // Show notification to user
+      showError("Time's up! Call ended.");
+      
+      try {
+        // Close the OpenAI session and stop audio
+        console.log('🔌 Forcibly closing OpenAI session');
+        endCall();
+        
+        // Make sure UI state is synced
+        setIsCallActive(false);
+        setInteractionModeWithSync('input');
+        console.log('✅ Call cleanup completed on timer expiration');
+      } catch (error) {
+        console.error('❌ Error cleaning up call on timer expiration:', error);
+      }
+    } else {
+      console.log('⏱️ Timer expired while not in a call');
+    }
+    
+    // End the session which will transition to the ending stage
+    console.log('🏁 Ending interview session due to timer expiration');
+    handleTimerComplete();
+    
+    return { shouldRepeat: false };
+  }, [
+    interviewStage,
+    interactionMode,
+    isCallActive,
+    isSessionActive,
+    messages,
+    endCall,
+    setIsCallActive,
+    setInteractionModeWithSync,
+    handleTimerComplete,
+    showError
+  ]);
+
   // Update the render function to use the actual component interfaces
   const renderContent = () => {
     switch (interviewStage) {
@@ -403,7 +455,7 @@ const InterviewPage: React.FC = () => {
           isActive={isSessionActive}
           timerKey={sessionTimerKey}
           duration={TOTAL_INTERVIEW_TIME}
-          onComplete={handleTimerComplete}
+          onComplete={handleTimerExpiration}
         />
       )}
 
