@@ -124,18 +124,43 @@ const useInterviewState = ({ onSessionEnd }: UseInterviewStateProps = {}) => {
 
   // Reset the entire interview state
   const resetInterviewState = useCallback(() => {
+    console.log('🧹 Completely resetting interview state for new player');
+    
+    // Reset core interview state
     setInterviewStage('pre-scan');
-    setIsIntroAudioPlaying(false);
-    setInterviewedSuspects([]);
-    setIsSessionActive(false);
     setInteractionMode('input');
+    setIsSessionActive(false);
+    setIsIntroAudioPlaying(false);
+    
+    // Reset ID and tracking state
     setSuspectId('');
     setPlayerId('');
-    setIsCallActive(false);
+    setInterviewedSuspects([]);
     setLoginError(null);
+    
+    // Reset call management state
+    setIsCallActive(false);
     setSessionTimerKey(prev => prev + 1); // Force timer reset
+    
+    // Reset persisted state
+    setSavedInterrogatedSuspects([]);
+    
+    // Reset ref state
     isEndingRef.current = false;
-  }, []);
+    
+    console.log('🔄 Interview state reset complete');
+  }, [
+    setInterviewStage,
+    setInteractionMode,
+    setIsSessionActive,
+    setIsIntroAudioPlaying,
+    setSuspectId,
+    setPlayerId,
+    setInterviewedSuspects,
+    setLoginError,
+    setIsCallActive,
+    setSavedInterrogatedSuspects
+  ]);
 
   // Hang up the current call
   const hangUpCall = useCallback(() => {

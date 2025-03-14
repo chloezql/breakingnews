@@ -38,5 +38,5 @@ export interface SessionState {
 }
 
 // Define constants
-export const TOTAL_INTERVIEW_TIME = 150; // 5 minutes in seconds
+export const TOTAL_INTERVIEW_TIME = 120; // 5 minutes in seconds
 export const AVAILABLE_SUSPECTS = ['1234', '5678', '9876']; // List of available suspect IDs 

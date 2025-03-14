@@ -63,6 +63,10 @@ const InterviewPage: React.FC = () => {
   // Create a ref for the WebSocket message handler to avoid circular dependencies
   const handleWebSocketMessageRef = useRef<(data: any) => Promise<void>>();
   
+  // Create refs for functions with circular dependencies
+  const resetGameCompletelyRef = useRef<() => void>();
+  const playEndingAudioRef = useRef<() => void>();
+  
   // Use our custom hook for interview state
   const {
     interviewStage,
@@ -91,7 +95,8 @@ const InterviewPage: React.FC = () => {
     allSuspectsCalled,
     handleIntroAudioEnded,
     handleTimerComplete,
-    setIsSessionActive
+    setIsSessionActive,
+    resetInterviewState
   } = useInterviewState();
   
   // Use our custom hook for call handling
@@ -116,24 +121,55 @@ const InterviewPage: React.FC = () => {
     onAudioEnded: handleIntroAudioEnded
   });
   
-  // Handler for playing the ending audio
-  const playEndingAudio = useCallback(() => {
-    // Determine which audio to play
-    const audioFile = allSuspectsCalled() 
-        ? '/guard-audios/Station4_Tony_03A.wav' // All suspects interviewed
-        : '/guard-audios/Station4_Tony_03.wav';  // Time's up
+  // Set up WebSocket connection
+  const { 
+    sendMessage, 
+    disconnect: disconnectWebSocket, 
+    reconnect: reconnectWebSocket 
+  } = useWebSocket({
+    onMessage: (data) => handleWebSocketMessageRef.current?.(data),
+    onConnect: () => console.log('WebSocket connected'),
+    onDisconnect: () => console.log('WebSocket disconnected')
+  });
+  
+  // Define function to completely reset the game and all resources
+  const resetGameCompletely = useCallback(() => {
+    console.log('🔄 Completely resetting game for next player');
     
-    // Set up audio with onended callback to reset state
-    const endAudio = new Audio(audioFile);
-    endAudio.onended = endInterviewSession;
+    // First make sure any active calls are ended
+    if (interactionMode === 'call' || isCallActive) {
+      console.log('📞 Cleaning up active call before reset');
+      endCall();
+    }
     
-    // Play the audio
-    endAudio.play().catch(err => {
-      console.error('Failed to play ending audio:', err);
-      // If there's an error playing audio, still reset state
-      setTimeout(endInterviewSession, 1000);
-    });
-  }, [allSuspectsCalled, endInterviewSession]);
+    // Reset all application state
+    resetInterviewState();
+    
+    // Clear local storage to remove any persisted state
+    localStorage.removeItem('interrogatedSuspects');
+    
+    // Return to pre-scan state
+    setInterviewStageWithSync('pre-scan');
+    
+    // Reconnect the WebSocket for the next player
+    reconnectWebSocket();
+    
+    console.log('✅ Game completely reset and ready for next player');
+    
+  }, [
+    interactionMode,
+    isCallActive,
+    endCall,
+    resetInterviewState,
+    setInterviewStageWithSync,
+    reconnectWebSocket,
+    showError
+  ]);
+  
+  // Store the function in ref
+  useEffect(() => {
+    resetGameCompletelyRef.current = resetGameCompletely;
+  }, [resetGameCompletely]);
   
   // WebSocket handler for RFID card scanning
   handleWebSocketMessageRef.current = async (data: any) => {
@@ -164,23 +200,12 @@ const InterviewPage: React.FC = () => {
     }
   };
   
-  // Set up WebSocket connection
-  const { 
-    sendMessage, 
-    disconnect: disconnectWebSocket, 
-    reconnect: reconnectWebSocket 
-  } = useWebSocket({
-    onMessage: (data) => handleWebSocketMessageRef.current?.(data),
-    onConnect: () => console.log('WebSocket connected'),
-    onDisconnect: () => console.log('WebSocket disconnected')
-  });
-  
   // Handle interview session start
   const handleStartInterview = useCallback(() => {
     if (interviewStage === 'post-scan' && !isIntroAudioPlaying) {
       console.log('Starting interview session from post-scan stage');
       startInterviewSession();
-      // playIntroAudio();
+      playIntroAudio();
       
       // Directly move to interview stage after starting the session
       setIsSessionActive(true);
@@ -194,7 +219,8 @@ const InterviewPage: React.FC = () => {
     startInterviewSession,
     setIsSessionActive,
     setInterviewStageWithSync,
-    setInteractionModeWithSync
+    setInteractionModeWithSync,
+    playIntroAudio
   ]);
   
   // Handle starting a call
@@ -270,10 +296,10 @@ const InterviewPage: React.FC = () => {
   
   // Add session ending handler
   useEffect(() => {
-    if (interviewStage === 'ending') {
-      playEndingAudio();
+    if (interviewStage === 'ending' && playEndingAudioRef.current) {
+      playEndingAudioRef.current();
     }
-  }, [interviewStage, playEndingAudio]);
+  }, [interviewStage]);
 
   // Load interrogated suspects from localStorage on component mount
   useEffect(() => {
@@ -348,9 +374,7 @@ const InterviewPage: React.FC = () => {
     if (interactionMode === 'call') {
       console.log('📞 Call mode detected during timer expiration - ending call');
       
-      // Show notification to user
-      showError("Time's up! Call ended.");
-      
+      // Show notification to user      
       try {
         // Close the OpenAI session and stop audio
         console.log('🔌 Forcibly closing OpenAI session');
@@ -384,6 +408,47 @@ const InterviewPage: React.FC = () => {
     handleTimerComplete,
     showError
   ]);
+
+  // Handler for playing the ending audio
+  const playEndingAudio = useCallback(() => {
+    // Determine which audio to play
+    const audioFile = allSuspectsCalled() 
+        ? '/guard-audios/Station4_Tony_03A.wav' // All suspects interviewed
+        : '/guard-audios/Station4_Tony_03.wav';  // Time's up
+    
+    // Set up audio with onended callback to reset state
+    const endAudio = new Audio(audioFile);
+    
+    // Set callback to reset the game after showing ending screen
+    const handleAudioEnded = () => {
+      console.log('🔊 Ending audio finished');
+      
+      // First end the current session
+      endInterviewSession();
+      
+      // Wait a moment to show the ending screen before resetting
+      setTimeout(() => {
+        if (resetGameCompletelyRef.current) {
+          resetGameCompletelyRef.current();
+        }
+      }, 1000); // Show ending for 5 seconds before resetting
+    };
+    
+    // Set the callback
+    endAudio.onended = handleAudioEnded;
+    
+    // Play the audio
+    endAudio.play().catch(err => {
+      console.error('Failed to play ending audio:', err);
+      // If there's an error playing audio, still reset state
+      handleAudioEnded()
+    });
+  }, [allSuspectsCalled, endInterviewSession]);
+  
+  // Store the function in ref
+  useEffect(() => {
+    playEndingAudioRef.current = playEndingAudio;
+  }, [playEndingAudio]);
 
   // Update the render function to use the actual component interfaces
   const renderContent = () => {
