@@ -62,14 +62,6 @@ const useInputHandling = ({
     if (value.endsWith('.')) {
       console.log('Suspect ID with confirmation:', value);
       
-      // If player only pressed 5 and then ., play an intro audio
-      if (value === '5.') {
-        const introAudio = new Audio('/suspect-intro.mp3');
-        onInputChange('');
-        introAudio.play();
-        return;
-      }
-      
       const suspectId = value.slice(0, -1);
       console.log('Checking suspect ID:', suspectId, 'Valid:', validateSuspectId(suspectId));
       if (validateSuspectId(suspectId)) {
