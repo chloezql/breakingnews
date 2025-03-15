@@ -5,7 +5,6 @@ import { navigateToStage } from './services/navigation';
 import { 
   ReporterInfoPage, 
   ResultPage, 
-  RatingPage, 
   ScanIdPage, 
   AliasPage,
   WelcomePage,

@@ -16,6 +16,9 @@ export function ArticleEvidencePage() {
   
   const [error, setError] = useState('');
   
+  // Maximum number of evidence pieces that can be selected
+  const MAX_EVIDENCE_SELECTION = 3;
+  
   // Filter the evidence items to only show collected evidence
   const availableEvidence = EVIDENCE_ITEMS.filter(item => 
     collectedEvidenceIds.includes(item.id)
@@ -26,14 +29,28 @@ export function ArticleEvidencePage() {
     setSelectedEvidenceIds(prev => {
       // If the evidence is already selected, remove it
       if (prev.includes(evidenceId)) {
+        // Clear error when deselecting (dropping below max)
+        if (prev.length <= MAX_EVIDENCE_SELECTION) {
+          setError('');
+        }
         return prev.filter(id => id !== evidenceId);
       }
+      
+      // If already at max selection, don't add more
+      if (prev.length >= MAX_EVIDENCE_SELECTION) {
+        setError(`You can only select up to ${MAX_EVIDENCE_SELECTION} pieces of evidence`);
+        return prev;
+      }
+      
       // Otherwise, add it to the selection
+      setError(''); // Clear any error
       return [...prev, evidenceId];
     });
     
-    // Clear any error when a selection is made
-    if (error) setError('');
+    // Clear any error when a selection is made (except max selection error)
+    if (error && !error.includes('only select up')) {
+      setError('');
+    }
   };
   
   // Handle form submission
@@ -70,14 +87,14 @@ export function ArticleEvidencePage() {
             <form onSubmit={handleSubmit}>
               <div className="prompt-container">
                 <p className="prompt-text">
-                  To make my story more convincing, I will include the following photos:
+                  To make my story more convincing, I will include the following photos (select up to {MAX_EVIDENCE_SELECTION}):
                 </p>
                 
                 <div className="evidence-container">
                   {availableEvidence.map(evidence => (
                     <div 
                       key={evidence.id}
-                      className={`evidence-card ${selectedEvidenceIds.includes(evidence.id) ? 'selected' : ''}`}
+                      className={`evidence-card ${selectedEvidenceIds.includes(evidence.id) ? 'selected' : ''} ${selectedEvidenceIds.length >= MAX_EVIDENCE_SELECTION && !selectedEvidenceIds.includes(evidence.id) ? 'disabled' : ''}`}
                       onClick={() => toggleEvidence(evidence.id)}
                       title={evidence.description}
                     >
@@ -102,8 +119,8 @@ export function ArticleEvidencePage() {
                 
                 <p className="selection-hint">
                   {selectedEvidenceIds.length === 0 
-                    ? 'Click on evidence to select it' 
-                    : `Selected: ${selectedEvidenceIds.length} piece${selectedEvidenceIds.length > 1 ? 's' : ''} of evidence`}
+                    ? `Click on evidence to select it (up to ${MAX_EVIDENCE_SELECTION})` 
+                    : `Selected: ${selectedEvidenceIds.length}/${MAX_EVIDENCE_SELECTION} piece${selectedEvidenceIds.length > 1 ? 's' : ''} of evidence`}
                 </p>
               </div>
               

@@ -143,6 +143,7 @@
                 overflow: hidden;
                 vertical-align: bottom;
                 transition: border-color 0.2s ease;
+                box-shadow: none;
                 
                 &:focus {
                   outline: none;

@@ -172,13 +172,22 @@ export function ResultPage() {
               : '';
           }).filter(Boolean).join('\n')
         : '';
+
+      // Get witness quotes text with the format "[Witness Name] mentioned [Suspect Name] in their statement : Quote"
+      const getWitnessQuotesText = (witnessQuotes: string[]) => {
+        // with the format "[Witness Name] mentioned [Suspect Name] in their statement : Quote"
+        return witnessQuotes.map(quote => {
+          const [witnessName, suspectName, quoteText] = quote.split(':');
+          return `${witnessName} mentioned ${suspectName} in their statement : ${quoteText}`;
+        }).join('\n');
+      };
       
       // Get witness quotes
       const witnessQuotes = gameState.article_witness_quotes || [];
       const witnessQuotesText = witnessQuotes.length > 0 
-        ? witnessQuotes.map(quote => `"${quote}"`).join('\n') 
+        ? getWitnessQuotesText(witnessQuotes)
         : '';
-      
+
       // Get suspect details
       const suspectIds = gameState.article_suspect_ids || [];
       const suspectDetails = suspectIds.length > 0

@@ -8,10 +8,49 @@ import './ArticleWitnessQuotesPage.scss';
 interface Quote {
   text: string;
   witnessId: number;
+  suspectName: string;
   witnessName: string;
 }
 
+interface TapeMatch {
+  id: number;
+  witness: string;
+  witnessImage: string;
+  suspect: string;
+  suspectImage: string;
+  tapeImage: string;
+}
+
+
 export function ArticleWitnessQuotesPage() {
+
+  const tapeMatches: TapeMatch[] = [
+    {
+      id: 1,
+      witness: "Football Player",
+      witnessImage: "/witness-photos/football-player-tape.png",
+      suspect: "Kevin",
+      suspectImage: "/character-photos/kevin.png",
+      tapeImage: "/witness-photos/football-player-tape.png"
+    },
+    {
+      id: 2,
+      witness: "Exhibition Manager",
+      witnessImage: "/witness-photos/manager-tape.png",
+      suspect: "Dr. Hart",
+      suspectImage: "/character-photos/dr.hart.png",
+      tapeImage: "/witness-photos/manager-tape.png"
+    },
+    {
+      id: 3,
+      witness: "Neighbor at Dorm",
+      witnessImage: "/witness-photos/neighbor-tape.png",
+      suspect: "Lucy",
+      suspectImage: "/character-photos/lucy.png",
+      tapeImage: "/witness-photos/neighbor-tape.png"
+    }
+  ];
+
   const { gameState, updateGameState, moveToNextStage } = useGame();
   
   // Get the initially selected quotes from the game state or use an empty array
@@ -29,14 +68,16 @@ export function ArticleWitnessQuotesPage() {
         return {
           text,
           witnessId: witness?.id || 0,
-          witnessName
+          witnessName,
+          suspectName: tapeMatches.find(match => match.witness === witnessName)?.suspect || ''
         };
       }
       // Fallback if the format doesn't match
       return {
         text: quoteStr,
         witnessId: 0,
-        witnessName: 'Unknown'
+        witnessName: 'Unknown',
+        suspectName: ''
       };
     });
   });
@@ -91,6 +132,7 @@ export function ArticleWitnessQuotesPage() {
         const newQuote: Quote = {
           text: highlightedText,
           witnessId: currentWitness.id,
+          suspectName: tapeMatches.find(match => match.witness === currentWitness.name)?.suspect || '',
           witnessName: currentWitness.name
         };
         

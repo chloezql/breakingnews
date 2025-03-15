@@ -146,6 +146,18 @@
                   box-shadow: 0 5px 15px rgba(205, 42, 17, 0.2);
                 }
                 
+                &.disabled {
+                  opacity: 0.5;
+                  cursor: not-allowed;
+                  transform: none;
+                  box-shadow: none;
+                  
+                  &:hover {
+                    transform: none;
+                    box-shadow: none;
+                  }
+                }
+                
                 .evidence-image {
                   height: 120px;
                   display: flex;
@@ -214,8 +226,13 @@
             .error-message {
               color: #f44336;
               font-size: 16px;
-              margin-top: 10px;
+              margin: 15px 0;
               text-align: center;
+              padding: 10px;
+              background-color: rgba(244, 67, 54, 0.1);
+              border: 1px solid #f44336;
+              border-radius: 4px;
+              font-weight: bold;
             }
             
             .selection-hint {

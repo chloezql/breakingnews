@@ -60,19 +60,29 @@ const ScanIdPage: React.FC<ScanIdPageProps> = ({ onPlayerLoaded }) => {
         console.log('Player found:', playerData);
         setPlayerInfo(playerData);
         
-        // Create game state with player data
+        // Create game state with player data from API
         const newState: GameState = {
-          currentStage: GameStage.ANGLE_GENERATION,
-          id: playerData.id,
+          currentStage: GameStage.ALIAS, // Start at ALIAS stage after scanning ID
+          id: playerData.id, // Use ID from API
           player_name: playerData.player_name || "",
           id_card_no: playerData.id_card_no || id,
-          headline: playerData.headline || "",
+          // Use these properties from API response
           evidence_list: playerData.evidence_list || [],
           tape: playerData.tape || [],
           selected_suspect: playerData.selected_suspect || [],
-          full_article_generated: playerData.full_article_generated || "",
-          view_count: playerData.view_count || 0,
-          hashtags: playerData.hashtags || []
+          // Initialize the rest of the game state properties
+          headline: "",
+          full_article_generated: "",
+          article_death_cause: "",
+          article_suspect_ids: [],
+          article_method: "",
+          article_motive: "",
+          article_evidence_ids: [],
+          article_witness_quotes: [],
+          article_style: "",
+          article_interrogation_findings: {},
+          view_count: 0,
+          hashtags: [] as string[]
         };
         
         saveGameState(newState);
