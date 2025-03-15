@@ -10,13 +10,15 @@ import {
   AliasPage,
   WelcomePage,
   EvidenceRecapPage,
+  SuspectRecapPage,
   TapeRevealPage,
   ArticleIntroPage,
   ArticleDeathCausePage,
   ArticleSuspectPage,
   ArticleMethodPage,
   ArticleMotivePage,
-  ArticleEvidencePage
+  ArticleEvidencePage,
+  ArticleWitnessQuotesPage
 } from './pages';
 import { GameContext } from './context/GameContext';
 import TabBar from './components/TabBar';
@@ -77,7 +79,7 @@ function App() {
           headline: '',
           evidence_list: [],
           tape: [],
-          selected_suspect: '',
+          selected_suspect: [],
           story_angle: '',
           full_article_generated: '',
           ratings: {
@@ -133,6 +135,8 @@ function App() {
         return <WelcomePage />;
       case GameStage.EVIDENCE_RECAP:
         return <EvidenceRecapPage />;
+      case GameStage.SUSPECT_RECAP:
+        return <SuspectRecapPage />;
       case GameStage.TAPE_REVEAL:
         return <TapeRevealPage />;
       case GameStage.ARTICLE_INTRO:
@@ -147,6 +151,8 @@ function App() {
         return <ArticleMotivePage />;
       case GameStage.ARTICLE_EVIDENCE:
         return <ArticleEvidencePage />;
+      case GameStage.ARTICLE_WITNESS_QUOTES:
+        return <ArticleWitnessQuotesPage />;
       case GameStage.ANGLE_GENERATION:
         // Temporarily redirect to Reporter Info until AngleGenerationPage is implemented
         updateGameState({ currentStage: GameStage.REPORTER_INFO });
@@ -167,12 +173,16 @@ function App() {
     GameStage.SCAN_ID,
     GameStage.ALIAS,
     GameStage.WELCOME,
+    GameStage.EVIDENCE_RECAP,
+    GameStage.TAPE_REVEAL,
+    GameStage.SUSPECT_RECAP,
     GameStage.ARTICLE_INTRO,
     GameStage.ARTICLE_DEATH_CAUSE,
     GameStage.ARTICLE_SUSPECT,
     GameStage.ARTICLE_METHOD,
     GameStage.ARTICLE_MOTIVE,
-    GameStage.ARTICLE_EVIDENCE
+    GameStage.ARTICLE_EVIDENCE,
+    GameStage.ARTICLE_WITNESS_QUOTES
   ];
 
   return (

@@ -6,7 +6,7 @@ export interface Player {
   headline?: string;
   evidence_list?: number[];
   tape?: string;
-  selected_suspect?: string;
+  selected_suspect?: number[];
   story_angle?: string;
   full_article_generated?: string;
   ratings?: {

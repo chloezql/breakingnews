@@ -14,6 +14,8 @@ const TabBar: React.FC<TabBarProps> = ({ currentStage }) => {
     { id: GameStage.WELCOME, label: 'Welcome' },
     { id: GameStage.EVIDENCE_RECAP, label: 'Evidence Recap' },
     { id: GameStage.TAPE_REVEAL, label: 'Tape Reveal' },
+    { id: GameStage.SUSPECT_RECAP, label: 'Suspect Recap' },
+    { id: GameStage.ARTICLE_INTRO, label: 'Article Intro' },
     { id: GameStage.REPORTER_INFO, label: 'Reporter Info' },
     { id: GameStage.RESULT, label: 'Article' },
     { id: GameStage.RATING, label: 'Ratings' }

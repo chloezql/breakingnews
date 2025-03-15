@@ -69,7 +69,7 @@ const ScanIdPage: React.FC<ScanIdPageProps> = ({ onPlayerLoaded }) => {
           headline: playerData.headline || "",
           evidence_list: playerData.evidence_list || [],
           tape: playerData.tape || [],
-          selected_suspect: playerData.selected_suspect || "",
+          selected_suspect: playerData.selected_suspect || [],
           story_angle: playerData.story_angle || "",
           full_article_generated: playerData.full_article_generated || "",
           ratings: playerData.ratings || {
@@ -134,7 +134,9 @@ const ScanIdPage: React.FC<ScanIdPageProps> = ({ onPlayerLoaded }) => {
                 <p><strong>ID:</strong> {playerInfo.id}</p>
                 <p><strong>Card Number:</strong> {playerInfo.id_card_no}</p>
                 {playerInfo.player_name && <p><strong>Name:</strong> {playerInfo.player_name}</p>}
-                {playerInfo.selected_suspect && <p><strong>Selected Suspect:</strong> {playerInfo.selected_suspect}</p>}
+                {playerInfo.selected_suspect && playerInfo.selected_suspect.length > 0 && (
+                  <p><strong>Selected Suspect:</strong> {playerInfo.selected_suspect.join(', ')}</p>
+                )}
               </div>
               <p className="proceed-message">Proceeding to next screen...</p>
             </div>

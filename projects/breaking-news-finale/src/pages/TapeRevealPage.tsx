@@ -178,7 +178,7 @@ export function TapeRevealPage() {
                     className="continue-button"
                     onClick={handleContinue}
                   >
-                    Check Out My Suspects
+                    Continue to Suspect Recap
                   </button>
                 </>
               )}

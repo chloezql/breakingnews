@@ -107,14 +107,13 @@ export const suspects: Record<string, Suspect> = {
   }
 };
 
-export const getSuspect = (id: string): Suspect | undefined => {
-  return suspects[id];
+export const getSuspect = (id: number): Suspect | undefined => {
+  return suspects[String(id)];
 };
 
-export const validateSuspectId = (id: string): boolean => {
-  return id in suspects;
-}; 
-
+export const validateSuspectId = (id: number): boolean => {
+  return String(id) in suspects;
+};
 
 export const worldBackground = `Astra Academy of Art is a prestigious yet cutthroat institution where students battle for artistic success. 
 Erin Carter, a 22-year-old art prodigy, was found dead last night. 

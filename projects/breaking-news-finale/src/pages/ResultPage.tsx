@@ -107,9 +107,11 @@ export function ResultPage() {
         : '';
       
       // Get suspect details
-      const suspectDetails = gameState.selected_suspect
+      const selectedSuspectIds = gameState.selected_suspect || [];
+      const suspectDetails = selectedSuspectIds.length > 0
         ? (() => {
-            const suspect = getSuspect(gameState.selected_suspect);
+            const suspectId = selectedSuspectIds[0];
+            const suspect = getSuspect(suspectId);
             return suspect 
               ? `Name: ${suspect.name}, background: ${suspect.info}, motives: ${suspect.motives}, other suspects: ${suspect.otherSuspects.map(s => `${s.name}: ${s.background}`).join(', ')}, timeline: ${suspect.timeline.map(t => `${t.time}: ${t.event}`).join(', ')}`
               : '';
@@ -167,7 +169,15 @@ export function ResultPage() {
         
         ${tapeDetails ? `One witness stated, "${tapeDetails}"` : 'Witnesses at the scene described the events as "unprecedented" and "alarming."'} Community members are advised to stay informed as this story develops.
         
-        ${suspectDetails ? `Authorities are currently questioning ${getSuspect(gameState.selected_suspect || '')?.name || 'a person of interest'} in connection with the case.` : 'This is a developing story, and more details will be provided as they become available.'}`;
+        ${selectedSuspectIds.length > 0 
+          ? `Authorities are currently questioning ${
+              (() => {
+                const suspectId = selectedSuspectIds[0];
+                const suspect = getSuspect(suspectId);
+                return suspect?.name || 'a person of interest';
+              })()
+            } in connection with the case.` 
+          : 'This is a developing story, and more details will be provided as they become available.'}`;
         
         setFull(fallbackStory);
         updateGameState({ full_article_generated: fallbackStory });
@@ -291,7 +301,7 @@ export function ResultPage() {
           <div className="story-box">
           <div className="mini-headline">Level Up: GDC Invades the City!</div>
             <div className="mini-content">
-              Gamers and developers unite! The city is buzzing as the Game Developer Conference rolls into town, transforming every pixel and polygon into a playground of possibility. From indie to AAA, our streets are now live levels waiting to be explored. Don’t blink—you might just miss a secret side quest!
+              Gamers and developers unite! The city is buzzing as the Game Developer Conference rolls into town, transforming every pixel and polygon into a playground of possibility. From indie to AAA, our streets are now live levels waiting to be explored. Don't blink—you might just miss a secret side quest!
             </div>
 
           </div>

@@ -33,6 +33,7 @@
   position: fixed; // Fix position to ensure it covers the entire screen
   top: 0;
   left: 0;
+  z-index: 100; // Ensure it's above other content
   
   .window-container {
     width: 100%;
@@ -107,11 +108,10 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center; // Center content vertically
         width: 100%;
+        height: 100%; // Take up full height
         max-height: none; // Remove max-height constraint
         overflow-y: visible; // Change from auto to visible
-        margin: auto 0; // Center vertically
         padding-bottom: 20px; // Add padding at the bottom to ensure button visibility
         
         h1 {

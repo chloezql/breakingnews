@@ -8,7 +8,7 @@ export interface GameState {
   headline?: string;
   evidence_list?: number[];
   tape?: number[];
-  selected_suspect?: string;
+  selected_suspect?: number[];
   story_angle?: string;
   full_article_generated?: string;
   article_death_cause?: string;

@@ -90,7 +90,7 @@ export function EvidenceRecapPage() {
               className="continue-button"
               onClick={handleContinue}
             >
-              Check Tapes
+              Continue
             </button>
           </div>
         </div>
