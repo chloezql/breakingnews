@@ -3,6 +3,7 @@ import { useGame } from '../context/GameContext';
 import { EVIDENCE_ITEMS } from '../constants/evidence';
 import { witnessTapes } from '../types/tapes';
 import { getSuspect } from '../types/suspects';
+import { getRandomJoke } from '../constants/jokes';
 import './ResultPage.scss';
 
 // Import confetti library
@@ -44,6 +45,7 @@ export function ResultPage() {
   const [confettiPlayed, setConfettiPlayed] = useState(false);
   const [revealedDigits, setRevealedDigits] = useState<number[]>([]);
   const [finalViewCount, setFinalViewCount] = useState<number>(0);
+  const [dailyJoke, setDailyJoke] = useState({ setup: '', punchline: '' });
   const generationAttempted = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const articleReadyRef = useRef(false);
@@ -56,7 +58,10 @@ export function ResultPage() {
   // Log the full game state for debugging
   useEffect(() => {
     console.log('ResultPage - Full Game State:', JSON.stringify(gameState, null, 2));
-  }, [gameState]);
+    
+    // Set a random joke when the component mounts
+    setDailyJoke(getRandomJoke());
+  }, []);
 
   // Generate the news story when the component mounts
   useEffect(() => {
@@ -914,7 +919,7 @@ export function ResultPage() {
         )}
         
         {/* Newspaper */}
-        <div className="newspaper">
+        <div className={`newspaper ${showViewCount ? 'blur-background' : ''}`}>
           <div className="newspaper-header">
             <h1>Global Daily Courier</h1>
             <div className="date-line">
@@ -945,81 +950,98 @@ export function ResultPage() {
                 </div>
               </div>
             ) : (
-              <>
-                {/* Main story content */}
-                <div className="main-column">
-                  {evidenceImages.length > 0 && (
-                    <div className="main-image">
-                      <img 
-                        src={`/images/evidence/${evidenceImages[0]}`} 
-                        alt="Evidence" 
-                        className="evidence-img"
-                        onError={(e) => {
-                          if (e.currentTarget.parentElement) {
-                            e.currentTarget.parentElement.classList.add('no-image');
-                          }
-                        }}
-                      />
-                    </div>
-                  )}
-                  {article.split('\n\n').map((paragraph, index) => (
-                    <p key={index}>{paragraph}</p>
-                  ))}
-                </div>
+              <div className="main-column">
+                {/* Main image (first evidence image) */}
+                {evidenceImages.length > 0 && (
+                  <div className="main-image">
+                    <img 
+                      src={`/images/evidence/${evidenceImages[0]}`} 
+                      alt="Evidence" 
+                      className="evidence-img"
+                      onError={(e) => {
+                        if (e.currentTarget.parentElement) {
+                          e.currentTarget.parentElement.classList.add('no-image');
+                        }
+                      }}
+                    />
+                  </div>
+                )}
                 
-                {/* Additional content and images */}
-                <div className="secondary-content">
-                  {evidenceImages.slice(1).map((image, index) => (
-                    <div key={index}>
-                      <div className="evidence-inline">
-                        <img 
-                          src={`/images/evidence/${image}`} 
-                          alt={`Evidence ${index + 2}`}
-                          className="evidence-img"
-                          onError={(e) => {
-                            if (e.currentTarget.parentElement) {
-                              e.currentTarget.parentElement.classList.add('no-image');
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className="evidence-caption">
-                        Evidence Photo {index + 2}: Discovered at the scene
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Add some filler text if there aren't many evidence images */}
-                  {evidenceImages.length <= 2 && (
-                    <div className="secondary-text">
-                      <p>The investigation continues as authorities gather more evidence and interview witnesses. Local residents have expressed shock and concern over the incident at the prestigious art academy.</p>
-                      <p>Campus security has been increased, and counseling services are being provided to students and faculty affected by the tragedy.</p>
-                    </div>
-                  )}
-                </div>
-              </>
+                {/* First paragraph */}
+                {article.split('\n\n')[0] && (
+                  <p>{article.split('\n\n')[0]}</p>
+                )}
+                
+                {/* Second evidence image */}
+                {evidenceImages.length > 1 && (
+                  <div className="evidence-inline">
+                    <img 
+                      src={`/images/evidence/${evidenceImages[1]}`} 
+                      alt="Evidence 2" 
+                      className="evidence-img"
+                      onError={(e) => {
+                        if (e.currentTarget.parentElement) {
+                          e.currentTarget.parentElement.classList.add('no-image');
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+                
+                {/* Middle paragraphs */}
+                {article.split('\n\n').slice(1, -1).map((paragraph, index) => (
+                  <p key={index + 1}>{paragraph}</p>
+                ))}
+                
+                {/* Third evidence image */}
+                {evidenceImages.length > 2 && (
+                  <div className="evidence-inline">
+                    <img 
+                      src={`/images/evidence/${evidenceImages[2]}`} 
+                      alt="Evidence 3" 
+                      className="evidence-img"
+                      onError={(e) => {
+                        if (e.currentTarget.parentElement) {
+                          e.currentTarget.parentElement.classList.add('no-image');
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+                
+                {/* Last paragraph */}
+                {article.split('\n\n').length > 1 && (
+                  <p>{article.split('\n\n')[article.split('\n\n').length - 1]}</p>
+                )}
+              </div>
             )}
           </div>
           
           {/* Additional stories section */}
           <div className="additional-stories">
-            <div className="story-box">
+            <div className="story-box news-story">
               <div className="mini-headline">Level Up: GDC Invades the City!</div>
               <div className="mini-content">
                 Gamers and developers unite! The city is buzzing as the Game Developer Conference rolls into town, transforming every pixel and polygon into a playground of possibility. From indie to AAA, our streets are now live levels waiting to be explored. Don't blink—you might just miss a secret side quest!
               </div>
             </div>
-            <div className="story-box">
+            
+            <div className="story-box daily-joke">
+              <div className="mini-headline">Daily Joke</div>
+              <div className="mini-content">
+                <p><strong>{dailyJoke.setup}</strong></p>
+                <p>{dailyJoke.punchline}</p>
+              </div>
+            </div>
+            
+            <div className="story-box qr-section">
+              <div className="mini-headline">Scan for Leaderboard</div>
               <div className="price-comparison">
                 <div className="price-item">
-                  <span className="price">$Scan the QR code to keep track of the leaderboard</span>
-                  <span className="item"></span>
+                  <span className="price">Track your story's performance</span>
                 </div>
                 <div className="price-item">
-                  {/* place a qr code placeholder here */}
-                  <img src="/qr_placeholder.png" alt='' className="qr-code" style={{ width: '120px', height: '120px',  marginTop: '10px' }} />
-                  <span className="price"></span>
-                  <span className="item"></span>
+                  <img src="/website-qr.png" alt="Leaderboard QR Code" className="qr-code" style={{ width: '100px', height: '100px', marginTop: '10px' }} />
                 </div>
               </div>
             </div>
