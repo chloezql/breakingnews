@@ -11,7 +11,11 @@ import {
   WelcomePage,
   EvidenceRecapPage,
   TapeRevealPage,
-  ArticleIntroPage
+  ArticleIntroPage,
+  ArticleDeathCausePage,
+  ArticleSuspectPage,
+  ArticleMethodPage,
+  ArticleMotivePage
 } from './pages';
 import { GameContext } from './context/GameContext';
 import TabBar from './components/TabBar';
@@ -132,6 +136,14 @@ function App() {
         return <TapeRevealPage />;
       case GameStage.ARTICLE_INTRO:
         return <ArticleIntroPage />;
+      case GameStage.ARTICLE_DEATH_CAUSE:
+        return <ArticleDeathCausePage />;
+      case GameStage.ARTICLE_SUSPECT:
+        return <ArticleSuspectPage />;
+      case GameStage.ARTICLE_METHOD:
+        return <ArticleMethodPage />;
+      case GameStage.ARTICLE_MOTIVE:
+        return <ArticleMotivePage />;
       case GameStage.ANGLE_GENERATION:
         // Temporarily redirect to Reporter Info until AngleGenerationPage is implemented
         updateGameState({ currentStage: GameStage.REPORTER_INFO });
@@ -152,7 +164,11 @@ function App() {
     GameStage.SCAN_ID,
     GameStage.ALIAS,
     GameStage.WELCOME,
-    GameStage.ARTICLE_INTRO
+    GameStage.ARTICLE_INTRO,
+    GameStage.ARTICLE_DEATH_CAUSE,
+    GameStage.ARTICLE_SUSPECT,
+    GameStage.ARTICLE_METHOD,
+    GameStage.ARTICLE_MOTIVE
   ];
 
   return (

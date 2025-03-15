@@ -11,6 +11,15 @@ export interface GameState {
   selected_suspect?: string;
   story_angle?: string;
   full_article_generated?: string;
+  article_death_cause?: string;
+  article_suspect_ids?: number[];
+  article_method?: string;
+  article_motive?: string;
+  article_evidence_ids?: number[];
+  article_witness_quotes?: string[];
+  article_interrogation_findings?: {
+    [suspectId: string]: string;
+  };
   ratings?: {
     viral: number;
     truth: number;
