@@ -18,7 +18,8 @@ import {
   ArticleMethodPage,
   ArticleMotivePage,
   ArticleEvidencePage,
-  ArticleWitnessQuotesPage
+  ArticleWitnessQuotesPage,
+  ArticleStylePage
 } from './pages';
 import { ArticleInterrogationFindingsPage } from './pages/ArticleInterrogationFindingsPage';
 import { GameContext } from './context/GameContext';
@@ -123,6 +124,21 @@ function App() {
         nextStage = GameStage.REPORTER_INFO;
       }
       
+      // Skip RATING stage
+      if (nextStage === GameStage.RATING) {
+        // If we're at the RESULT stage, don't move to the next stage
+        if (gameState.currentStage === GameStage.RESULT) {
+          return;
+        }
+        // Otherwise, find the next stage after RATING
+        const ratingIndex = stages.indexOf(GameStage.RATING);
+        if (ratingIndex < stages.length - 1) {
+          nextStage = stages[ratingIndex + 1];
+        } else {
+          return; // No more stages after RATING
+        }
+      }
+      
       updateGameState({ currentStage: nextStage });
     }
   };
@@ -164,10 +180,13 @@ function App() {
         return <ArticleInterrogationFindingsPage />;
       case GameStage.REPORTER_INFO:
         return <ReporterInfoPage />;
+      case GameStage.ARTICLE_STYLE:
+        return <ArticleStylePage />;
       case GameStage.RESULT:
         return <ResultPage />;
       case GameStage.RATING:
-        return <RatingPage />;
+        // We no longer use the rating page, redirect to result page
+        return <ResultPage />;
       default:
         return <ScanIdPage onPlayerLoaded={handlePlayerLoaded} />;
     }
@@ -189,7 +208,9 @@ function App() {
     GameStage.ARTICLE_EVIDENCE,
     GameStage.ARTICLE_WITNESS_QUOTES,
     GameStage.ARTICLE_INTERROGATION_FINDINGS,
-    GameStage.REPORTER_INFO
+    GameStage.REPORTER_INFO,
+    GameStage.ARTICLE_STYLE,
+    GameStage.RESULT
   ];
 
   return (

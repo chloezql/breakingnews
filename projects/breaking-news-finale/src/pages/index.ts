@@ -13,4 +13,5 @@ export { ArticleSuspectPage } from './ArticleSuspectPage';
 export { ArticleMethodPage } from './ArticleMethodPage';
 export { ArticleMotivePage } from './ArticleMotivePage';
 export { ArticleEvidencePage } from './ArticleEvidencePage';
-export { ArticleWitnessQuotesPage } from './ArticleWitnessQuotesPage'; 
+export { ArticleWitnessQuotesPage } from './ArticleWitnessQuotesPage';
+export { ArticleStylePage } from './ArticleStylePage'; 

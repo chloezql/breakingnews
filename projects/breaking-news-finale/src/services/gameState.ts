@@ -17,6 +17,7 @@ export interface GameState {
   article_motive?: string;
   article_evidence_ids?: number[];
   article_witness_quotes?: string[];
+  article_style?: string;
   article_interrogation_findings?: {
     [suspectId: string]: string;
   };

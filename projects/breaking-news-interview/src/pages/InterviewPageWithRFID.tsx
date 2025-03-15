@@ -180,7 +180,7 @@ const InterviewPage: React.FC = () => {
   useEffect(() => {
     resetGameCompletelyRef.current = resetGameCompletely;
   }, [resetGameCompletely]);
-  
+
   // WebSocket handler for RFID card scanning
   handleWebSocketMessageRef.current = async (data: any) => {
     if (data.type === 'rfid_scan' && !playerId) {
@@ -238,7 +238,7 @@ const InterviewPage: React.FC = () => {
     
     if (!suspectId || !isValidSuspectId(suspectId)) {
       showError('Invalid suspect ID. Please try again.');
-      return;
+        return;
     }
     
     // Set UI state to call mode first
@@ -348,7 +348,7 @@ const InterviewPage: React.FC = () => {
     };
     
     window.addEventListener('keydown', handleAnyKeyForFocus);
-    
+
     return () => {
       window.removeEventListener('keydown', handleGlobalKeydown);
       window.removeEventListener('keydown', handleAnyKeyForFocus);

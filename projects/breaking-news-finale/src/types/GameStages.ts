@@ -16,6 +16,7 @@ export enum GameStage {
   ARTICLE_INTERROGATION_FINDINGS = 'article_interrogation_findings',
   ANGLE_GENERATION = 'angle_generation',
   REPORTER_INFO = 'reporter_info',
+  ARTICLE_STYLE = 'article_style',
   RESULT = 'result',
   RATING = 'rating'
 } 

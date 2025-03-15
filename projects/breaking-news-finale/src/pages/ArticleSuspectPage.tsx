@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
+import { suspects } from '../types/suspects';
 import './ArticleSuspectPage.scss';
 
 // Define the suspect interface
 interface Suspect {
-  id: number;
+  id: string;
   name: string;
   image: string;
 }
@@ -12,22 +13,22 @@ interface Suspect {
 export function ArticleSuspectPage() {
   const { gameState, updateGameState, moveToNextStage } = useGame();
   
-  // Define the suspects
-  const suspects: Suspect[] = [
-    { id: 1, name: 'Kevin', image: '/character-photos/kevin.png' },
-    { id: 2, name: 'Dr. Hart', image: '/character-photos/dr.hart.png' },
-    { id: 3, name: 'Lucy', image: '/character-photos/lucy.png' }
+  // Define the suspects using data from suspects.ts
+  const suspectsList: Suspect[] = [
+    { id: "1234", name: 'Dr. Eleanor Hart', image: '/character-photos/dr.hart.png' },
+    { id: "5678", name: 'Kevin Sanchez', image: '/character-photos/kevin.png' },
+    { id: "9876", name: 'Lucy Marlow', image: '/character-photos/lucy.png' }
   ];
   
   // Get the initial selected suspects from the game state or use an empty array
-  const [selectedSuspects, setSelectedSuspects] = useState<number[]>(
-    gameState?.article_suspect_ids || []
+  const [selectedSuspects, setSelectedSuspects] = useState<string[]>(
+    gameState?.article_suspect_ids?.map(id => String(id)) || []
   );
   
   const [error, setError] = useState('');
   
   // Handle suspect selection
-  const toggleSuspect = (suspectId: number) => {
+  const toggleSuspect = (suspectId: string) => {
     setSelectedSuspects(prev => {
       // If the suspect is already selected, remove them
       if (prev.includes(suspectId)) {
@@ -52,7 +53,8 @@ export function ArticleSuspectPage() {
     }
     
     // Save to game state and move to next stage
-    updateGameState({ article_suspect_ids: selectedSuspects });
+    // Convert string IDs to numbers for compatibility with existing code
+    updateGameState({ article_suspect_ids: selectedSuspects.map(id => Number(id)) });
     moveToNextStage();
   };
   
@@ -79,7 +81,7 @@ export function ArticleSuspectPage() {
                 </p>
                 
                 <div className="suspects-container">
-                  {suspects.map(suspect => (
+                  {suspectsList.map(suspect => (
                     <div 
                       key={suspect.id}
                       className={`suspect-card ${selectedSuspects.includes(suspect.id) ? 'selected' : ''}`}
