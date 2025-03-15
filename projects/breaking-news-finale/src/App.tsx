@@ -188,7 +188,8 @@ function App() {
     GameStage.ARTICLE_MOTIVE,
     GameStage.ARTICLE_EVIDENCE,
     GameStage.ARTICLE_WITNESS_QUOTES,
-    GameStage.ARTICLE_INTERROGATION_FINDINGS
+    GameStage.ARTICLE_INTERROGATION_FINDINGS,
+    GameStage.REPORTER_INFO
   ];
 
   return (
