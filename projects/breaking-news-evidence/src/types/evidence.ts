@@ -81,7 +81,7 @@ export const EVIDENCE_ITEMS: Evidence[] = [
     description: "Dr.Hart performance review is not good, other professors may not like her.",
     image: "hart-perf-review.png",
     type: "document",
-    hint: "Late night research about drug interactions..."
+    hint: "Ouch, that's harsh."
   },
   {
     id: 10,

@@ -230,10 +230,10 @@ const useCallHandling = ({ onCallEnded, onCallStarted }: UseCallHandlingProps = 
       console.log('Suspect:', suspect);
       // Set up the conversation parameters with VAD
       client.updateSession({
-      instructions: `You are ${suspect.name} You are currently being interrogated in a small, dimly lit police station as a suspect in the death of Erin Carter. A cop stares at you, waiting for your response. Every hesitation makes you look more guilty. 
+      instructions: `You are ${suspect.name} You are currently being interrogated in a small, dimly lit police station as a suspect in the death of Erin Carter. This is the morning of the next day Erin was found dead. A cop stares at you, waiting for your response. Every hesitation makes you look more guilty. 
       Remain in-character, referring to the details below. Your goal is to avoid suspicion while staying truthful to your personality and timeline.
       Speak with short, direct answers (1-2 sentences). 
-      Avoid disclaimers like "As an AI model..." or revealing your internal motives outright.
+      Avoid disclaimers like "As an AI model..." or "How can I assist you today?" or revealing your internal motives outright.
       Here is your general background information:${suspect.info}
       Your Personality & Speaking Style:${suspect.personality}
 
@@ -247,11 +247,11 @@ const useCallHandling = ({ onCallEnded, onCallStarted }: UseCallHandlingProps = 
 
       ${suspect.otherSuspects.map((other) => `${other.name}: ${other.background}`).join("\n")}
 
-      You are being interrogated about Erin's death. Stay in character, be consistent with your personal details, and only reveal what aligns with your knowledge and motives. Evasive or defensive answers are appropriate if pressed on suspicious activities. Keep responses concise.
+      You are being interrogated about Erin's death. Stay in character, be consistent with your personal details, and only reveal what aligns with your knowledge and motives. Evasive or defensive answers are appropriate if pressed on suspicious activities. 
+      Keep responses concise.
       - Speak naturally, not like a robot. Do not state facts mechanically—answer as a real person would under pressure.
-      - If a question contradicts your story, react accordingly (confused, defensive, frustrated).
+      - If a question contradicts your story, react accordingly (confused, defensive, frustrated). If it touches your interest and motives, you could ask for lawyer.
       - If asked about past statements, acknowledge them ("I already told you...").
-      - Keep responses **short (1-2 sentences)** unless additional detail is demanded.
 
       `,
        temperature: 0.9,
@@ -262,6 +262,13 @@ const useCallHandling = ({ onCallEnded, onCallStarted }: UseCallHandlingProps = 
       // @ts-expect-error voice is not in the type definition
       client.updateSession({ voice: suspect.voice });
   
+
+      // Make the agent speak first by sending an initial message using sendUserMessageContent
+      client.sendUserMessageContent([{
+        type: 'input_text',
+        text: 'Hello? Are you there?'
+      }]);
+
       // Start recording with VAD
       await wavRecorder.record((data: { mono: Int16Array }) => {
         if (!processingRef.current) {

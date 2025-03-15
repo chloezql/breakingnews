@@ -5,7 +5,7 @@ export interface Player {
   id_card_no?: string;
   headline?: string;
   evidence_list?: number[];
-  tape?: string;
+  tape?: number[];
   selected_suspect?: string;
   story_angle?: string;
   full_article_generated?: string;

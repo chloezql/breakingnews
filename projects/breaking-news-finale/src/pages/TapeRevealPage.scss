@@ -1,0 +1,360 @@
+@import url('https://fonts.googleapis.com/css2?family=Jersey+15&family=Pixelify+Sans:wght@400..700&display=swap');
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+[data-component='TapeRevealPage'] {
+  font-family: 'Jersey 15', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  height: 100vh; // Full viewport height
+  width: 100vw; // Full viewport width
+  position: fixed; // Fix position to ensure it covers the entire screen
+  top: 0;
+  left: 0;
+  
+  .window-container {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    background-color: #e48b77;
+    border: none;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    
+    // Windows classic title bar
+    .window-title-bar {
+      height: 28px;
+      background: linear-gradient(to right, #d32f2f, #b71c1c);
+      color: white;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px 0 8px;
+      font-size: 12px;
+      
+      .title-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .window-controls {
+        display: flex;
+        
+        button {
+          width: 20px;
+          height: 20px;
+          margin-left: 2px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: #d32f2f;
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 0;
+          font-size: 12px;
+          padding: 0;
+          line-height: 1;
+          
+          &:hover {
+            background-color: #b71c1c;
+          }
+          
+          &.close-btn:hover {
+            background-color: #f44336;
+          }
+        }
+      }
+    }
+    
+    .window-content {
+      background-color: #f0f0f0;
+      padding: 16px;
+      border: none;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center; // Center content vertically
+      align-items: center; // Center content horizontally
+      overflow: auto;
+      max-height: none; // Remove max-height constraint
+      
+      .tape-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center; // Center content vertically
+        width: 100%;
+        max-height: none; // Remove max-height constraint
+        overflow-y: visible; // Change from auto to visible
+        margin: auto 0; // Center vertically
+        padding-bottom: 20px; // Add padding at the bottom to ensure button visibility
+        
+        h1 {
+          font-size: 28px; // Reduced from 32px
+          margin-bottom: 20px; // Reduced from 30px
+          color: #CD2A11;
+          text-align: center;
+        }
+        
+        .tape-matches {
+          display: flex;
+          flex-direction: column;
+          gap: 15px; // Further reduced from 20px
+          width: 100%;
+          max-width: 800px; // Reduced from 900px
+          margin-bottom: 15px; // Reduced from 20px
+          
+          .tape-match {
+            background-color: #fff;
+            border: 2px solid;
+            border-color: #fff #999 #999 #fff;
+            padding: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+            margin-bottom: 0;
+            
+            &.revealing {
+              background-color: #f5f5f5;
+              animation: pulse 1.5s infinite;
+            }
+            
+            &.revealed {
+              animation: none;
+            }
+            
+            .match-pair {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              
+              .witness-card, .suspect-card {
+                width: 130px;
+                text-align: center;
+                
+                .card-image {
+                  width: 100%;
+                  height: 100px;
+                  overflow: hidden;
+                  margin-bottom: 5px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  
+                  img {
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: contain;
+                  }
+                }
+                
+                .card-name {
+                  font-size: 14px;
+                  font-weight: bold;
+                  color: #333;
+                }
+              }
+              
+              .suspect-card {
+                background-color: #fff;
+                border: 2px solid;
+                border-color: #fff #999 #999 #fff;
+                padding: 6px;
+                
+                .card-image {
+                  background-color: #e0e0e0;
+                }
+              }
+              
+              .match-connector {
+                flex: 1;
+                height: 5px;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 15px;
+                
+                .connector-line {
+                  width: 100%;
+                  height: 2px;
+                  background-color: #ccc;
+                }
+                
+                .result-indicator {
+                  position: absolute;
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 20px;
+                  font-weight: bold;
+                  animation: fadeIn 0.5s ease-out;
+                  
+                  &.success {
+                    background-color: #4CAF50;
+                    color: white;
+                  }
+                  
+                  &.failure {
+                    background-color: #F44336;
+                    color: white;
+                  }
+                }
+              }
+            }
+            
+            .revealing-animation {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background-color: rgba(0, 0, 0, 0.7);
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              animation: fadeIn 0.3s ease-out;
+              z-index: 10;
+              
+              .tape-image {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 10px;
+                position: relative;
+                
+                &::before {
+                  content: '';
+                  position: absolute;
+                  top: -10px;
+                  left: -10px;
+                  right: -10px;
+                  bottom: -10px;
+                  border: 2px solid #fff;
+                  border-radius: 50%;
+                  animation: spin 2s linear infinite;
+                }
+                
+                img {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: contain;
+                }
+              }
+              
+              .revealing-text {
+                color: white;
+                font-size: 20px;
+                font-weight: bold;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+              }
+            }
+          }
+        }
+        
+        .results-summary {
+          text-align: center;
+          margin-top: 5px;
+          margin-bottom: 15px; // Increased from 10px
+          animation: slideIn 0.5s ease-out;
+          position: relative;
+          z-index: 5;
+          
+          h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #333;
+          }
+          
+          .continue-button {
+            background: #e0e0e0;
+            color: #333;
+            border: 2px solid;
+            border-color: #fff #999 #999 #fff;
+            border-radius: 0;
+            padding: 10px 20px;
+            font-family: 'Jersey 15', sans-serif;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+            margin-top: 10px; // Increased from 5px
+            position: relative;
+            z-index: 20;
+            display: inline-block; // Ensure proper display
+            min-width: 200px; // Ensure minimum width
+            
+            &:active {
+              border-color: #999 #fff #fff #999;
+              box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.1);
+            }
+            
+            &:hover {
+              background-color: #f0f0f0;
+            }
+          }
+        }
+      }
+    }
+    
+    .window-status-bar {
+      height: 24px;
+      background-color: #f0f0f0;
+      border-top: 1px solid #999;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+      font-size: 11px;
+      color: #333;
+      
+      .status-text {
+        flex-grow: 1;
+      }
+      
+      .windows-logo {
+        width: 16px;
+        height: 16px;
+        background-color: #CD2A11;
+        position: relative;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 7px;
+          height: 7px;
+          background-color: white;
+          box-shadow: 9px 0 0 white, 0 9px 0 white, 9px 9px 0 white;
+        }
+      }
+    }
+  }
+} 

@@ -1,0 +1,55 @@
+.tab-bar {
+  width: 100%;
+  position: relative;
+  margin-bottom: 0;
+  
+  .tab-bar-inner {
+    display: flex;
+    background-color: #f0f0f0;
+    border-bottom: none;
+    position: relative;
+    z-index: 2;
+    padding: 0 8px;
+  }
+  
+  .tab {
+    padding: 8px 16px;
+    background-color: #e0e0e0;
+    border: 1px solid #999;
+    border-bottom: none;
+    margin-right: 2px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #666;
+    cursor: default;
+    position: relative;
+    
+    // Classic Windows inset shadow for inactive tabs
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    
+    &.active {
+      background-color: white;
+      color: #CD2A11;
+      border-bottom: 1px solid white;
+      margin-bottom: -1px;
+      z-index: 3;
+      
+      // Remove the inset shadow for active tab
+      box-shadow: none;
+    }
+    
+    // Windows classic hover effect
+    &:not(.active):hover {
+      background-color: #e8e8e8;
+    }
+  }
+  
+  // Border that runs along the bottom of the tabs
+  .tab-content-border {
+    height: 1px;
+    background-color: #999;
+    position: relative;
+    z-index: 1;
+    margin-top: -1px;
+  }
+} 

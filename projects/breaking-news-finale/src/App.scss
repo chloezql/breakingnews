@@ -6,46 +6,90 @@
   padding: 0;
 }
 
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family: 'Jersey 15', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  background-color: #f0f0f0; // Windows classic background color
 }
 
 .App {
   text-align: center;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   position: relative;
+  
+  &::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    background-color: #f0f0f0;
+    border: 1px solid #999;
+    margin: 8px;
+    box-shadow: inset 1px 1px 0 white, inset -1px -1px 0 #999;
+  }
+  
+  .app-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow: hidden;
+  }
 }
 
 button {
   cursor: pointer;
   font-family: 'Jersey 15', sans-serif;
+  border: 2px solid;
+  border-color: #fff #999 #999 #fff;
+  background-color: #e0e0e0;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+  
+  &:active {
+    border-color: #999 #fff #fff #999;
+    box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.1);
+  }
 }
 
 input, textarea {
   font-family: 'Jersey 15', sans-serif;
+  border: 2px solid;
+  border-color: #999 #fff #fff #999;
+  background-color: white;
+  border-radius: 0;
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* User ID Badge */
 .user-id-badge {
   position: fixed;
-  top: 15px;
+  top: 40px;
   right: 15px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
+  background-color: #f0f0f0;
+  color: #333;
   padding: 8px 12px;
-  border-radius: 20px;
+  border-radius: 0;
   font-family: 'Pixelify Sans', cursive;
   font-size: 14px;
   z-index: 1000;
   display: flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border: 1px solid #999;
+  box-shadow: inset 1px 1px 0 white, inset -1px -1px 0 #999;
   animation: fadeIn 0.3s ease-in-out;
 }
 
@@ -56,6 +100,7 @@ input, textarea {
 .user-id-value {
   font-weight: bold;
   letter-spacing: 0.5px;
+  color: #CD2A11;
 }
 
 /* Code Input Screen */
@@ -144,10 +189,15 @@ input, textarea {
 
 /* Common styles for all pages */
 .page-container {
-  min-height: 100vh;
+  flex: 1;
+  height: calc(100vh - 40px); // Account for tab bar height
   width: 100%;
   display: flex;
   flex-direction: column;
+  padding: 0;
+  background-color: white;
+  margin: 0;
+  overflow: hidden;
 }
 
 /* Utility classes */
@@ -223,7 +273,7 @@ input, textarea {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #fe2f0d;
+  background-color: #CD2A11;
   color: white;
   font-family: 'Pixelify Sans', cursive;
   font-size: 24px;
@@ -257,5 +307,7 @@ input, textarea {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 } 

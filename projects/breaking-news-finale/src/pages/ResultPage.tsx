@@ -103,7 +103,7 @@ export function ResultPage() {
       
       // Get tape details
       const tapeDetails = gameState.tape
-        ? witnessTapes.find(t => t.id.toString() === gameState.tape)?.content || ''
+        ? witnessTapes.find(t => gameState.tape?.includes(t.id))?.content || ''
         : '';
       
       // Get suspect details
@@ -111,7 +111,7 @@ export function ResultPage() {
         ? (() => {
             const suspect = getSuspect(gameState.selected_suspect);
             return suspect 
-              ? `Name: ${suspect.name}\nRelationship: ${suspect.relationship}\nBackground: ${suspect.background.join(', ')}`
+              ? `Name: ${suspect.name}, background: ${suspect.info}, motives: ${suspect.motives}, other suspects: ${suspect.otherSuspects.map(s => `${s.name}: ${s.background}`).join(', ')}, timeline: ${suspect.timeline.map(t => `${t.time}: ${t.event}`).join(', ')}`
               : '';
           })()
         : '';

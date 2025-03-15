@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Jersey+15&family=Pixelify+Sans:wght@400..700&display=swap');
+
+[data-component='AliasPage'] {
+  font-family: 'Jersey 15', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  height: calc(100vh - 40px); // Account for tab bar
+  
+  .window-container {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    background-color: #e48b77;
+    border: none;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    
+    // Windows classic title bar
+    .window-title-bar {
+      height: 28px;
+      background: linear-gradient(to right, #d32f2f, #b71c1c);
+      color: white;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px 0 8px;
+      font-size: 12px;
+      
+      .title-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .window-controls {
+        display: flex;
+        
+        button {
+          width: 20px;
+          height: 20px;
+          margin-left: 2px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: #d32f2f;
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 0;
+          font-size: 12px;
+          padding: 0;
+          line-height: 1;
+          
+          &:hover {
+            background-color: #b71c1c;
+          }
+          
+          &.close-btn:hover {
+            background-color: #f44336;
+          }
+        }
+      }
+    }
+    
+    .window-content {
+      background-color: #f0f0f0;
+      padding: 16px;
+      border: none;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+      
+      .alias-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        
+        .alias-prompt {
+          max-width: 600px;
+          width: 100%;
+          text-align: center;
+          
+          h2 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #333;
+          }
+          
+          .alias-input-container {
+            margin: 30px 0;
+            padding: 10px;
+            position: relative;
+            
+            &::after {
+              content: '';
+              position: absolute;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              height: 1px;
+              background-color: #e64b30;
+            }
+            
+            .alias-input {
+              width: 100%;
+              font-size: 24px;
+              padding: 5px;
+              text-align: center;
+              background: transparent;
+              border: none;
+              outline: none;
+              color: #CD2A11;
+              font-family: 'Jersey 15', sans-serif;
+              
+              &:focus {
+                outline: none;
+              }
+              
+              &::placeholder {
+                color: #999;
+                opacity: 0.5;
+              }
+            }
+          }
+          
+          .alias-instruction {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 30px;
+          }
+          
+          .continue-button {
+            background: #e0e0e0;
+            color: #333;
+            border: 2px solid;
+            border-color: #fff #999 #999 #fff;
+            border-radius: 0;
+            padding: 8px 16px;
+            font-family: 'Jersey 15', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+            
+            &:active {
+              border-color: #999 #fff #fff #999;
+              box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.1);
+            }
+            
+            &:hover:not(:disabled) {
+              background-color: #f0f0f0;
+            }
+            
+            &:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
+            }
+          }
+        }
+      }
+    }
+    
+    .window-status-bar {
+      height: 24px;
+      background-color: #f0f0f0;
+      border-top: 1px solid #999;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+      font-size: 11px;
+      color: #333;
+      
+      .status-text {
+        flex-grow: 1;
+      }
+      
+      .windows-logo {
+        width: 16px;
+        height: 16px;
+        background-color: #CD2A11;
+        position: relative;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 7px;
+          height: 7px;
+          background-color: white;
+          box-shadow: 9px 0 0 white, 0 9px 0 white, 9px 9px 0 white;
+        }
+      }
+    }
+  }
+} 
