@@ -221,7 +221,8 @@ const InterviewPage: React.FC = () => {
       
       // Trigger audio playback with proper browser context
       // This ensures we're in a user-triggered context to avoid autoplay restrictions
-      playIntroAudio();
+      // playIntroAudio();
+      handleIntroAudioEnded();
     }
   }, [
     interviewStage,

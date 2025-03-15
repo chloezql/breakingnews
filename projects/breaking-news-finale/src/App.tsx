@@ -10,7 +10,8 @@ import {
   AliasPage,
   WelcomePage,
   EvidenceRecapPage,
-  TapeRevealPage
+  TapeRevealPage,
+  ArticleIntroPage
 } from './pages';
 import { GameContext } from './context/GameContext';
 import TabBar from './components/TabBar';
@@ -129,6 +130,8 @@ function App() {
         return <EvidenceRecapPage />;
       case GameStage.TAPE_REVEAL:
         return <TapeRevealPage />;
+      case GameStage.ARTICLE_INTRO:
+        return <ArticleIntroPage />;
       case GameStage.ANGLE_GENERATION:
         // Temporarily redirect to Reporter Info until AngleGenerationPage is implemented
         updateGameState({ currentStage: GameStage.REPORTER_INFO });
@@ -148,7 +151,8 @@ function App() {
   const hideUIStages = [
     GameStage.SCAN_ID,
     GameStage.ALIAS,
-    GameStage.WELCOME
+    GameStage.WELCOME,
+    GameStage.ARTICLE_INTRO
   ];
 
   return (

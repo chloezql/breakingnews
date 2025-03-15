@@ -5,4 +5,5 @@ export { default as ScanIdPage } from './ScanIdPage';
 export { AliasPage } from './AliasPage';
 export { WelcomePage } from './WelcomePage';
 export { EvidenceRecapPage } from './EvidenceRecapPage';
-export { TapeRevealPage } from './TapeRevealPage'; 
+export { TapeRevealPage } from './TapeRevealPage';
+export { ArticleIntroPage } from './ArticleIntroPage'; 
