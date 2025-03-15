@@ -2,14 +2,13 @@ import { GameStage } from '../types/GameStages';
 
 export interface GameState {
   currentStage: GameStage;
-  id?: string;
+  id: string;
   player_name?: string;
   id_card_no?: string;
   headline?: string;
   evidence_list?: number[];
   tape?: number[];
   selected_suspect?: number[];
-  story_angle?: string;
   full_article_generated?: string;
   article_death_cause?: string;
   article_suspect_ids?: number[];
@@ -21,13 +20,8 @@ export interface GameState {
   article_interrogation_findings?: {
     [suspectId: string]: string;
   };
-  ratings?: {
-    viral: number;
-    truth: number;
-    creativity: number;
-    overall: number;
-    feedback: string;
-  }
+  view_count?: number,
+  hashtags?: string[]
 }
 
 const STORAGE_KEY = 'breaking_news_game_state';
@@ -41,7 +35,8 @@ export const loadGameState = (): GameState | null => {
   if (!savedState) {
     // Initialize with default state
     const initialState: GameState = {
-      currentStage: GameStage.ANGLE_GENERATION
+      currentStage: GameStage.START,
+      id: ''
     };
      saveGameState(initialState);
     return initialState;
@@ -61,7 +56,8 @@ export const clearGameState = (): void => {
 
 export const resetGameState = (): GameState => {
   const initialState: GameState = {
-    currentStage: GameStage.ANGLE_GENERATION
+    currentStage: GameStage.START,
+    id: ''
   };
   saveGameState(initialState);
   return initialState;

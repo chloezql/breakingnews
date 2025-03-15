@@ -29,8 +29,6 @@ export function GameContainer() {
         return <ReporterInfoPage />;
       case GameStage.RESULT:
         return <ResultPage />;
-      case GameStage.RATING:
-        return <RatingPage />;
     }
   };
 

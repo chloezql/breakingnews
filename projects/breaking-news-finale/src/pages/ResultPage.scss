@@ -137,34 +137,36 @@
               color: white;
               font-family: 'Press Start 2P', monospace;
               font-size: 36px;
-              animation: none; /* Reset animation */
+              
+              &.rolling {
+                animation: slotRolling 1.5s ease-out;
+              }
+              
+              &.revealed {
+                animation: digitReveal 0.5s ease-out forwards;
+              }
             }
           }
 
           /* Apply different animation delays based on digit position */
-          .digit-slot:nth-child(5) .digit {
-            animation: slotMachine 1.5s ease-out forwards;
-            animation-delay: 0s;
+          .digit-slot:nth-child(5) .digit.rolling {
+            animation-duration: 1.5s;
           }
           
-          .digit-slot:nth-child(4) .digit {
-            animation: slotMachine 1.5s ease-out forwards;
-            animation-delay: 0.3s;
+          .digit-slot:nth-child(4) .digit.rolling {
+            animation-duration: 1.8s;
           }
           
-          .digit-slot:nth-child(3) .digit {
-            animation: slotMachine 1.5s ease-out forwards;
-            animation-delay: 0.6s;
+          .digit-slot:nth-child(3) .digit.rolling {
+            animation-duration: 2.1s;
           }
           
-          .digit-slot:nth-child(2) .digit {
-            animation: slotMachine 1.5s ease-out forwards;
-            animation-delay: 0.9s;
+          .digit-slot:nth-child(2) .digit.rolling {
+            animation-duration: 2.4s;
           }
           
-          .digit-slot:nth-child(1) .digit {
-            animation: slotMachine 1.5s ease-out forwards;
-            animation-delay: 1.2s;
+          .digit-slot:nth-child(1) .digit.rolling {
+            animation-duration: 2.7s;
           }
         }
 
@@ -588,31 +590,51 @@
   }
 }
 
-@keyframes slotMachine {
+@keyframes slotRolling {
+  0%, 10% { content: "0"; }
+  10%, 20% { content: "1"; }
+  20%, 30% { content: "2"; }
+  30%, 40% { content: "3"; }
+  40%, 50% { content: "4"; }
+  50%, 60% { content: "5"; }
+  60%, 70% { content: "6"; }
+  70%, 80% { content: "7"; }
+  80%, 90% { content: "8"; }
+  90%, 100% { content: "9"; }
+  
   0% {
-    transform: translateY(-500%);
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(-10px);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-2px);
+  }
+  80% {
+    transform: translateY(-1px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes digitReveal {
+  0% {
+    transform: translateY(-100%);
     opacity: 0;
   }
   20% {
     opacity: 1;
   }
-  40% {
-    transform: translateY(20%);
-  }
-  50% {
-    transform: translateY(-10%);
-  }
   60% {
-    transform: translateY(5%);
-  }
-  70% {
-    transform: translateY(-3%);
+    transform: translateY(10%);
   }
   80% {
-    transform: translateY(2%);
-  }
-  90% {
-    transform: translateY(-1%);
+    transform: translateY(-5%);
   }
   100% {
     transform: translateY(0);

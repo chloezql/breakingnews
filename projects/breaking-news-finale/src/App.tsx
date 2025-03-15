@@ -82,15 +82,9 @@ function App() {
           evidence_list: [],
           tape: [],
           selected_suspect: [],
-          story_angle: '',
           full_article_generated: '',
-          ratings: {
-            viral: 0,
-            truth: 0,
-            creativity: 0,
-            overall: 0,
-            feedback: ''
-          }
+          view_count: 0,
+          hashtags: []
         };
         setGameState(initialState);
       }

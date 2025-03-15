@@ -7,15 +7,9 @@ export interface Player {
   evidence_list?: number[];
   tape?: number[];
   selected_suspect?: number[];
-  story_angle?: string;
   full_article_generated?: string;
-  ratings?: {
-    viral: number;
-    truth: number;
-    creativity: number;
-    overall: number;
-    feedback: string;
-  }
+  view_count?: number,
+  hashtags?: string[]
 }
 
 const API_BASE_URL = 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
@@ -95,3 +89,30 @@ export const updatePlayerEvidence = async (playerId: string, evidenceIds: number
   }
 };
 
+// Update the player name, headline, full article generated , view count, hashtags
+export const updatePlayerResults = async (playerId: string, updates: Partial<Player>) => {
+  const url = `${API_BASE_URL}/update_player_results/${playerId}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API error details:', errorData);
+      throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Player data updated successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('Error updating player data:', error);
+    throw error;
+  }
+}

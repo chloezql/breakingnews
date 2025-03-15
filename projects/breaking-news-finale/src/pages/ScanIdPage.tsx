@@ -70,15 +70,9 @@ const ScanIdPage: React.FC<ScanIdPageProps> = ({ onPlayerLoaded }) => {
           evidence_list: playerData.evidence_list || [],
           tape: playerData.tape || [],
           selected_suspect: playerData.selected_suspect || [],
-          story_angle: playerData.story_angle || "",
           full_article_generated: playerData.full_article_generated || "",
-          ratings: playerData.ratings || {
-            viral: 0,
-            truth: 0,
-            creativity: 0,
-            overall: 0,
-            feedback: ''
-          }
+          view_count: playerData.view_count || 0,
+          hashtags: playerData.hashtags || []
         };
         
         saveGameState(newState);
@@ -116,10 +110,10 @@ const ScanIdPage: React.FC<ScanIdPageProps> = ({ onPlayerLoaded }) => {
         <div className="window-content">
           <h1>Login</h1>
           
-          <div className={`connection-status ${connectionStatus}`}>
+          {/* <div className={`connection-status ${connectionStatus}`}>
             <div className="status-indicator"></div>
             <p>WebSocket: {connectionStatus}</p>
-          </div>
+          </div> */}
           
           {error && (
             <div className="error-message">

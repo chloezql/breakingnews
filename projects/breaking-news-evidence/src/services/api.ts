@@ -7,15 +7,9 @@ export interface Player {
   evidence_list?: number[];
   tape?: string;
   selected_suspect?: number[];
-  story_angle?: string;
   full_article_generated?: string;
-  ratings?: {
-    viral: number;
-    truth: number;
-    creativity: number;
-    overall: number;
-    feedback: string;
-  }
+  view_count?: number,
+  hashtags?: string[]
 }
 
 const API_BASE_URL = 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';

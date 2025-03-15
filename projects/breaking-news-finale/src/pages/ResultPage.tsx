@@ -5,8 +5,12 @@ import { witnessTapes } from '../types/tapes';
 import { getSuspect } from '../types/suspects';
 import './ResultPage.scss';
 
+// Import confetti library
+import confetti from 'canvas-confetti';
+
 // Import OpenAI
 import OpenAI from 'openai';
+import { updatePlayerResults } from 'services/api';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -37,6 +41,9 @@ export function ResultPage() {
   const [showHashtags, setShowHashtags] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
+  const [confettiPlayed, setConfettiPlayed] = useState(false);
+  const [revealedDigits, setRevealedDigits] = useState<number[]>([]);
+  const [finalViewCount, setFinalViewCount] = useState<number>(0);
   const generationAttempted = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -68,10 +75,32 @@ export function ResultPage() {
             // After article is shown and centered for 2 seconds, show view count
             setTimeout(() => {
               setShowViewCount(true);
-              // After view count is shown, show hashtags
+              // Initialize with all digits hidden
+              setRevealedDigits([-1, -1, -1, -1, -1]);
+              
+              // Reveal digits one by one with delays
+              const finalDigits = finalViewCount.toString().padStart(5, '0').split('').map(Number);
+              
               setTimeout(() => {
-                setShowHashtags(true);
-              }, 1500);
+                setRevealedDigits(prev => [prev[0], prev[1], prev[2], prev[3], finalDigits[4]]);
+                setTimeout(() => {
+                  setRevealedDigits(prev => [prev[0], prev[1], prev[2], finalDigits[3], prev[4]]);
+                  setTimeout(() => {
+                    setRevealedDigits(prev => [prev[0], prev[1], finalDigits[2], prev[3], prev[4]]);
+                    setTimeout(() => {
+                      setRevealedDigits(prev => [prev[0], finalDigits[1], prev[2], prev[3], prev[4]]);
+                      setTimeout(() => {
+                        setRevealedDigits(prev => [finalDigits[0], prev[1], prev[2], prev[3], prev[4]]);
+                        // After all digits are revealed, show hashtags
+                        setTimeout(() => {
+                          setShowHashtags(true);
+                          playConfetti()
+                        }, 1000);
+                      }, 300);
+                    }, 300);
+                  }, 300);
+                }, 300);
+              }, 300);
             }, 2000);
           }, 500);
         }, 500);
@@ -84,7 +113,7 @@ export function ResultPage() {
         }
       };
     }
-  }, [isStoryReady, videoRef]);
+  }, [isStoryReady, videoRef, finalViewCount]);
 
   // Get images from the player's selected evidence
   const getSelectedEvidenceImages = () => {
@@ -251,6 +280,15 @@ export function ResultPage() {
           
           // Generate view count
           await generateViewCount(generatedStory);
+          
+          // Update player results
+          await updatePlayerResults(gameState.id, {
+            view_count: finalViewCount,
+            hashtags: hashtags,
+            full_article_generated: generatedStory,
+            headline: gameState.headline,
+            player_name: gameState.player_name,
+          });
           
           // Get evidence images
           getSelectedEvidenceImages();
@@ -459,13 +497,13 @@ export function ResultPage() {
         throw new Error('No OpenAI API key found');
       }
 
-      const viewCountPrompt = `Based on the following news article, estimate how many views it would likely get if published online.
-      Consider the headline, content, and viral potential. The article is about a death at an art academy.
+      const viewCountPrompt = `Based on the following news article, estimate how many views it would likely get if published online.       
+      Provide ONLY a 5-digit number (between 10000 and 99999) representing the estimated views. No explanation or additional text.
+      Consider the headline, content, style, social impact and viral potential. The article is about a death at an art academy.
       
       Article:
       ${articleText}
-      
-      Provide ONLY a 5-digit number representing the estimated view count. No explanation or additional text.`;
+      `;
 
       console.log('View count generation prompt:', viewCountPrompt);
       
@@ -483,7 +521,8 @@ export function ResultPage() {
       // First try to extract any 5-digit number
       const fiveDigitMatch = responseText.match(/\b\d{5}\b/);
       if (fiveDigitMatch) {
-        setViewCount(parseInt(fiveDigitMatch[0], 10));
+        const count = parseInt(fiveDigitMatch[0], 10);
+        setFinalViewCount(count);
         return;
       }
       
@@ -493,23 +532,63 @@ export function ResultPage() {
         const num = parseInt(anyNumberMatch[0], 10);
         // Ensure it's a 5-digit number
         if (num < 10000) {
-          setViewCount(num + 10000); // Make it at least 5 digits
+          setFinalViewCount(num + 10000); // Make it at least 5 digits
         } else if (num > 99999) {
-          setViewCount(Math.floor(num % 100000)); // Take last 5 digits
+          setFinalViewCount(Math.floor(num % 100000)); // Take last 5 digits
         } else {
-          setViewCount(num);
+          setFinalViewCount(num);
         }
         return;
       }
       
       // If no number found, generate a random one
-      setViewCount(Math.floor(Math.random() * 90000) + 10000);
+      setFinalViewCount(Math.floor(Math.random() * 90000) + 10000);
       
     } catch (error) {
       console.error('Error generating view count:', error);
       // Fallback view count
-      setViewCount(Math.floor(Math.random() * 90000) + 10000);
+      setFinalViewCount(Math.floor(Math.random() * 90000) + 10000);
     }
+  };
+
+  // Function to play confetti animation
+  const playConfetti = () => {
+    if (confettiPlayed) return;
+    
+    console.log('Playing confetti animation');
+    setConfettiPlayed(true);
+    
+    const duration = 5 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 300 };
+    
+    function randomInRange(min: number, max: number): number {
+      return Math.random() * (max - min) + min;
+    }
+    
+    const interval: NodeJS.Timeout = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+      
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+      
+      const particleCount = 50 * (timeLeft / duration);
+      
+      // Since particles fall down, start a bit higher than random
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        colors: ['#fe2f0d', '#ffffff', '#000000'],
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        colors: ['#fe2f0d', '#ffffff', '#000000'],
+      });
+    }, 250);
   };
 
   // Handle printing the newspaper
@@ -552,11 +631,19 @@ export function ResultPage() {
               </div>
               <div className="view-counter">
                 <div className="counter-digits">
-                  {viewCount.toString().padStart(5, '0').split('').map((digit, index) => (
-                    <div key={index} className="digit-slot">
-                      <div className="digit">{digit}</div>
-                    </div>
-                  ))}
+                  {[0, 1, 2, 3, 4].map((position) => {
+                    const isRevealed = revealedDigits[position] !== -1;
+                    const displayDigit = isRevealed ? revealedDigits[position] : 0;
+                    const digitClass = isRevealed ? "digit revealed" : "digit rolling";
+                    
+                    return (
+                      <div key={position} className="digit-slot">
+                        <div className={digitClass} data-position={position}>
+                          {displayDigit}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="view-label">VIEWS</div>
               </div>
