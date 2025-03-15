@@ -10,4 +10,5 @@ export { ArticleIntroPage } from './ArticleIntroPage';
 export { ArticleDeathCausePage } from './ArticleDeathCausePage';
 export { ArticleSuspectPage } from './ArticleSuspectPage';
 export { ArticleMethodPage } from './ArticleMethodPage';
-export { ArticleMotivePage } from './ArticleMotivePage'; 
+export { ArticleMotivePage } from './ArticleMotivePage';
+export { ArticleEvidencePage } from './ArticleEvidencePage'; 

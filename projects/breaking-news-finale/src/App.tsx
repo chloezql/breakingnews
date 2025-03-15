@@ -15,7 +15,8 @@ import {
   ArticleDeathCausePage,
   ArticleSuspectPage,
   ArticleMethodPage,
-  ArticleMotivePage
+  ArticleMotivePage,
+  ArticleEvidencePage
 } from './pages';
 import { GameContext } from './context/GameContext';
 import TabBar from './components/TabBar';
@@ -144,6 +145,8 @@ function App() {
         return <ArticleMethodPage />;
       case GameStage.ARTICLE_MOTIVE:
         return <ArticleMotivePage />;
+      case GameStage.ARTICLE_EVIDENCE:
+        return <ArticleEvidencePage />;
       case GameStage.ANGLE_GENERATION:
         // Temporarily redirect to Reporter Info until AngleGenerationPage is implemented
         updateGameState({ currentStage: GameStage.REPORTER_INFO });
@@ -168,7 +171,8 @@ function App() {
     GameStage.ARTICLE_DEATH_CAUSE,
     GameStage.ARTICLE_SUSPECT,
     GameStage.ARTICLE_METHOD,
-    GameStage.ARTICLE_MOTIVE
+    GameStage.ARTICLE_MOTIVE,
+    GameStage.ARTICLE_EVIDENCE
   ];
 
   return (
