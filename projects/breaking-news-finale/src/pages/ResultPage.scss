@@ -614,10 +614,26 @@
 
 /* Print styles */
 @media print {
+  @page {
+    size: letter portrait;
+    margin: 0;
+  }
+  
+  html, body {
+    width: 8.5in;
+    height: 11in;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  
   .result-page {
     background-color: white;
     padding: 0;
-    height: auto;
+    height: 11in;
+    width: 8.5in;
+    margin: 0;
+    overflow: hidden;
   }
 
   .video-container,
@@ -628,22 +644,48 @@
   }
 
   .article-container {
+    position: absolute;
+    top: 0;
+    left: 0;
     transform: none !important;
     opacity: 1 !important;
     padding: 0;
+    margin: 0;
+    height: 11in;
+    width: 8.5in;
+    overflow: visible;
+    filter: none !important; /* Ensure no blur filter is applied */
   }
 
   .newspaper {
     box-shadow: none;
-    width: 100%;
-    height: auto;
-    padding: 0.5cm;
+    width: 8.5in;
+    height: 11in;
+    padding: 0.5in;
     margin: 0;
+    filter: none !important; /* Ensure no blur filter is applied */
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .newspaper::before,
   .newspaper::after {
     display: none; /* Hide the pattern when printing */
+  }
+  
+  .newspaper.blur-background {
+    filter: none !important; /* Override blur class during printing */
+  }
+  
+  /* Ensure content fits within the page */
+  .story-content {
+    max-height: 7in; /* Adjust to ensure all content fits on one page */
+    overflow: visible;
+  }
+  
+  .additional-stories {
+    position: relative;
+    bottom: 0;
   }
 }
 

@@ -847,12 +847,23 @@ export function ResultPage() {
     // Add a class to the body to trigger print-specific styles
     document.body.classList.add('printing');
     
+    // Remove blur from newspaper for printing
+    const newspaperElement = document.querySelector('.newspaper');
+    if (newspaperElement) {
+      newspaperElement.classList.remove('blur-background');
+    }
+    
     // Print the page
     window.print();
     
-    // Remove the class after printing
+    // Restore blur and remove the printing class after printing
     setTimeout(() => {
       document.body.classList.remove('printing');
+      
+      // Only add the blur back if the view count overlay is still showing
+      if (showViewCount && newspaperElement) {
+        newspaperElement.classList.add('blur-background');
+      }
     }, 500);
   };
 
@@ -1035,7 +1046,7 @@ export function ResultPage() {
             </div>
             
             <div className="story-box qr-section">
-              <div className="mini-headline">Scan for Leaderboard</div>
+              <div className="mini-headline">Scan for latest information about Breaking News</div>
               <div className="price-comparison">
                 <div className="price-item">
                   <span className="price">Track your story's performance</span>
