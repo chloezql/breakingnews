@@ -33,7 +33,7 @@ export function AliasPage() {
   };
 
   return (
-    <div data-component="AliasPage" className="page-container">
+    <div data-component="AliasPage">
       <div className="window-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Reporter Alias</div>

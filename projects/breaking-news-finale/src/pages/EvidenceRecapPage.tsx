@@ -25,7 +25,7 @@ export function EvidenceRecapPage() {
   };
 
   return (
-    <div data-component="EvidenceRecapPage" className="page-container">
+    <div data-component="EvidenceRecapPage">
       <div className="window-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Evidence Recap</div>

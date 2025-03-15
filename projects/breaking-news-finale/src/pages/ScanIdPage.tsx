@@ -102,7 +102,7 @@ const ScanIdPage: React.FC<ScanIdPageProps> = ({ onPlayerLoaded }) => {
   };
 
   return (
-    <div className="scan-id-page page-container">
+    <div className="scan-id-page">
       <div className="scan-id-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Reporter Login</div>

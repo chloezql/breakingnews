@@ -108,7 +108,7 @@ export function TapeRevealPage() {
   };
   
   return (
-    <div data-component="TapeRevealPage" className="page-container">
+    <div data-component="TapeRevealPage">
       <div className="window-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Witness Tapes</div>

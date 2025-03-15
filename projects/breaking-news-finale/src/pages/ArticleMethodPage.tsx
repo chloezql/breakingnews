@@ -64,7 +64,7 @@ export function ArticleMethodPage() {
   const suspectText = selectedSuspectIds.length === 1 ? 'The suspect' : 'The suspects';
   
   return (
-    <div data-component="ArticleMethodPage" className="page-container">
+    <div data-component="ArticleMethodPage">
       <div className="window-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Article Creation (3/7)</div>

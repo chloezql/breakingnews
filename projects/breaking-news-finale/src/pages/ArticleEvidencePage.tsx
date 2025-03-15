@@ -52,7 +52,7 @@ export function ArticleEvidencePage() {
   };
   
   return (
-    <div data-component="ArticleEvidencePage" className="page-container">
+    <div data-component="ArticleEvidencePage">
       <div className="window-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Article Creation (5/7)</div>

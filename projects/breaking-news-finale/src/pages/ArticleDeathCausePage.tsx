@@ -67,7 +67,7 @@ export function ArticleDeathCausePage() {
   };
   
   return (
-    <div data-component="ArticleDeathCausePage" className="page-container">
+    <div data-component="ArticleDeathCausePage">
       <div className="window-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Article Creation (1/7)</div>
@@ -85,7 +85,7 @@ export function ArticleDeathCausePage() {
             <form onSubmit={handleSubmit}>
               <div className="prompt-container">
                 <div className="inline-prompt">
-                  <span className="prompt-text">I think Erin died because of </span>
+                  <span className="prompt-text">I think Erin's death was caused by </span>
                   <textarea
                     ref={textareaRef}
                     value={deathCause}

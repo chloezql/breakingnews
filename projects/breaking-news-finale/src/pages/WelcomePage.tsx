@@ -11,7 +11,7 @@ export function WelcomePage() {
   };
 
   return (
-    <div data-component="WelcomePage" className="page-container">
+    <div data-component="WelcomePage">
       <div className="window-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Welcome</div>

@@ -14,7 +14,7 @@ export function ArticleIntroPage() {
   };
   
   return (
-    <div data-component="ArticleIntroPage" className="page-container">
+    <div data-component="ArticleIntroPage">
       <div className="window-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Article Creation</div>

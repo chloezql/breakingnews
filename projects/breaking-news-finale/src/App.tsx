@@ -20,6 +20,7 @@ import {
   ArticleEvidencePage,
   ArticleWitnessQuotesPage
 } from './pages';
+import { ArticleInterrogationFindingsPage } from './pages/ArticleInterrogationFindingsPage';
 import { GameContext } from './context/GameContext';
 import TabBar from './components/TabBar';
 import './App.scss';
@@ -115,7 +116,13 @@ function App() {
     const currentIndex = stages.indexOf(gameState.currentStage);
     
     if (currentIndex < stages.length - 1) {
-      const nextStage = stages[currentIndex + 1];
+      let nextStage = stages[currentIndex + 1];
+      
+      // Skip ANGLE_GENERATION stage
+      if (nextStage === GameStage.ANGLE_GENERATION) {
+        nextStage = GameStage.REPORTER_INFO;
+      }
+      
       updateGameState({ currentStage: nextStage });
     }
   };
@@ -153,10 +160,8 @@ function App() {
         return <ArticleEvidencePage />;
       case GameStage.ARTICLE_WITNESS_QUOTES:
         return <ArticleWitnessQuotesPage />;
-      case GameStage.ANGLE_GENERATION:
-        // Temporarily redirect to Reporter Info until AngleGenerationPage is implemented
-        updateGameState({ currentStage: GameStage.REPORTER_INFO });
-        return <div className="loading-screen">Loading next page...</div>;
+      case GameStage.ARTICLE_INTERROGATION_FINDINGS:
+        return <ArticleInterrogationFindingsPage />;
       case GameStage.REPORTER_INFO:
         return <ReporterInfoPage />;
       case GameStage.RESULT:
@@ -182,7 +187,8 @@ function App() {
     GameStage.ARTICLE_METHOD,
     GameStage.ARTICLE_MOTIVE,
     GameStage.ARTICLE_EVIDENCE,
-    GameStage.ARTICLE_WITNESS_QUOTES
+    GameStage.ARTICLE_WITNESS_QUOTES,
+    GameStage.ARTICLE_INTERROGATION_FINDINGS
   ];
 
   return (

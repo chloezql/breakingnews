@@ -13,6 +13,7 @@ export enum GameStage {
   ARTICLE_MOTIVE = 'article_motive',
   ARTICLE_EVIDENCE = 'article_evidence',
   ARTICLE_WITNESS_QUOTES = 'article_witness_quotes',
+  ARTICLE_INTERROGATION_FINDINGS = 'article_interrogation_findings',
   ANGLE_GENERATION = 'angle_generation',
   REPORTER_INFO = 'reporter_info',
   RESULT = 'result',

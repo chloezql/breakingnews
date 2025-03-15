@@ -32,7 +32,7 @@ export function SuspectRecapPage() {
   // If no suspect is selected, show an error message
   if (!suspect) {
     return (
-      <div data-component="SuspectRecapPage" className="page-container">
+      <div data-component="SuspectRecapPage">
         <div className="window-container">
           <div className="window-title-bar">
             <div className="title-text">Breaking News - Suspect Recap</div>
@@ -71,7 +71,7 @@ export function SuspectRecapPage() {
   };
   
   return (
-    <div data-component="SuspectRecapPage" className="page-container">
+    <div data-component="SuspectRecapPage">
       <div className="window-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Suspect Recap</div>

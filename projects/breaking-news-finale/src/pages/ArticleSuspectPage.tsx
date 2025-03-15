@@ -57,7 +57,7 @@ export function ArticleSuspectPage() {
   };
   
   return (
-    <div data-component="ArticleSuspectPage" className="page-container">
+    <div data-component="ArticleSuspectPage">
       <div className="window-container">
         <div className="window-title-bar">
           <div className="title-text">Breaking News - Article Creation (2/7)</div>
