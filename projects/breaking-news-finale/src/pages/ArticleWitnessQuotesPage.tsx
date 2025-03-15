@@ -242,6 +242,7 @@ export function ArticleWitnessQuotesPage() {
                 </p>
                 <button 
                   className="continue-button"
+                  style={{ padding: '20px', fontSize:'20px', marginTop: '50px' }}
                   onClick={() => updateGameState({ currentStage: GameStage.ARTICLE_INTERROGATION_FINDINGS })}
                 >
                   Continue

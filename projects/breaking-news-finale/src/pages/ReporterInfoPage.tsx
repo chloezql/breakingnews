@@ -104,7 +104,7 @@ export function ReporterInfoPage() {
                   className="continue-button"
                   disabled={!headline.trim() || !!error}
                 >
-                  PUBLISH STORY
+                  CONTINUE
                 </button>
               </form>
             </div>

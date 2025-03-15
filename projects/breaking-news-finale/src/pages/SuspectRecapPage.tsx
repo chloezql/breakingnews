@@ -46,12 +46,13 @@ export function SuspectRecapPage() {
           <div className="window-content">
             <div className="error-container">
               <h1>No Suspect Selected</h1>
-              <p className="error-message">You haven't selected a suspect to interview yet. This is unusual and may indicate an issue with your game progress.</p>
+              <p className="error-message">Sadly you didn't got the time to interview any suspects. But that's no big deal!</p>
               <button 
                 className="continue-button"
+                style={{ padding: '20px', fontSize:'20px' }}
                 onClick={handleContinue}
               >
-                Continue to Article Intro
+                Continue
               </button>
             </div>
           </div>

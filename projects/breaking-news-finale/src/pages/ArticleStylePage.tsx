@@ -123,7 +123,7 @@ export function ArticleStylePage() {
             </div>
 
             <div className="button-container">
-              <button type="submit" className="submit-button">Continue</button>
+              <button type="submit" className="submit-button">Generate Article</button>
             </div>
           </form>
         </div>

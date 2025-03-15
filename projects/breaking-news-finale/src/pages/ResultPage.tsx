@@ -180,6 +180,9 @@ export function ResultPage() {
           console.log('Starting view count animation with value:', viewCountToUse);
           
           setShowViewCount(true);
+          // Disable scrolling when view count overlay is shown
+          document.body.classList.add('no-scroll');
+          
           // Initialize with all digits hidden
           setRevealedDigits([-1, -1, -1, -1, -1]);
           
@@ -219,6 +222,20 @@ export function ResultPage() {
       }, 500);
     }, 500);
   };
+
+  // Watch for view count overlay changes to manage body scroll
+  useEffect(() => {
+    if (showViewCount) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+    
+    // Cleanup function to ensure no-scroll is removed when component unmounts
+    return () => {
+      document.body.classList.remove('no-scroll');
+    };
+  }, [showViewCount]);
 
   // Handle video playback and animations
   useEffect(() => {
@@ -853,6 +870,9 @@ export function ResultPage() {
       newspaperElement.classList.remove('blur-background');
     }
     
+    // Temporarily remove no-scroll class for printing
+    document.body.classList.remove('no-scroll');
+    
     // Print the page
     window.print();
     
@@ -863,6 +883,11 @@ export function ResultPage() {
       // Only add the blur back if the view count overlay is still showing
       if (showViewCount && newspaperElement) {
         newspaperElement.classList.add('blur-background');
+      }
+      
+      // Restore no-scroll class if view count overlay is still showing
+      if (showViewCount) {
+        document.body.classList.add('no-scroll');
       }
     }, 500);
   };
