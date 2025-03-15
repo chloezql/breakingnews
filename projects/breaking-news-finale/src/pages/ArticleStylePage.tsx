@@ -2,27 +2,79 @@ import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import './ArticleStylePage.scss';
 
+// Define tone and theme options
+const TONE_OPTIONS = [
+  { id: 'serious', label: 'Serious' },
+  { id: 'dramatic', label: 'Dramatic' },
+  { id: 'thrilling', label: 'Thrilling' },
+  { id: 'mysterious', label: 'Mysterious' },
+  { id: 'shocking', label: 'Shocking' },
+  { id: 'somber', label: 'Somber' },
+  { id: 'urgent', label: 'Urgent' },
+  { id: 'analytical', label: 'Analytical' }
+];
+
+const THEME_OPTIONS = [
+  { id: 'crime', label: 'Crime' },
+  { id: 'justice', label: 'Justice' },
+  { id: 'conspiracy', label: 'Conspiracy' },
+  { id: 'tragedy', label: 'Tragedy' },
+  { id: 'corruption', label: 'Corruption' },
+  { id: 'investigation', label: 'Investigation' },
+  { id: 'scandal', label: 'Scandal' },
+  { id: 'exposé', label: 'Exposé' }
+];
+
 export function ArticleStylePage() {
   const { gameState, updateGameState, moveToNextStage } = useGame();
-  const [selectedStyle, setSelectedStyle] = useState<string>('standard');
+  const [selectedTones, setSelectedTones] = useState<string[]>([]);
+  const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [error, setError] = useState<string>('');
 
-  const handleStyleSelect = (style: string) => {
-    setSelectedStyle(style);
+  const toggleTone = (toneId: string) => {
+    setSelectedTones(prev => {
+      if (prev.includes(toneId)) {
+        return prev.filter(id => id !== toneId);
+      } else {
+        return [...prev, toneId];
+      }
+    });
+    setError('');
+  };
+
+  const toggleTheme = (themeId: string) => {
+    setSelectedThemes(prev => {
+      if (prev.includes(themeId)) {
+        return prev.filter(id => id !== themeId);
+      } else {
+        return [...prev, themeId];
+      }
+    });
     setError('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!selectedStyle) {
-      setError('Please select a style for your article');
+
+    if (selectedTones.length === 0) {
+      setError('Please select at least one tone for your article');
       return;
     }
 
+    if (selectedThemes.length === 0) {
+      setError('Please select at least one theme for your article');
+      return;
+    }
+
+    // Combine tones and themes into a single object
+    const styleData = {
+      tones: selectedTones,
+      themes: selectedThemes
+    };
+
     // Update game state with the selected style
-    updateGameState({ article_style: selectedStyle });
-    
+    updateGameState({ article_style: JSON.stringify(styleData) });
+
     // Move to the next stage
     moveToNextStage();
   };
@@ -33,76 +85,55 @@ export function ArticleStylePage() {
         <div className="window-title-bar">
           <div className="window-title">Choose Article Style</div>
         </div>
-        
+
         <div className="window-content">
           <div className="instruction">
-            <p>Select a style for your breaking news article:</p>
+            <p>Select the tone and themes for your breaking news article:</p>
           </div>
-          
+
           {error && <div className="error-message">{error}</div>}
-          
+
           <form onSubmit={handleSubmit}>
-            <div className="style-options">
-              <div 
-                className={`style-option ${selectedStyle === 'standard' ? 'selected' : ''}`}
-                onClick={() => handleStyleSelect('standard')}
-              >
-                <div className="style-preview standard-preview">
-                  <div className="preview-header">Standard</div>
-                  <div className="preview-content">
-                    <div className="preview-line"></div>
-                    <div className="preview-line"></div>
-                    <div className="preview-line"></div>
-                  </div>
+            <h2 className="section-title">Article Tone</h2>
+            <p className="section-description">Select one or more tones for your article:</p>
+            <div className="tags-container">
+              {TONE_OPTIONS.map(tone => (
+                <div
+                  key={tone.id}
+                  className={`tag ${selectedTones.includes(tone.id) ? 'selected' : ''}`}
+                  onClick={() => toggleTone(tone.id)}
+                >
+                  {tone.label}
                 </div>
-                <div className="style-description">
-                  Classic newspaper layout with a clean, professional look
-                </div>
-              </div>
-              
-              <div 
-                className={`style-option ${selectedStyle === 'tabloid' ? 'selected' : ''}`}
-                onClick={() => handleStyleSelect('tabloid')}
-              >
-                <div className="style-preview tabloid-preview">
-                  <div className="preview-header">Tabloid</div>
-                  <div className="preview-content">
-                    <div className="preview-line"></div>
-                    <div className="preview-line"></div>
-                    <div className="preview-line"></div>
-                  </div>
-                </div>
-                <div className="style-description">
-                  Bold and attention-grabbing with dramatic presentation
-                </div>
-              </div>
-              
-              <div 
-                className={`style-option ${selectedStyle === 'digital' ? 'selected' : ''}`}
-                onClick={() => handleStyleSelect('digital')}
-              >
-                <div className="style-preview digital-preview">
-                  <div className="preview-header">Digital</div>
-                  <div className="preview-content">
-                    <div className="preview-line"></div>
-                    <div className="preview-line"></div>
-                    <div className="preview-line"></div>
-                  </div>
-                </div>
-                <div className="style-description">
-                  Modern web layout optimized for online reading
-                </div>
-              </div>
+              ))}
             </div>
-            
+
+            <h2 className="section-title">Article Theme</h2>
+            <p className="section-description">Select one or more themes for your article:</p>
+            <div className="tags-container">
+              {THEME_OPTIONS.map(theme => (
+                <div
+                  key={theme.id}
+                  className={`tag ${selectedThemes.includes(theme.id) ? 'selected' : ''}`}
+                  onClick={() => toggleTheme(theme.id)}
+                >
+                  {theme.label}
+                </div>
+              ))}
+            </div>
+
             <div className="button-container">
               <button type="submit" className="submit-button">Continue</button>
             </div>
           </form>
         </div>
-        
+
         <div className="window-status-bar">
-          <div className="status-text">Select a style to continue</div>
+          <div className="status-text">
+            {selectedTones.length > 0 && selectedThemes.length > 0
+              ? 'Ready to continue'
+              : 'Select tone and theme to continue'}
+          </div>
         </div>
       </div>
     </div>

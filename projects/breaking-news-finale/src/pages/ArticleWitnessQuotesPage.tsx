@@ -181,7 +181,7 @@ export function ArticleWitnessQuotesPage() {
     
     // Convert Quote objects to strings for game state
     const quotesForGameState = selectedQuotes.map(
-      quote => `"${quote.text}" - ${quote.witnessName}`
+      quote => `"${quote.text}" - ${quote.witnessName} mentioned ${quote.suspectName} in their statement. `
     );
     
     // Save to game state and move to next stage

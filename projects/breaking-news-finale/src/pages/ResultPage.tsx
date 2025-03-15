@@ -46,6 +46,12 @@ export function ResultPage() {
   const [finalViewCount, setFinalViewCount] = useState<number>(0);
   const generationAttempted = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const articleReadyRef = useRef(false);
+  const videoEndedRef = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Add refs to store the latest values for view count and hashtags
+  const viewCountRef = useRef<number>(0);
+  const hashtagsRef = useRef<string[]>([]);
 
   // Log the full game state for debugging
   useEffect(() => {
@@ -60,50 +66,171 @@ export function ResultPage() {
       generationAttempted.current = true;
       generateNewsStory();
     }
+
+    // Set a safety timeout to show the article if generation takes too long
+    const safetyTimeout = setTimeout(() => {
+      if (!showArticle) {
+        console.log('Safety timeout triggered - showing article regardless of state');
+        if (videoRef.current && !videoEndedRef.current) {
+          videoRef.current.pause();
+        }
+        proceedToShowArticle();
+      }
+    }, 30000); // 30 seconds max wait time
+
+    timeoutRef.current = safetyTimeout;
+    
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, []);
+
+  // Watch for article ready state
+  useEffect(() => {
+    if (isStoryReady && !articleReadyRef.current) {
+      console.log('Article generation completed - videoEnded:', videoEndedRef.current);
+      console.log('Final view count after generation:', finalViewCount);
+      console.log('Hashtags after generation:', hashtags);
+      
+      // Update the refs with current values
+      viewCountRef.current = finalViewCount;
+      hashtagsRef.current = hashtags;
+      
+      // Ensure we have valid values before proceeding
+      if (finalViewCount <= 0) {
+        const defaultCount = Math.floor(Math.random() * 90000) + 10000;
+        console.log('No valid view count found before showing article, using default:', defaultCount);
+        setFinalViewCount(defaultCount);
+        setViewCount(defaultCount);
+        viewCountRef.current = defaultCount;
+      }
+      
+      if (!hashtags.length) {
+        const defaultHashtags = ['#BreakingNews', '#AstraAcademy', '#Investigation', '#ArtWorld', '#Justice'];
+        console.log('No hashtags found before showing article, using defaults:', defaultHashtags);
+        setHashtags(defaultHashtags);
+        hashtagsRef.current = defaultHashtags;
+      }
+      
+      articleReadyRef.current = true;
+      
+      if (videoEndedRef.current) {
+        // If video has already ended, proceed to show article
+        proceedToShowArticle();
+      } else if (videoRef.current) {
+        // If video is still playing but we've been waiting a while, skip to end
+        const currentTime = videoRef.current.currentTime;
+        const duration = videoRef.current.duration;
+        
+        if (duration - currentTime > 2) { // If more than 2 seconds left
+          console.log('Article ready but video still playing - skipping to end');
+          // Skip to near the end of the video
+          videoRef.current.currentTime = Math.max(duration - 0.5, 0);
+        }
+      }
+    }
+  }, [isStoryReady, finalViewCount, hashtags]);
+
+  // Function to proceed to showing the article
+  const proceedToShowArticle = () => {
+    console.log('Proceeding to show article - videoEnded:', videoEndedRef.current, 'articleReady:', articleReadyRef.current);
+    
+    // Get the latest values from refs
+    const currentViewCount = viewCountRef.current;
+    const currentHashtags = [...hashtagsRef.current];
+    
+    console.log('Current view count value:', currentViewCount, 'Hashtags:', currentHashtags);
+    
+    // Double-check we have a valid view count
+    let viewCountToUse = currentViewCount;
+    if (currentViewCount <= 0) {
+      viewCountToUse = Math.floor(Math.random() * 90000) + 10000;
+      console.log('No valid view count found at show time, using default:', viewCountToUse);
+      setFinalViewCount(viewCountToUse);
+      setViewCount(viewCountToUse);
+      viewCountRef.current = viewCountToUse;
+    }
+    
+    // Double-check we have hashtags
+    let hashtagsToUse = currentHashtags;
+    if (!currentHashtags.length) {
+      hashtagsToUse = ['#BreakingNews', '#AstraAcademy', '#Investigation', '#ArtWorld', '#Justice'];
+      console.log('No hashtags found at show time, using defaults:', hashtagsToUse);
+      setHashtags(hashtagsToUse);
+      hashtagsRef.current = hashtagsToUse;
+    }
+    
+    setVideoEnded(true);
+    setTimeout(() => {
+      setFadeOut(true);
+      setTimeout(() => {
+        setShowArticle(true);
+        console.log('Article is now visible, preparing to show view count animation');
+        
+        // After article is shown and centered for 2 seconds, show view count
+        setTimeout(() => {
+          // Use the stored value to ensure consistency
+          console.log('Starting view count animation with value:', viewCountToUse);
+          
+          setShowViewCount(true);
+          // Initialize with all digits hidden
+          setRevealedDigits([-1, -1, -1, -1, -1]);
+          
+          // Reveal digits one by one with delays
+          const digits = viewCountToUse.toString().padStart(5, '0').split('').map(Number);
+          console.log('Revealing view count digits:', digits, 'from viewCountToUse:', viewCountToUse);
+          
+          // Schedule the digit reveals
+          const revealDigit = (position: number, value: number, delay: number) => {
+            setTimeout(() => {
+              console.log(`Revealing digit at position ${position}: ${value}`);
+              setRevealedDigits(prev => {
+                const newDigits = [...prev];
+                newDigits[position] = value;
+                return newDigits;
+              });
+              
+              // After all digits are revealed, show hashtags
+              if (position === 0) {
+                setTimeout(() => {
+                  console.log('All digits revealed, showing hashtags');
+                  setShowHashtags(true);
+                  playConfetti();
+                }, 1000);
+              }
+            }, delay);
+          };
+          
+          // Reveal digits from right to left
+          revealDigit(4, digits[4], 300);  // Last digit
+          revealDigit(3, digits[3], 600);  // 4th digit
+          revealDigit(2, digits[2], 900);  // 3rd digit
+          revealDigit(1, digits[1], 1200); // 2nd digit
+          revealDigit(0, digits[0], 1500); // 1st digit
+          
+        }, 2000);
+      }, 500);
+    }, 500);
+  };
 
   // Handle video playback and animations
   useEffect(() => {
-    if (isStoryReady && videoRef.current) {
+    if (videoRef.current) {
       // When the video ends, fade it out and show the article
       const handleVideoEnd = () => {
-        setVideoEnded(true);
-        setTimeout(() => {
-          setFadeOut(true);
-          setTimeout(() => {
-            setShowArticle(true);
-            // After article is shown and centered for 2 seconds, show view count
-            setTimeout(() => {
-              setShowViewCount(true);
-              // Initialize with all digits hidden
-              setRevealedDigits([-1, -1, -1, -1, -1]);
-              
-              // Reveal digits one by one with delays
-              const finalDigits = finalViewCount.toString().padStart(5, '0').split('').map(Number);
-              
-              setTimeout(() => {
-                setRevealedDigits(prev => [prev[0], prev[1], prev[2], prev[3], finalDigits[4]]);
-                setTimeout(() => {
-                  setRevealedDigits(prev => [prev[0], prev[1], prev[2], finalDigits[3], prev[4]]);
-                  setTimeout(() => {
-                    setRevealedDigits(prev => [prev[0], prev[1], finalDigits[2], prev[3], prev[4]]);
-                    setTimeout(() => {
-                      setRevealedDigits(prev => [prev[0], finalDigits[1], prev[2], prev[3], prev[4]]);
-                      setTimeout(() => {
-                        setRevealedDigits(prev => [finalDigits[0], prev[1], prev[2], prev[3], prev[4]]);
-                        // After all digits are revealed, show hashtags
-                        setTimeout(() => {
-                          setShowHashtags(true);
-                          playConfetti()
-                        }, 1000);
-                      }, 300);
-                    }, 300);
-                  }, 300);
-                }, 300);
-              }, 300);
-            }, 2000);
-          }, 500);
-        }, 500);
+        console.log('Video playback ended - isStoryReady:', isStoryReady, 'articleReadyRef:', articleReadyRef.current);
+        videoEndedRef.current = true;
+        
+        if (articleReadyRef.current) {
+          // If article is already ready, proceed to show it
+          proceedToShowArticle();
+        } else {
+          // If article is not ready yet, set videoEnded flag and wait
+          setVideoEnded(true);
+          console.log('Video ended but article not ready yet - waiting for article generation');
+        }
       };
 
       videoRef.current.addEventListener('ended', handleVideoEnd);
@@ -113,7 +240,7 @@ export function ResultPage() {
         }
       };
     }
-  }, [isStoryReady, videoRef, finalViewCount]);
+  }, [videoRef]);
 
   // Get images from the player's selected evidence
   const getSelectedEvidenceImages = () => {
@@ -149,219 +276,308 @@ export function ResultPage() {
   const generateNewsStory = async () => {
     setIsGenerating(true);
     console.log('Generating news story...');
+    
     try {
-      // Log key game state properties used for article generation
-      console.log('Article generation - key inputs:', {
-        headline: gameState.headline,
-        player_name: gameState.player_name,
-        death_cause: gameState.article_death_cause,
-        method: gameState.article_method,
-        motive: gameState.article_motive,
-        evidence_ids: gameState.article_evidence_ids,
-        witness_quotes: gameState.article_witness_quotes,
-        suspect_ids: gameState.article_suspect_ids,
-        style: gameState.article_style
-      });
+      // Prepare all the data needed for generation
+      const articleData = prepareArticleData();
+      const prompt = createArticlePrompt(articleData);
+      console.log('Article generation prompt created');
       
-      // Get evidence details
-      const evidenceDetails = gameState.article_evidence_ids 
-        ? gameState.article_evidence_ids.map(id => {
-            const evidence = EVIDENCE_ITEMS.find(e => e.id === id);
-            return evidence 
-              ? `${evidence.name}: ${evidence.description}` 
-              : '';
-          }).filter(Boolean).join('\n')
-        : '';
-
-      // Get witness quotes text with the format "[Witness Name] mentioned [Suspect Name] in their statement : Quote"
-      const getWitnessQuotesText = (witnessQuotes: string[]) => {
-        // with the format "[Witness Name] mentioned [Suspect Name] in their statement : Quote"
-        return witnessQuotes.map(quote => {
-          const [witnessName, suspectName, quoteText] = quote.split(':');
-          return `${witnessName} mentioned ${suspectName} in their statement : ${quoteText}`;
-        }).join('\n');
-      };
+      let generatedStory = '';
+      let generatedHashtags: string[] = [];
+      let generatedViewCount = 0;
       
-      // Get witness quotes
-      const witnessQuotes = gameState.article_witness_quotes || [];
-      const witnessQuotesText = witnessQuotes.length > 0 
-        ? getWitnessQuotesText(witnessQuotes)
-        : '';
-
-      // Get suspect details
-      const suspectIds = gameState.article_suspect_ids || [];
-      const suspectDetails = suspectIds.length > 0
-        ? suspectIds.map(id => {
-            const suspect = getSuspect(id);
-            if (suspect) {
-              console.log(`Found suspect: ${suspect.name} with ID ${id}`);
-              return `Name: ${suspect.name}, background: ${suspect.info}`;
-            } else {
-              console.log(`Could not find suspect with ID ${id}`);
-              return '';
-            }
-          }).filter(Boolean).join('\n')
-        : '';
-
-      // Get interrogation findings
-      const interrogationFindings = gameState.article_interrogation_findings || {};
-      const interrogationText = Object.keys(interrogationFindings).length > 0
-        ? Object.entries(interrogationFindings).map(([suspectId, finding]) => {
-            const suspect = getSuspect(Number(suspectId));
-            if (suspect) {
-              console.log(`Found suspect for interrogation: ${suspect.name} with ID ${suspectId}`);
-              return `${suspect.name}'s Statement: ${finding}`;
-            } else {
-              console.log(`Could not find suspect for interrogation with ID ${suspectId}`);
-              return '';
-            }
-          }).filter(Boolean).join('\n')
-        : '';
-
-      // Create the structured prompt for OpenAI
-      const prompt = `You are a skilled newspaper journalist writing a breaking news story for a major publication.
-      
-      # ARTICLE DETAILS
-      Headline: "${gameState.headline || "Breaking News"}"
-      Reporter: ${gameState.player_name || "Anonymous Reporter"}
-      Death Cause: ${gameState.article_death_cause || "Unknown"}
-      Method: ${gameState.article_method || "Unknown"}
-      Motive: ${gameState.article_motive || "Unknown"}
-      
-      # EVIDENCE
-      ${evidenceDetails ? `${evidenceDetails}` : 'No specific evidence provided.'}
-      
-      # WITNESS STATEMENTS
-      ${witnessQuotesText ? `${witnessQuotesText}` : 'No witness statements provided.'}
-      
-      # SUSPECT INFORMATION
-      ${suspectDetails ? `${suspectDetails}` : 'No suspect information provided.'}
-      
-      # INTERROGATION FINDINGS
-      ${interrogationText ? `${interrogationText}` : 'No interrogation findings provided.'}
-      
-      # WRITING GUIDELINES
-      - Your article style should build around the following keywords: ${gameState.article_style}
-      - Begin with a strong, attention-grabbing lead paragraph
-      - Incorporate evidence, witness quotes, and suspect information naturally
-      - Maintain an objective tone while highlighting the chosen angle
-      - Structure the article in 4-5 short paragraphs for readability
-      - Include at least one direct quote from a witness if available
-      - Focus on the most impactful details that support the headline
-      - Do not include the headline in the article text
-      - Aim for 250-300 words total
-      
-      # IMPORTANT
-      - This is a breaking news story about a death at an art academy
-      - The article should be factual but engaging enough to attract readers
-      - Write in a way that could potentially go viral while maintaining journalistic integrity`;
-
-      console.log('Article generation prompt:', prompt);
-
-      // If OpenAI API key is available, use it to generate the story
+      // Try to generate with OpenAI if API key is available
       if (process.env.REACT_APP_OPENAI_API_KEY) {
-        console.log('Generating story with OpenAI...');
-        
         try {
-          const completion = await openai.chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
-            model: "gpt-4",
-            temperature: 0.7,
-            max_tokens: 1000,
+          console.log('Generating story with OpenAI...');
+          generatedStory = await generateStoryWithOpenAI(prompt);
+          console.log('Story generated successfully, length:', generatedStory.length);
+          
+          // Generate hashtags and view count
+          generatedHashtags = await generateHashtags(generatedStory);
+          generatedViewCount = await generateViewCount(generatedStory);
+          
+          console.log('Generation complete with values:', {
+            storyLength: generatedStory.length,
+            hashtags: generatedHashtags,
+            viewCount: generatedViewCount
           });
-  
-          console.log('OpenAI API response received:', {
-            status: 'success',
-            model: completion.model,
-            usage: completion.usage,
-            finish_reason: completion.choices[0].finish_reason
-          });
-  
-          const generatedStory = completion.choices[0].message.content || '';
-          console.log('Generated story length:', generatedStory.length);
-          console.log('Generated story preview:', generatedStory.substring(0, 100) + '...');
-          
-          setArticle(generatedStory);
-          updateGameState({ full_article_generated: generatedStory });
-          
-          // Generate hashtags
-          await generateHashtags(generatedStory);
-          
-          // Generate view count
-          await generateViewCount(generatedStory);
-          
-          // Update player results
-          await updatePlayerResults(gameState.id, {
-            view_count: finalViewCount,
-            hashtags: hashtags,
-            full_article_generated: generatedStory,
-            headline: gameState.headline,
-            player_name: gameState.player_name,
-          });
-          
-          // Get evidence images
-          getSelectedEvidenceImages();
         } catch (apiError) {
           console.error('OpenAI API error:', apiError);
-          throw apiError;
+          // Fall back to default generation
+          const fallback = generateFallbackStory(articleData);
+          generatedStory = fallback.story;
+          generatedHashtags = fallback.hashtags;
+          generatedViewCount = fallback.viewCount;
         }
       } else {
-        // Fallback if no API key is available
+        // No API key available, use fallback
         console.log('No OpenAI API key found, using fallback story generation');
-        
-        // Create a simple story based on the user's input
-        const fallbackStory = `In a shocking development today at Astra Academy of Art, ${gameState.article_death_cause || "a tragic incident occurred"}.
-        
-        Local authorities have confirmed the incident and are investigating further. "We are taking this matter very seriously," said Police Chief Johnson.
-        
-        ${witnessQuotesText ? `One witness stated, ${witnessQuotesText.split('\n')[0]}` : 'Witnesses at the scene described the events as "unprecedented" and "alarming."'} Community members are advised to stay informed as this story develops.
-        
-        ${suspectIds.length > 0 
-          ? `Authorities are currently questioning ${
-              (() => {
-                const suspectId = suspectIds[0];
-                const suspect = getSuspect(suspectId);
-                return suspect?.name || 'a person of interest';
-              })()
-            } in connection with the case.` 
-          : 'This is a developing story, and more details will be provided as they become available.'}`;
-        
-        setArticle(fallbackStory);
-        updateGameState({ full_article_generated: fallbackStory });
-        
-        // Set fallback hashtags and view count
-        setHashtags(['#BreakingNews', '#AstraAcademy', '#Investigation', '#ArtWorld', '#Justice']);
-        setViewCount(Math.floor(Math.random() * 90000) + 10000);
-        
-        // Get evidence images
-        getSelectedEvidenceImages();
+        const fallback = generateFallbackStory(articleData);
+        generatedStory = fallback.story;
+        generatedHashtags = fallback.hashtags;
+        generatedViewCount = fallback.viewCount;
       }
+      
+      // Update state with generated content
+      setArticle(generatedStory);
+      setHashtags(generatedHashtags);
+      hashtagsRef.current = generatedHashtags; // Update the hashtags ref
+      setViewCount(generatedViewCount);
+      setFinalViewCount(generatedViewCount);
+      viewCountRef.current = generatedViewCount; // Update the view count ref
+      updateGameState({ full_article_generated: generatedStory });
+      
+      // Update player results in the database
+      try {
+        await updatePlayerResults(gameState.id, {
+          view_count: generatedViewCount,
+          hashtags: generatedHashtags,
+          full_article_generated: generatedStory,
+          headline: gameState.headline,
+          player_name: gameState.player_name,
+        });
+        console.log('Successfully updated player results with view count:', generatedViewCount);
+      } catch (updateError) {
+        console.error('Error updating player results:', updateError);
+      }
+      
+      // Get evidence images
+      getSelectedEvidenceImages();
+      
     } catch (error) {
-      console.error('Error generating news story:', error);
+      console.error('Unexpected error in story generation:', error);
       
-      // Fallback in case of error
-      const errorStory = `In a shocking development today at Astra Academy of Art, a student was found dead under mysterious circumstances.
+      // Use error fallback values
+      const errorHashtags = ['#BreakingNews', '#AstraAcademy', '#Investigation', '#ArtWorld', '#Justice'];
+      const errorViewCount = Math.floor(Math.random() * 90000) + 10000;
+      const errorStory = createErrorStory();
       
-      Local authorities have confirmed the incident and are investigating further. "We are taking this matter very seriously," said Police Chief Johnson.
-      
-      Witnesses at the scene described the events as "unprecedented" and "alarming." Community members are advised to stay informed as this story develops.
-      
-      This is a developing story, and more details will be provided as they become available.`;
-      
+      // Update state with fallback values
       setArticle(errorStory);
+      setHashtags(errorHashtags);
+      hashtagsRef.current = errorHashtags; // Update the hashtags ref
+      setViewCount(errorViewCount);
+      setFinalViewCount(errorViewCount);
+      viewCountRef.current = errorViewCount; // Update the view count ref
       updateGameState({ full_article_generated: errorStory });
       
-      // Set fallback hashtags and view count
-      setHashtags(['#BreakingNews', '#AstraAcademy', '#Investigation', '#ArtWorld', '#Justice']);
-      setViewCount(Math.floor(Math.random() * 90000) + 10000);
+      console.log('Using error fallback values:', {
+        viewCount: errorViewCount,
+        hashtags: errorHashtags,
+        storyLength: errorStory.length
+      });
+      
+      // Try to update player results with error fallback values
+      try {
+        await updatePlayerResults(gameState.id, {
+          view_count: errorViewCount,
+          hashtags: errorHashtags,
+          full_article_generated: errorStory,
+          headline: gameState.headline,
+          player_name: gameState.player_name,
+        });
+      } catch (updateError) {
+        console.error('Error updating player results with error fallback values:', updateError);
+      }
       
       // Get evidence images
       getSelectedEvidenceImages();
     } finally {
+      // Update state to indicate story is ready
       setIsGenerating(false);
       setIsStoryReady(true);
-      console.log('Article generation complete. isGenerating:', false, 'isStoryReady:', true);
+      console.log('Article generation complete or failed. isGenerating:', false, 'isStoryReady:', true);
     }
+  };
+
+  // Helper function to prepare article data
+  const prepareArticleData = () => {
+    // Log key game state properties used for article generation
+    console.log('Article generation - key inputs:', {
+      headline: gameState.headline,
+      player_name: gameState.player_name,
+      death_cause: gameState.article_death_cause,
+      method: gameState.article_method,
+      motive: gameState.article_motive,
+      evidence_ids: gameState.article_evidence_ids,
+      witness_quotes: gameState.article_witness_quotes,
+      suspect_ids: gameState.article_suspect_ids,
+      style: gameState.article_style
+    });
+    
+    // Get evidence details
+    const evidenceDetails = gameState.article_evidence_ids 
+      ? gameState.article_evidence_ids.map(id => {
+          const evidence = EVIDENCE_ITEMS.find(e => e.id === id);
+          return evidence 
+            ? `${evidence.name}: ${evidence.description}` 
+            : '';
+        }).filter(Boolean).join('\n')
+      : '';
+
+    // Get witness quotes text
+    const witnessQuotes = gameState.article_witness_quotes || [];
+    const witnessQuotesText = witnessQuotes.length > 0 
+      ? witnessQuotes.map(quote => `"${quote}"`).join('\n')
+      : '';
+
+    // Get suspect details
+    const suspectIds = gameState.article_suspect_ids || [];
+    const suspectDetails = suspectIds.length > 0
+      ? suspectIds.map(id => {
+          const suspect = getSuspect(id);
+          if (suspect) {
+            console.log(`Found suspect: ${suspect.name} with ID ${id}`);
+            return `Name: ${suspect.name}, background: ${suspect.info}`;
+          } else {
+            console.log(`Could not find suspect with ID ${id}`);
+            return '';
+          }
+        }).filter(Boolean).join('\n')
+      : '';
+
+    // Get interrogation findings
+    const interrogationFindings = gameState.article_interrogation_findings || {};
+    const interrogationText = Object.keys(interrogationFindings).length > 0
+      ? Object.entries(interrogationFindings).map(([suspectId, finding]) => {
+          const suspect = getSuspect(Number(suspectId));
+          if (suspect) {
+            console.log(`Found suspect for interrogation: ${suspect.name} with ID ${suspectId}`);
+            return `${suspect.name}'s Statement: ${finding}`;
+          } else {
+            console.log(`Could not find suspect for interrogation with ID ${suspectId}`);
+            return '';
+          }
+        }).filter(Boolean).join('\n')
+      : '';
+      
+    return {
+      headline: gameState.headline || "Breaking News",
+      playerName: gameState.player_name || "Anonymous Reporter",
+      deathCause: gameState.article_death_cause || "Unknown",
+      method: gameState.article_method || "Unknown",
+      motive: gameState.article_motive || "Unknown",
+      evidenceDetails,
+      witnessQuotesText,
+      suspectDetails,
+      interrogationText,
+      style: gameState.article_style || "",
+      suspectIds
+    };
+  };
+
+  // Helper function to create article prompt
+  const createArticlePrompt = (data: any) => {
+    return `You are a skilled newspaper journalist writing a breaking news story for a major publication.
+      
+    # ARTICLE DETAILS
+    Headline: "${data.headline}"
+    Reporter: ${data.playerName}
+    Death Cause: ${data.deathCause}
+    Method: ${data.method}
+    Motive: ${data.motive}
+    
+    # EVIDENCE
+    ${data.evidenceDetails ? `${data.evidenceDetails}` : 'No specific evidence provided.'}
+    
+    # WITNESS STATEMENTS
+    ${data.witnessQuotesText ? `${data.witnessQuotesText}` : 'No witness statements provided.'}
+    
+    # SUSPECT INFORMATION
+    ${data.suspectDetails ? `${data.suspectDetails}` : 'No suspect information provided.'}
+    
+    # INTERROGATION FINDINGS
+    ${data.interrogationText ? `${data.interrogationText}` : 'No interrogation findings provided.'}
+    
+    # WRITING GUIDELINES
+    - Your article style should build around the following keywords: ${data.style}
+    - Begin with a strong, attention-grabbing lead paragraph
+    - Incorporate evidence, witness quotes, and suspect information naturally
+    - Maintain an objective tone while highlighting the chosen angle
+    - Structure the article in 4-5 short paragraphs for readability
+    - Include at least one direct quote from a witness if available
+    - Focus on the most impactful details that support the headline
+    - Do not include the headline in the article text
+    - Aim for 250-300 words total
+    
+    # IMPORTANT
+    - This is a breaking news story about a death at an art academy
+    - The article should be factual but engaging enough to attract readers
+    - Write in a way that could potentially go viral while maintaining journalistic integrity`;
+  };
+
+  // Helper function to generate story with OpenAI
+  const generateStoryWithOpenAI = async (prompt: string) => {
+    const completion = await openai.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "gpt-4",
+      temperature: 0.7,
+      max_tokens: 1000,
+    });
+
+    console.log('OpenAI API response received:', {
+      status: 'success',
+      model: completion.model,
+      usage: completion.usage,
+      finish_reason: completion.choices[0].finish_reason
+    });
+
+    const generatedStory = completion.choices[0].message.content || '';
+    console.log('Generated story length:', generatedStory.length);
+    console.log('Generated story preview:', generatedStory.substring(0, 100) + '...');
+    
+    return generatedStory;
+  };
+
+  // Helper function to generate fallback story
+  const generateFallbackStory = (data: any) => {
+    const fallbackStory = `In a shocking development today at Astra Academy of Art, ${data.deathCause || "a tragic incident occurred"}.
+    
+    Local authorities have confirmed the incident and are investigating further. "We are taking this matter very seriously," said Police Chief Johnson.
+    
+    ${data.witnessQuotesText ? `One witness stated, ${data.witnessQuotesText.split('\n')[0]}` : 'Witnesses at the scene described the events as "unprecedented" and "alarming."'} Community members are advised to stay informed as this story develops.
+    
+    ${data.suspectIds.length > 0 
+      ? `Authorities are currently questioning ${
+          (() => {
+            const suspectId = data.suspectIds[0];
+            const suspect = getSuspect(suspectId);
+            return suspect?.name || 'a person of interest';
+          })()
+        } in connection with the case.` 
+      : 'This is a developing story, and more details will be provided as they become available.'}`;
+    
+    const fallbackHashtags = ['#BreakingNews', '#AstraAcademy', '#Investigation', '#ArtWorld', '#Justice'];
+    const fallbackViewCount = Math.floor(Math.random() * 90000) + 10000;
+    
+    console.log('Generated fallback story with values:', {
+      storyLength: fallbackStory.length,
+      hashtags: fallbackHashtags,
+      viewCount: fallbackViewCount
+    });
+    
+    // Update the refs directly here as well for extra safety
+    hashtagsRef.current = fallbackHashtags;
+    viewCountRef.current = fallbackViewCount;
+    
+    return {
+      story: fallbackStory,
+      hashtags: fallbackHashtags,
+      viewCount: fallbackViewCount
+    };
+  };
+
+  // Helper function to create error story
+  const createErrorStory = () => {
+    return `In a shocking development today at Astra Academy of Art, a student was found dead under mysterious circumstances.
+    
+    Local authorities have confirmed the incident and are investigating further. "We are taking this matter very seriously," said Police Chief Johnson.
+    
+    Witnesses at the scene described the events as "unprecedented" and "alarming." Community members are advised to stay informed as this story develops.
+    
+    This is a developing story, and more details will be provided as they become available.`;
   };
 
   // Generate hashtags based on the article
@@ -383,82 +599,86 @@ export function ResultPage() {
 
       console.log('Hashtag generation prompt:', hashtagPrompt);
       
+      const completion = await openai.chat.completions.create({
+        messages: [{ role: "user", content: hashtagPrompt }],
+        model: "gpt-3.5-turbo",
+        temperature: 0.8,
+        max_tokens: 150,
+      });
+
+      const responseText = completion.choices[0].message.content || '';
+      console.log('Hashtag response text:', responseText);
+      
+      // Improved regex to extract JSON array from response
+      // This pattern looks for an array of strings in the response
       try {
-        const completion = await openai.chat.completions.create({
-          messages: [{ role: "user", content: hashtagPrompt }],
-          model: "gpt-3.5-turbo",
-          temperature: 0.8,
-          max_tokens: 150,
-        });
-  
-        console.log('Hashtag API response received:', {
-          status: 'success',
-          model: completion.model,
-          usage: completion.usage,
-          finish_reason: completion.choices[0].finish_reason
-        });
-  
-        const responseText = completion.choices[0].message.content || '';
-        console.log('Hashtag response text:', responseText);
-        
-        // Improved regex to extract JSON array from response
-        // This pattern looks for an array of strings in the response
-        try {
-          console.log('Attempting to parse entire response as JSON...');
-          // First try to parse the entire response as JSON
-          const parsedResponse = JSON.parse(responseText);
-          if (Array.isArray(parsedResponse)) {
-            console.log('Successfully parsed response as JSON array:', parsedResponse);
-            setHashtags(parsedResponse.slice(0, 5)); // Limit to 5 hashtags
-            return;
-          } else {
-            console.log('Response parsed as JSON but is not an array:', parsedResponse);
-          }
-        } catch (e) {
-          console.log('Failed to parse entire response as JSON, trying regex extraction...', e);
-          // If that fails, try to extract the array using regex
-          const jsonMatch = responseText.match(/\[\s*"[^"]*"(?:\s*,\s*"[^"]*")*\s*\]/);
-          if (jsonMatch) {
-            console.log('Found JSON-like pattern with regex:', jsonMatch[0]);
-            try {
-              const hashtagArray = JSON.parse(jsonMatch[0]) as string[];
-              console.log('Successfully parsed extracted JSON:', hashtagArray);
-              setHashtags(hashtagArray.slice(0, 5)); // Limit to 5 hashtags
-              return;
-            } catch (parseError) {
-              console.error('Error parsing extracted JSON:', parseError);
-            }
-          } else {
-            console.log('No JSON-like pattern found with regex');
-          }
-          
-          // If all else fails, extract hashtags directly from text
-          console.log('Attempting to extract hashtags directly from text...');
-          const hashtagRegex = /#[a-zA-Z0-9]+/g;
-          const extractedHashtags = responseText.match(hashtagRegex);
-          if (extractedHashtags && extractedHashtags.length > 0) {
-            console.log('Extracted hashtags directly from text:', extractedHashtags);
-            setHashtags(extractedHashtags.slice(0, 5)); // Limit to 5 hashtags
-            return;
-          } else {
-            console.log('No hashtags found in text');
-          }
-          
-          // Last resort: manually create hashtags from the article
-          console.log('Creating fallback hashtags based on article content...');
-          const fallbackHashtags = createFallbackHashtags(articleText);
-          setHashtags(fallbackHashtags);
-          return;
+        console.log('Attempting to parse entire response as JSON...');
+        // First try to parse the entire response as JSON
+        const parsedResponse = JSON.parse(responseText);
+        if (Array.isArray(parsedResponse)) {
+          console.log('Successfully parsed response as JSON array:', parsedResponse);
+          const finalHashtags = parsedResponse.slice(0, 5); // Limit to 5 hashtags
+          setHashtags(finalHashtags);
+          hashtagsRef.current = finalHashtags; // Update the ref
+          return finalHashtags;
+        } else {
+          console.log('Response parsed as JSON but is not an array:', parsedResponse);
         }
-      } catch (apiError) {
-        console.error('OpenAI API error during hashtag generation:', apiError);
-        throw apiError;
+      } catch (e) {
+        console.log('Failed to parse entire response as JSON, trying regex extraction...', e);
+        // If that fails, try to extract the array using regex
+        const jsonMatch = responseText.match(/\[\s*"[^"]*"(?:\s*,\s*"[^"]*")*\s*\]/);
+        if (jsonMatch) {
+          console.log('Found JSON-like pattern with regex:', jsonMatch[0]);
+          try {
+            const hashtagArray = JSON.parse(jsonMatch[0]) as string[];
+            console.log('Successfully parsed extracted JSON:', hashtagArray);
+            const finalHashtags = hashtagArray.slice(0, 5); // Limit to 5 hashtags
+            setHashtags(finalHashtags);
+            hashtagsRef.current = finalHashtags; // Update the ref
+            return finalHashtags;
+          } catch (parseError) {
+            console.error('Error parsing extracted JSON:', parseError);
+          }
+        } else {
+          console.log('No JSON-like pattern found with regex');
+        }
+        
+        // If all else fails, extract hashtags directly from text
+        console.log('Attempting to extract hashtags directly from text...');
+        const hashtagRegex = /#[a-zA-Z0-9]+/g;
+        const extractedHashtags = responseText.match(hashtagRegex);
+        if (extractedHashtags && extractedHashtags.length > 0) {
+          console.log('Extracted hashtags directly from text:', extractedHashtags);
+          const finalHashtags = extractedHashtags.slice(0, 5); // Limit to 5 hashtags
+          setHashtags(finalHashtags);
+          hashtagsRef.current = finalHashtags; // Update the ref
+          return finalHashtags;
+        } else {
+          console.log('No hashtags found in text');
+        }
+        
+        // Last resort: manually create hashtags from the article
+        console.log('Creating fallback hashtags based on article content...');
+        const fallbackHashtags = createFallbackHashtags(articleText);
+        setHashtags(fallbackHashtags);
+        hashtagsRef.current = fallbackHashtags; // Update the ref
+        return fallbackHashtags;
       }
     } catch (error) {
       console.error('Error generating hashtags:', error);
       // Fallback hashtags
-      setHashtags(['#BreakingNews', '#AstraAcademy', '#Investigation', '#ArtWorld', '#Justice']);
+      const defaultHashtags = ['#BreakingNews', '#AstraAcademy', '#Investigation', '#ArtWorld', '#Justice'];
+      setHashtags(defaultHashtags);
+      hashtagsRef.current = defaultHashtags; // Update the ref
+      return defaultHashtags;
     }
+    
+    // If we somehow get here without returning, use default hashtags
+    const defaultHashtags = ['#BreakingNews', '#AstraAcademy', '#Investigation', '#ArtWorld', '#Justice'];
+    setHashtags(defaultHashtags);
+    hashtagsRef.current = defaultHashtags; // Update the ref
+    return defaultHashtags;
   };
 
   // Helper function to create fallback hashtags from article text
@@ -531,8 +751,11 @@ export function ResultPage() {
       const fiveDigitMatch = responseText.match(/\b\d{5}\b/);
       if (fiveDigitMatch) {
         const count = parseInt(fiveDigitMatch[0], 10);
+        console.log('Found 5-digit view count:', count);
         setFinalViewCount(count);
-        return;
+        setViewCount(count); // Also set viewCount for backward compatibility
+        viewCountRef.current = count; // Update the ref
+        return count;
       }
       
       // If no 5-digit number, try to extract any number
@@ -540,23 +763,37 @@ export function ResultPage() {
       if (anyNumberMatch) {
         const num = parseInt(anyNumberMatch[0], 10);
         // Ensure it's a 5-digit number
+        let finalCount = num;
         if (num < 10000) {
-          setFinalViewCount(num + 10000); // Make it at least 5 digits
+          finalCount = num + 10000; // Make it at least 5 digits
         } else if (num > 99999) {
-          setFinalViewCount(Math.floor(num % 100000)); // Take last 5 digits
-        } else {
-          setFinalViewCount(num);
+          finalCount = Math.floor(num % 100000); // Take last 5 digits
+          if (finalCount < 10000) finalCount += 10000; // Ensure it's 5 digits
         }
-        return;
+        console.log('Adjusted view count to 5 digits:', finalCount, 'from original:', num);
+        setFinalViewCount(finalCount);
+        setViewCount(finalCount); // Also set viewCount for backward compatibility
+        viewCountRef.current = finalCount; // Update the ref
+        return finalCount;
       }
       
       // If no number found, generate a random one
-      setFinalViewCount(Math.floor(Math.random() * 90000) + 10000);
+      const randomCount = Math.floor(Math.random() * 90000) + 10000;
+      console.log('Using random view count:', randomCount);
+      setFinalViewCount(randomCount);
+      setViewCount(randomCount); // Also set viewCount for backward compatibility
+      viewCountRef.current = randomCount; // Update the ref
+      return randomCount;
       
     } catch (error) {
       console.error('Error generating view count:', error);
       // Fallback view count
-      setFinalViewCount(Math.floor(Math.random() * 90000) + 10000);
+      const fallbackCount = Math.floor(Math.random() * 90000) + 10000;
+      console.log('Using fallback view count due to error:', fallbackCount);
+      setFinalViewCount(fallbackCount);
+      setViewCount(fallbackCount); // Also set viewCount for backward compatibility
+      viewCountRef.current = fallbackCount; // Update the ref
+      return fallbackCount;
     }
   };
 
