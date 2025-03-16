@@ -1,0 +1,11 @@
+{
+  "framework": "create-react-app",
+  "buildCommand": "./build.sh",
+  "devCommand": "npm start",
+  "installCommand": "npm install --legacy-peer-deps && npm install github:openai/openai-realtime-api-beta sass openai@4.28.0 --legacy-peer-deps",
+  "outputDirectory": "build",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/[^.]+", "dest": "/index.html" }
+  ]
+} 

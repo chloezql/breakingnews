@@ -259,8 +259,10 @@ const useCallHandling = ({ onCallEnded, onCallStarted }: UseCallHandlingProps = 
         turn_detection: { type: 'server_vad' }
       });
       
-      // @ts-expect-error voice is not in the type definition
-      client.updateSession({ voice: suspect.voice });
+      // Add voice property to session update
+      client.updateSession({ 
+        voice: suspect.voice 
+      } as any);
   
 
       // Make the agent speak first by sending an initial message using sendUserMessageContent

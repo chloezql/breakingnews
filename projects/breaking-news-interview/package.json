@@ -7,6 +7,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.13.0",
     "@mui/material": "^5.14.11",
+    "@openai/realtime-api-beta": "github:openai/openai-realtime-api-beta",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -26,8 +27,11 @@
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+  },
   "scripts": {
-    "start": "PORT=3004 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -49,5 +53,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "engines": {
+    "node": "18.x"
   }
 }

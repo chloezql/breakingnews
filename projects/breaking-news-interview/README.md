@@ -53,6 +53,66 @@ The application has four main states:
    - **Call Mode**: For active conversations with suspects
 4. **Ending**: Session conclusion
 
+## Installation and Setup
+
+1. Clone the repository
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Create a `.env` file based on `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+4. Add your OpenAI API key to the `.env` file
+5. Start the development server:
+
+```bash
+npm start
+```
+
+## Deployment to Vercel
+
+This project is configured for easy deployment to Vercel, with special handling for the OpenAI Realtime API Beta package.
+
+### Prerequisites
+
+- A Vercel account
+- An OpenAI API key with access to the Realtime API
+
+### Automatic Deployment
+
+1. Push your code to a GitHub repository
+2. Import the project in Vercel
+3. Add the following environment variables in the Vercel project settings:
+   - `REACT_APP_OPENAI_API_KEY`: Your OpenAI API key
+   - `REACT_APP_API_BASE_URL`: The base URL for the API
+   - `REACT_APP_WS_URL`: The WebSocket server URL
+
+### Manual Deployment
+
+1. Install the Vercel CLI:
+
+```bash
+npm install -g vercel
+```
+
+2. Login to Vercel:
+
+```bash
+vercel login
+```
+
+3. Deploy the project:
+
+```bash
+vercel
+```
+
 ## Usage Instructions
 
 1. Scan your reporter ID card

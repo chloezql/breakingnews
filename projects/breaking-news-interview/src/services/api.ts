@@ -11,7 +11,8 @@ export interface Player {
   view_count?: number,
   hashtags?: string[]
 }
-const API_BASE_URL = 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
+// Use environment variable with fallback
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
 
 export const findPlayerByCardId = async (cardId: string): Promise<Player[] | null> => {
   try {

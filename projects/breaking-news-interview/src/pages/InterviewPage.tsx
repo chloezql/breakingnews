@@ -302,8 +302,10 @@ const InterviewPage: React.FC = () => {
       turn_detection: { type: 'server_vad' }
     });
     
-       // @ts-expect-error voice is not in the type definition
-    client.updateSession({ voice: suspect.voice }); // Modified this line
+    // Add voice property to session update
+    client.updateSession({ 
+      voice: suspect.voice 
+    } as any);
 
     // Start recording with VAD
     await wavRecorder.record((data: { mono: Int16Array }) => {
