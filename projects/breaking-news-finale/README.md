@@ -46,6 +46,12 @@ npm install
 yarn install
 ```
 
+4. Create a `.env` file based on `.env.example` and fill in your environment variables:
+
+```bash
+cp .env.example .env
+```
+
 ### Running the Application
 
 ```bash
@@ -54,7 +60,41 @@ npm start
 yarn start
 ```
 
-The application will be available at http://localhost:3005
+The application will be available at http://localhost:3000
+
+## Deployment to Vercel
+
+This project is configured for easy deployment to Vercel.
+
+### Automatic Deployment
+
+1. Push your code to a GitHub repository
+2. Import the project in Vercel
+3. Vercel will automatically detect the React app configuration
+4. Add the environment variables in the Vercel project settings:
+   - `REACT_APP_API_BASE_URL`
+   - `REACT_APP_WS_URL`
+   - `REACT_APP_OPENAI_API_KEY`
+
+### Manual Deployment
+
+1. Install the Vercel CLI:
+
+```bash
+npm install -g vercel
+```
+
+2. Login to Vercel:
+
+```bash
+vercel login
+```
+
+3. Deploy the project:
+
+```bash
+vercel
+```
 
 ## Project Structure
 
