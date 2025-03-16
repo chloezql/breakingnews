@@ -2,6 +2,61 @@
 @import './components/RFIDSimulator.scss';
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+/* Global styles to make images not draggable and hide cursor */
+img {
+  user-drag: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  pointer-events: none; /* Prevents drag and other mouse events */
+  -webkit-touch-callout: none; /* Disable iOS callout on long-press */
+}
+
+/* Hide cursor on all scenes and the entire app */
+body,
+.evidence-board-intro-page,
+.evidence-tutorial-page,
+.evidence-page,
+.result-page,
+.App {
+  cursor: none !important;
+}
+
+/* Ensure custom cursor elements like spotlight still work */
+.cursor-spotlight,
+.spotlight {
+  pointer-events: none !important;
+  z-index: 9999 !important; /* Ensure it's always on top */
+}
+
+/* Ensure interactive elements still work without showing cursor */
+button, 
+a, 
+input, 
+.clickable, 
+.evidence-item, 
+.suspect-card,
+.evidence-slot,
+.confirm-button,
+.continue-button,
+.tutorial-item {
+  cursor: none !important;
+  pointer-events: auto !important; /* Allow clicks but keep cursor hidden */
+}
+
+/* Ensure draggable elements work properly */
+.draggable {
+  pointer-events: auto !important;
+  cursor: none !important;
+}
+
+/* Override any other cursor styles that might be defined elsewhere */
+* {
+  cursor: none !important;
+}
+
 .App {
   min-height: 100vh;
   background-color: #f0f0f0;
