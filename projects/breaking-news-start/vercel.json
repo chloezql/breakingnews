@@ -1,8 +1,8 @@
 {
   "framework": "create-react-app",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm install --legacy-peer-deps && npm run build",
   "devCommand": "npm start",
-  "installCommand": "npm install",
+  "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "build",
   "routes": [
     { "handle": "filesystem" },
