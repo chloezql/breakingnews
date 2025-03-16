@@ -5,8 +5,8 @@ export interface Player {
   id_card_no?: string;
   created_at?: string;
 }
-// https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA/players
-const API_BASE_URL = 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
+// Use environment variable with fallback
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
 /**
  * Find a player by their card ID
  * @param cardId The RFID card ID to search for
