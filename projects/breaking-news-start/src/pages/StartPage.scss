@@ -1,5 +1,6 @@
 .start-page {
   height: 100vh;
+  width: 100vw;
   background-color: #fe2f0d;
   display: flex;
   flex-direction: column;
@@ -59,7 +60,7 @@
   margin-top: 30px;
   
   .scan-message {
-    font-size: 24px;
+    font-size: 30px;
     color: white;
     text-align: center;
     margin-bottom: 20px;
