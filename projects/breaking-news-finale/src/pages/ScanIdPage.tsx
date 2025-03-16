@@ -18,7 +18,7 @@ const ScanIdPage: React.FC<ScanIdPageProps> = ({ onPlayerLoaded }) => {
   
   // WebSocket handler for RFID card scanning
   const handleWebSocketMessage = async (data: WebSocketMessage) => {
-    if (data.type === 'rfid_scan' && data.cardId) {
+    if (data.type === 'rfid_scan' && data.deviceId === 'esp32-005' && data.cardId) {
       console.log('RFID card scanned:', data.cardId);
       await handleCardScan(data.cardId);
     }

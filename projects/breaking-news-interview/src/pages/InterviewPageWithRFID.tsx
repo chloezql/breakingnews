@@ -183,7 +183,7 @@ const InterviewPage: React.FC = () => {
 
   // WebSocket handler for RFID card scanning
   handleWebSocketMessageRef.current = async (data: any) => {
-    if (data.type === 'rfid_scan' && !playerId) {
+    if (data.type === 'rfid_scan' && data.deviceId === 'esp32-004' && !playerId) {
       console.log('RFID card scanned:', data.cardId);
       
       try {

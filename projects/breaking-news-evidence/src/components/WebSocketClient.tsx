@@ -29,7 +29,7 @@ const WebSocketClient: React.FC<WebSocketClientProps> = ({ onMessage }) => {
     }
 
     try {
-      const newWs = new WebSocket('ws://localhost:8080');
+      const newWs = new WebSocket('ws://192.168.4.100:8080');
 
       newWs.onopen = () => {
         console.log('WebSocket Connected');
