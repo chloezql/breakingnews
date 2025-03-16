@@ -15,5 +15,8 @@
     "install:projects": "cd projects/breaking-news-evidence && npm install && cd ../breaking-news-finale && npm install && cd ../breaking-news-interview && npm install && cd ../breaking-news-start && npm install"
   },
   "author": "",
-  "license": "ISC"
-} 
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^8.18.1"
+  }
+}
