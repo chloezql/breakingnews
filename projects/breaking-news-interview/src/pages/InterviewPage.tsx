@@ -83,8 +83,8 @@ const InterviewPage: React.FC = () => {
     const value = e.target.value;
     setCodeInput(value);
     
-    // Check if this is a code with confirmation (ends with .)
-    if (value.endsWith('.')) {
+    // Check if this is a code with confirmation (ends with 1)
+    if (value.endsWith('1')) {
       const code = value.slice(0, -1);
       const cardId = codeToCardId[code as keyof typeof codeToCardId];
       
@@ -139,15 +139,15 @@ const InterviewPage: React.FC = () => {
   const handleInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     
-    // Check if this is a suspect ID scan with confirmation (ends with .)
-    if (value.endsWith('.')) {
-      // if player only pressed 5 and then ., play an intro audio
-      if (value === '5.') {
-        const introAudio = new Audio('/suspect-intro.mp3');
-        setSuspectId('');
-        introAudio.play();
-        return;
-      }
+    // Check if this is a suspect ID scan with confirmation (ends with 1)
+    if (value.endsWith('1')) {
+      // // if player only pressed 5 and then ., play an intro audio
+      // if (value === '5.') {
+      //   const introAudio = new Audio('/suspect-intro.mp3');
+      //   setSuspectId('');
+      //   introAudio.play();
+      //   return;
+      // }
       
       const suspectId = value.slice(0, -1);
       if (validateSuspectId(suspectId)) {
@@ -173,7 +173,7 @@ const InterviewPage: React.FC = () => {
       }
     } 
     // Check if this is a suspect selection with confirmation (ends with 0)
-    else if (value.endsWith('0')) {
+    else if (value.endsWith('3')) {
       const suspectId = value.slice(0, -1);
       if (validateSuspectId(suspectId)) {
         // Only allow selecting a suspect if player ID has been set
@@ -592,8 +592,8 @@ const InterviewPage: React.FC = () => {
                 ref={suspectInputRef}
               />
               <Typography variant="body2" sx={{ marginTop: '10px', opacity: 0.7 }}>
-                To call a suspect: Enter suspect ID and then press enter (e.g., "1234 enter")
-                To select a suspect: Enter suspect ID and then press Select (e.g., "1234 Select")
+                To call a suspect: Enter suspect ID and then press enter (e.g., "7298 enter")
+                To select a suspect: Enter suspect ID and then press Select (e.g., "7298 Select")
               </Typography>
             </>
           )}
@@ -608,9 +608,9 @@ const InterviewPage: React.FC = () => {
             <div className="blur-fallback"></div>
             
             <img 
-              src={`/suspect-shadow/${suspectId === '1234' ? 'hart.png' : 
-                    suspectId === '5678' ? 'kevin.png' : 
-                    suspectId === '9876' ? 'lucy_marlow.png' : ''}`}
+              src={`/suspect-shadow/${suspectId === '7298' ? 'hart.png' : 
+                    suspectId === '4692' ? 'kevin.png' : 
+                    suspectId === '5746' ? 'lucy_marlow.png' : ''}`}
               alt="Suspect Shadow"
               className="suspect-shadow"
             />

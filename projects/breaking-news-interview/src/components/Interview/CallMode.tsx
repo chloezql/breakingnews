@@ -67,7 +67,7 @@ const CallMode: React.FC<CallModeProps> = ({
           onClick={onHangUp}
         >
           <Box component="p" sx={{ color: '#F44336', margin: 0 , fontSize: '40px'}}>
-            Press 0 to hang up
+            Press [End] to hang up
           </Box>
         </Box>
       </Box>

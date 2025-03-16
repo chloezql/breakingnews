@@ -19,8 +19,8 @@ interface Suspect {
 }
 
 export const suspects: Record<string, Suspect> = {
-  "1234": {
-    id: "1234",
+  "7298": {
+    id: "7298",
     name: "Dr. Eleanor Hart",
     voice:"alloy",
     age: 50,
@@ -46,8 +46,8 @@ export const suspects: Record<string, Suspect> = {
       { name: "Lucy Marlow", background: "Lucy is also your student, she is Erin's roommate. She's not that talented in your opinion. Lucy was hoping to be selected by you and attend the biennial exhibition. But you think she is not good enough. You know they fight a lot. " }
     ]
   },
-  "5678": {
-    id: "5678",
+  "4692": {
+    id: "4692",
     name: "Kevin Sanchez",
     voice: "ash",
     age: 22,
@@ -77,8 +77,8 @@ export const suspects: Record<string, Suspect> = {
       { name: "Lucy Marlow", background: "Hear about her from Erin, she seems pretty envious of Erin's success. The day Erin dead, they had a bad fight. Erin was injured with bruises everywhere. Lucy went crazy and even hit Erin with a sculpture. They argued about the upcoming biennial exhibition. And Lucy thought Erin took her opportunity away. " }
     ]
   },
-  "9876": {
-    id: "9876",
+  "5746": {
+    id: "5746",
     name: "Lucy Marlow",
     age: 22,
     voice: "sage",

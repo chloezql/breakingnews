@@ -15,9 +15,9 @@ export function ArticleSuspectPage() {
   
   // Define the suspects using data from suspects.ts
   const suspectsList: Suspect[] = [
-    { id: "1234", name: 'Dr. Eleanor Hart', image: '/character-photos/dr.hart.png' },
-    { id: "5678", name: 'Kevin Sanchez', image: '/character-photos/kevin.png' },
-    { id: "9876", name: 'Lucy Marlow', image: '/character-photos/lucy.png' }
+    { id: "7298", name: 'Dr. Eleanor Hart', image: '/character-photos/dr.hart.png' },
+    { id: "4692", name: 'Kevin Sanchez', image: '/character-photos/kevin.png' },
+    { id: "5746", name: 'Lucy Marlow', image: '/character-photos/lucy.png' }
   ];
   
   // Get the initial selected suspects from the game state or use an empty array

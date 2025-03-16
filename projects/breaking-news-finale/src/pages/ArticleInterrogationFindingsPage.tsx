@@ -166,7 +166,7 @@ export function ArticleInterrogationFindingsPage() {
                         <h3 className="suspect-name">{suspect.name}</h3>
                         <div className="suspect-image">
                           <img 
-                            src={`/character-photos/${suspectId === 1234 ? 'dr.hart' : suspectId === 5678 ? 'kevin' : 'lucy'}.png`} 
+                            src={`/character-photos/${suspectId === 7298 ? 'dr.hart' : suspectId === 4692 ? 'kevin' : 'lucy'}.png`} 
                             alt={suspect.name} 
                           />
                         </div>

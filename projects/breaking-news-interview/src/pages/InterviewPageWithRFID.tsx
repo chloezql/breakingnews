@@ -53,7 +53,7 @@ const getClient = (() => {
 
 // Function to validate suspect IDs
 const isValidSuspectId = (id: string): boolean => {
-  return ['1234', '5678', '9876'].includes(id);
+  return ['7298', '4692', '5746'].includes(id);
 };
 
 const InterviewPage: React.FC = () => {
@@ -221,8 +221,8 @@ const InterviewPage: React.FC = () => {
       
       // Trigger audio playback with proper browser context
       // This ensures we're in a user-triggered context to avoid autoplay restrictions
-      playIntroAudio();
-      // handleIntroAudioEnded();
+      // playIntroAudio();
+      handleIntroAudioEnded();
     }
   }, [
     interviewStage,

@@ -90,7 +90,7 @@ export function SuspectRecapPage() {
             
             <div className={`suspects-grid ${isAnimating ? 'animating' : ''}`}>
               {/* Dr. Eleanor Hart */}
-              <div className={`suspect-card ${isSuspectSelected(1234) ? 'selected' : 'greyed-out'}`}>
+              <div className={`suspect-card ${isSuspectSelected(7298) ? 'selected' : 'greyed-out'}`}>
                 <div className="suspect-image">
                   <img src="/character-photos/dr.hart.png" alt="Dr. Eleanor Hart" />
                 </div>
@@ -98,7 +98,7 @@ export function SuspectRecapPage() {
               </div>
               
               {/* Kevin Sanchez */}
-              <div className={`suspect-card ${isSuspectSelected(5678) ? 'selected' : 'greyed-out'}`}>
+              <div className={`suspect-card ${isSuspectSelected(4692) ? 'selected' : 'greyed-out'}`}>
                 <div className="suspect-image">
                   <img src="/character-photos/kevin.png" alt="Kevin Sanchez" />
                 </div>
@@ -106,7 +106,7 @@ export function SuspectRecapPage() {
               </div>
               
               {/* Lucy Marlow */}
-              <div className={`suspect-card ${isSuspectSelected(9876) ? 'selected' : 'greyed-out'}`}>
+              <div className={`suspect-card ${isSuspectSelected(5746) ? 'selected' : 'greyed-out'}`}>
                 <div className="suspect-image">
                   <img src="/character-photos/lucy.png" alt="Lucy Marlow" />
                 </div>

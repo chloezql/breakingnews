@@ -33,9 +33,9 @@ const useInputHandling = ({
     onStartIntro();
   }, [onStartIntro]);
   
-  // Handle hanging up call with key 0
+  // Handle hanging up call with key 3
   const handleKeyZero = useCallback(() => {
-    console.log('Key 0 pressed, attempting to hang up call');
+    console.log('Key [Hang Up] pressed, attempting to hang up call');
     onHangUp();
     // Always clear the input field regardless of whether a call was active
     onInputChange('');
@@ -52,14 +52,14 @@ const useInputHandling = ({
       return;
     }
     
-    // Handle key 0 to hang up call
-    if (value === '0') {
+    // Handle key 3 to hang up call
+    if (value === '3') {
       handleKeyZero();
       return;
     }
     
-    // Check if this is a suspect ID scan with confirmation (ends with .)
-    if (value.endsWith('.')) {
+    // Check if this is a suspect ID scan with confirmation (ends with 1)
+    if (value.endsWith('1')) {
       console.log('Suspect ID with confirmation:', value);
       
       const suspectId = value.slice(0, -1);
@@ -111,7 +111,7 @@ const useInputHandling = ({
   const handleGlobalKeydown = useCallback((e: KeyboardEvent) => {
     if (e.key === '9' && !isSessionActive) {
       handleKeyNine();
-    } else if (e.key === '0') {
+    } else if (e.key === '3') {
       handleKeyZero();
     }
   }, [handleKeyNine, handleKeyZero, isSessionActive]);

@@ -17,11 +17,11 @@ const SuspectImage: React.FC<SuspectImageProps> = ({
   // Map suspect IDs to their image paths
   const getImagePath = () => {
     switch (suspectId) {
-      case '1234':
+      case '7298':
         return '/dr.hart.png';
-      case '5678':
+      case '4692':
         return '/kevin-profile-image.png';
-      case '9876':
+      case '5746':
         return '/lucy.png';
       default:
         return '';

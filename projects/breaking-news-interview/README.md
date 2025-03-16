@@ -117,7 +117,7 @@ vercel
 
 1. Scan your reporter ID card
 2. Press 9 to start the interview session
-3. Enter a suspect ID followed by a dot (e.g., "1234.")
+3. Enter a suspect ID followed by a dot (e.g., "7298.")
 4. Interview the suspect
 5. Press 0 to end the call
 6. Repeat steps 3-5 for other suspects
@@ -125,9 +125,9 @@ vercel
 
 ## Available Suspect IDs
 
-- 1234: Dr. Hart
-- 5678: Kevin
-- 9876: Lucy
+- 7298: Dr. Hart
+- 4692: Kevin
+- 5746: Lucy
 
 ## Development Guidelines
 
