@@ -44,7 +44,7 @@ export function useWebSocket({ onMessage, onConnect, onDisconnect }: UseWebSocke
         // Send device info
         ws.send(JSON.stringify({
           type: 'device_connect',
-          deviceId: 'react-client-' + Date.now(),
+          deviceId: 'react-client-start',
           deviceType: 'react_client'
         }));
 

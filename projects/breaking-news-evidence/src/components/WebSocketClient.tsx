@@ -40,7 +40,7 @@ const WebSocketClient: React.FC<WebSocketClientProps> = ({ onMessage }) => {
         // Send device info on connect
         newWs.send(JSON.stringify({
           type: 'device_connect',
-          deviceId: 'react-client-' + Date.now(),
+          deviceId: 'react-client-evidence',
           deviceType: 'react_client'
         }));
       };
