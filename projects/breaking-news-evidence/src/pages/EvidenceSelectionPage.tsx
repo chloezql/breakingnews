@@ -78,7 +78,7 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
       date: 'June 6',
       events: [
         { time: '8am', description: 'Report Death' },
-        { time: '10am', description: 'Exhibition Grand Opening @Museum' }
+        { time: '10am', description: 'Exhibition Grand Opening @ MiamiMuseum' }
       ]
     }
   ];

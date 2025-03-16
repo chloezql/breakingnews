@@ -32,11 +32,11 @@ export const suspects: Record<string, Suspect> = {
     timeline: [
       { time: "08:00-09:00", event: "Had breakfast while reading latest art magazines" },
       { time: "09:00-12:00", event: "Taught theoretical art courses at the AAA academy" },
-      { time: "12:00-13:00", event: "Lunch with colleagues at faculty dining hall, discussing upcoming exhibition plans" },
-      { time: "14:00-14:30", event: "Met Erin at café to discuss exhibition details after you knew your name was removed from the exhibition. She was acting cold and you showed up claiming to help, but you secretly switched Erin's melatonin with sedative pills that you have." },
+      { time: "12:00-13:00", event: "Lunch with colleagues at faculty dining hall, discussing upcoming school year. " },
+      { time: "14:00-14:30", event: "Met Erin at café to discuss Miami Museum Biennale exhibition details after you knew your name was removed from the exhibition. She was acting cold and you showed up claiming to help, but you secretly switched Erin's melatonin with sedative pills that you have." },
       { time: "14:30-17:00", event: "Prepared academic paper for publication, conducted research and editing" },
       { time: "17:00-18:00", event: "Attended department meeting about future project funding allocation" },
-      { time: "18:00-20:00", event: "Worked in office finalizing exhibition details" },
+      { time: "18:00-20:00", event: "Worked in office." },
       { time: "20:00-22:00", event: "Returned home, watched classic art film after dinner" },
       { time: "22:00-23:30", event: "Checked and replied to important emails" },
       { time: "23:30", event: "Went to bed" }
@@ -116,6 +116,6 @@ export const validateSuspectId = (id: number): boolean => {
 };
 
 export const worldBackground = `Astra Academy of Art is a prestigious yet cutthroat institution where students battle for artistic success. 
-Erin Carter, a 22-year-old art prodigy, was found dead last night. 
+Erin Carter, a 22-year-old art prodigy, was found dead last night.  She was supposedly to showcase her work at the Miami Museum Biennale opening today. 
 The police detained three suspects: Dr. Eleanor Hart (mentor), Kevin Sanchez (boyfriend), and Lucy Marlow (classmate). 
 Tensions were high between Erin and each of them, and each suspect has hidden motives and an alibi that may not hold under scrutiny.\n`;
