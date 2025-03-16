@@ -35,7 +35,13 @@ export function useWebSocket({ onMessage, onConnect, onDisconnect }: UseWebSocke
     }
 
     try {
-      const ws = new WebSocket('ws://192.168.4.100:8080');
+      // Use environment variable with fallback
+      const wsUrl = process.env.REACT_APP_WS_URL;
+      if (!wsUrl) {
+        console.error('WebSocket URL is not defined');
+        return;
+      }
+      const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         console.log('WebSocket Connected');

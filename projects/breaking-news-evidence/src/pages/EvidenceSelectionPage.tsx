@@ -46,19 +46,19 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
   const suspects: SuspectEvidence[] = [
     {
       id: 'kevin',
-      name: 'Kevin Sanchez',
+      name: 'Kevin Sanchez: the boyfriend',
       image: '/character-photos/kevin.png',
       evidenceIds: [12, 13, 14, 15]  // IDs that correspond to Kevin's evidence
     },
     {
       id: 'dr-hart',
-      name: 'Dr. Hart',
+      name: 'Dr. Hart: the mentor',
       image: '/character-photos/dr.hart.png',
       evidenceIds: [8, 9, 10, 11]  // IDs that correspond to Dr. Hart's evidence
     },
     {
       id: 'lucy',
-      name: 'Lucy Marlow',
+      name: 'Lucy Marlow: the roommate',
       image: '/character-photos/lucy.png',
       evidenceIds: [16, 17, 18, 19]  // IDs that correspond to Lucy's evidence
     }

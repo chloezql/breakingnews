@@ -1,0 +1,11 @@
+{
+  "framework": "create-react-app",
+  "buildCommand": "./build.sh",
+  "devCommand": "npm start",
+  "installCommand": "npm install --legacy-peer-deps && npm install sass node-sass --legacy-peer-deps",
+  "outputDirectory": "build",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/[^.]+", "dest": "/index.html" }
+  ]
+} 
