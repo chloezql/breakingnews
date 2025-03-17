@@ -4,6 +4,7 @@ import { EVIDENCE_ITEMS } from '../constants/evidence';
 import { witnessTapes } from '../types/tapes';
 import { getSuspect } from '../types/suspects';
 import { getRandomJoke } from '../constants/jokes';
+import { GameStage } from '../types/GameStages';
 import './ResultPage.scss';
 
 // Import confetti library
@@ -46,11 +47,16 @@ export function ResultPage() {
   const [revealedDigits, setRevealedDigits] = useState<number[]>([]);
   const [finalViewCount, setFinalViewCount] = useState<number>(0);
   const [dailyJoke, setDailyJoke] = useState({ setup: '', punchline: '' });
+  const [viewResultsClicked, setViewResultsClicked] = useState(false);
+  const [countdown, setCountdown] = useState<number>(20);
+  const [showViewResultsButton, setShowViewResultsButton] = useState(false);
+  const [countdownActive, setCountdownActive] = useState(false);
   const generationAttempted = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const articleReadyRef = useRef(false);
   const videoEndedRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
   // Add refs to store the latest values for view count and hashtags
   const viewCountRef = useRef<number>(0);
   const hashtagsRef = useRef<string[]>([]);
@@ -171,54 +177,13 @@ export function ResultPage() {
     setTimeout(() => {
       setFadeOut(true);
       setTimeout(() => {
+        // First show the article/newspaper
         setShowArticle(true);
-        console.log('Article is now visible, preparing to show view count animation');
         
-        // After article is shown and centered for 2 seconds, show view count
+        // Then after the newspaper slides in, show the View Results button on top of it
         setTimeout(() => {
-          // Use the stored value to ensure consistency
-          console.log('Starting view count animation with value:', viewCountToUse);
-          
-          setShowViewCount(true);
-          // Disable scrolling when view count overlay is shown
-          document.body.classList.add('no-scroll');
-          
-          // Initialize with all digits hidden
-          setRevealedDigits([-1, -1, -1, -1, -1]);
-          
-          // Reveal digits one by one with delays
-          const digits = viewCountToUse.toString().padStart(5, '0').split('').map(Number);
-          console.log('Revealing view count digits:', digits, 'from viewCountToUse:', viewCountToUse);
-          
-          // Schedule the digit reveals
-          const revealDigit = (position: number, value: number, delay: number) => {
-            setTimeout(() => {
-              console.log(`Revealing digit at position ${position}: ${value}`);
-              setRevealedDigits(prev => {
-                const newDigits = [...prev];
-                newDigits[position] = value;
-                return newDigits;
-              });
-              
-              // After all digits are revealed, show hashtags
-              if (position === 0) {
-                setTimeout(() => {
-                  console.log('All digits revealed, showing hashtags');
-                  setShowHashtags(true);
-                  playConfetti();
-                }, 1000);
-              }
-            }, delay);
-          };
-          
-          // Reveal digits from right to left
-          revealDigit(4, digits[4], 300);  // Last digit
-          revealDigit(3, digits[3], 600);  // 4th digit
-          revealDigit(2, digits[2], 900);  // 3rd digit
-          revealDigit(1, digits[1], 1200); // 2nd digit
-          revealDigit(0, digits[0], 1500); // 1st digit
-          
-        }, 2000);
+          setShowViewResultsButton(true);
+        }, 1500); // Wait for the newspaper slide-in animation to complete
       }, 500);
     }, 500);
   };
@@ -859,8 +824,148 @@ export function ResultPage() {
     }, 250);
   };
 
-  // Handle printing the newspaper
-  const handlePrint = () => {
+  // Handle viewing the results
+  const handleViewResults = () => {
+    console.log('View Results button clicked');
+    setViewResultsClicked(true);
+    
+    // Hide the View Results button
+    setShowViewResultsButton(false);
+    
+    // Add a class to the body to trigger print-specific styles
+    document.body.classList.add('printing');
+    
+    // Remove blur from newspaper for printing
+    const newspaperElement = document.querySelector('.newspaper');
+    if (newspaperElement) {
+      newspaperElement.classList.remove('blur-background');
+    }
+    
+    // Temporarily remove no-scroll class for printing
+    document.body.classList.remove('no-scroll');
+    
+    // First print the article
+    window.print();
+    
+    // Restore blur and remove the printing class after printing
+    setTimeout(() => {
+      document.body.classList.remove('printing');
+      
+      // After printing, show view count animation
+      setTimeout(() => {
+        // Use the stored value to ensure consistency
+        const viewCountToUse = viewCountRef.current;
+        console.log('Starting view count animation with value:', viewCountToUse);
+        
+        setShowViewCount(true);
+        // Disable scrolling when view count overlay is shown
+        document.body.classList.add('no-scroll');
+        
+        // Add the blur back to the newspaper
+        if (newspaperElement) {
+          newspaperElement.classList.add('blur-background');
+        }
+        
+        // Initialize with all digits hidden
+        setRevealedDigits([-1, -1, -1, -1, -1]);
+        
+        // Reveal digits one by one with delays
+        const digits = viewCountToUse.toString().padStart(5, '0').split('').map(Number);
+        console.log('Revealing view count digits:', digits, 'from viewCountToUse:', viewCountToUse);
+        
+        // Schedule the digit reveals
+        const revealDigit = (position: number, value: number, delay: number) => {
+          setTimeout(() => {
+            console.log(`Revealing digit at position ${position}: ${value}`);
+            setRevealedDigits(prev => {
+              const newDigits = [...prev];
+              newDigits[position] = value;
+              return newDigits;
+            });
+            
+            // After all digits are revealed, show hashtags and start countdown
+            if (position === 0) {
+              setTimeout(() => {
+                console.log('All digits revealed, showing hashtags');
+                setShowHashtags(true);
+                playConfetti();
+                
+                // Start the countdown
+                startCountdown();
+              }, 1000);
+            }
+          }, delay);
+        };
+        
+        // Reveal digits from right to left
+        revealDigit(4, digits[4], 300);  // Last digit
+        revealDigit(3, digits[3], 600);  // 4th digit
+        revealDigit(2, digits[2], 900);  // 3rd digit
+        revealDigit(1, digits[1], 1200); // 2nd digit
+        revealDigit(0, digits[0], 1500); // 1st digit
+      }, 500);
+    }, 1000);
+  };
+  
+  // Start the countdown timer
+  const startCountdown = () => {
+    setCountdownActive(true);
+    setCountdown(20);
+    
+    // Countdown timer
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          // Time's up, clear the timer
+          clearInterval(timer);
+          // Reset the game state
+          resetGame();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    countdownRef.current = timer;
+    
+    // Safety cleanup in case component unmounts
+    return () => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+      }
+    };
+  };
+  
+  // Reset the game state and go back to pre-scan status
+  const resetGame = () => {
+    console.log('Resetting game state and clearing localStorage');
+    
+    // Clear local storage
+    localStorage.removeItem('gameState');
+    
+    // Reset game state
+    updateGameState({
+      id: '',
+      currentStage: GameStage.START,
+      player_name: '',
+      headline: '',
+      article_evidence_ids: [],
+      article_witness_quotes: [],
+      article_suspect_ids: [],
+      article_interrogation_findings: {},
+      article_death_cause: '',
+      article_method: '',
+      article_motive: '',
+      article_style: '',
+      full_article_generated: ''
+    });
+    
+    // Redirect to home page
+    window.location.href = '/';
+  };
+
+  // Handle printing only (for the print button)
+  const handlePrintOnly = () => {
     // Add a class to the body to trigger print-specific styles
     document.body.classList.add('printing');
     
@@ -880,15 +985,13 @@ export function ResultPage() {
     setTimeout(() => {
       document.body.classList.remove('printing');
       
-      // Only add the blur back if the view count overlay is still showing
-      if (showViewCount && newspaperElement) {
+      // Add the blur back to the newspaper
+      if (newspaperElement) {
         newspaperElement.classList.add('blur-background');
       }
       
-      // Restore no-scroll class if view count overlay is still showing
-      if (showViewCount) {
-        document.body.classList.add('no-scroll');
-      }
+      // Restore no-scroll class
+      document.body.classList.add('no-scroll');
     }, 500);
   };
 
@@ -909,6 +1012,17 @@ export function ResultPage() {
 
       {/* Article content */}
       <div className={`article-container ${showArticle ? 'slide-in' : 'hidden'}`}>
+        {/* View Results Button Overlay */}
+        {showViewResultsButton && !viewResultsClicked && (
+          <div className="view-results-overlay">
+            <div className="view-results-container">
+              <button className="view-results-button" onClick={handleViewResults}>
+                View Results
+              </button>
+            </div>
+          </div>
+        )}
+        
         {/* View count overlay */}
         {showViewCount && (
           <div className="view-count-overlay">
@@ -945,17 +1059,30 @@ export function ResultPage() {
               </div>
             )}
             
+            {/* Countdown */}
+            {countdownActive && (
+              <div className="countdown-container">
+                <div className="countdown-timer">{countdown}</div>
+                <div className="countdown-text">Seconds remaining until reset</div>
+              </div>
+            )}
+            
             {/* Print button */}
-            {showHashtags && (
-              <button className="print-button" onClick={handlePrint}>
+            {showHashtags && !countdownActive && (
+              <button className="print-button" onClick={handlePrintOnly}>
                 Print to see your full article
               </button>
             )}
+            
+            {/* Article printed message */}
+            <div className="print-message">
+              Your article will be printed on the right side
+            </div>
           </div>
         )}
         
         {/* Newspaper */}
-        <div className={`newspaper ${showViewCount ? 'blur-background' : ''}`}>
+        <div className={`newspaper ${showViewResultsButton || showViewCount ? 'blur-background' : ''}`}>
           <div className="newspaper-header">
             <h1>Global Daily Courier</h1>
             <div className="date-line">
