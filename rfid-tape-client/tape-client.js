@@ -1,13 +1,16 @@
-const WebSocket = require('ws');
-const { exec } = require('child_process');
+const { SerialPort } = require('serialport');
+const { ReadlineParser } = require('@serialport/parser-readline');
+const { exec, spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
-// WebSocket server details
-const WS_SERVER = 'wss://breaking-news-ws-server-production.up.railway.app';
-const TARGET_DEVICE_ID = 'esp32-003';
+// Serial port configuration - update this to match your ESP32 port
+const SERIAL_PORT = '/dev/cu.usbserial-0001'; // Example: COM3 for Windows, /dev/ttyUSB0 for Linux
+const BAUD_RATE = 115200;
 
 // Audio directory path - update this to the correct path
 const AUDIO_DIR = path.join(__dirname, 'audio');
+console.log(`Audio directory: ${AUDIO_DIR}`);
 
 // Music file paths
 const MUSIC_FILES = {
@@ -19,6 +22,16 @@ const MUSIC_FILES = {
     'neighbor_default': path.join(AUDIO_DIR, 'Station3_Neighbor_01A.wav'),
     'default': path.join(AUDIO_DIR, 'Station3_Neighbor_01A.wav') // Default music for unknown cards
 };
+
+// Verify audio files exist
+console.log("Checking audio files...");
+for (const [key, filePath] of Object.entries(MUSIC_FILES)) {
+    if (fs.existsSync(filePath)) {
+        console.log(`✓ Found: ${key} -> ${filePath}`);
+    } else {
+        console.error(`✗ Missing: ${key} -> ${filePath}`);
+    }
+}
 
 // Define correct reader-UID matches and their associated music
 const CORRECT_MATCHES = {
@@ -46,6 +59,9 @@ let currentActiveReader = null;
 let currentMusicFile = null;
 let lastSwitchTime = 0; // Track when we last switched readers
 let currentAudioProcess = null;
+let isAudioPlaying = false;
+let audioStartTime = 0; // Track when audio playback started
+const AUDIO_GRACE_PERIOD = 5.0; // Grace period in seconds after audio starts before allowing interruption
 
 // Constants for timing - adjusted to match Arduino timing
 const CARD_REMOVAL_THRESHOLD = 1.0; // Match Arduino's STABLE_READ_TIME (1000ms)
@@ -56,6 +72,7 @@ const LOOP_DELAY = 100; // Main loop delay (100ms, half of Arduino's 200ms)
 // Helper function to determine the appropriate music file for a reader/UID combination
 function getMusicFile(reader, uid) {
     const key = `${reader}|${uid}`;
+    console.log(`Checking key: ${key}`);
     if (CORRECT_MATCHES[key]) {
         console.log("Correct reader-UID match!");
         return CORRECT_MATCHES[key];
@@ -68,38 +85,161 @@ function getMusicFile(reader, uid) {
     }
 }
 
+// Function to safely stop audio playback
+function stopAudio() {
+    if (!currentAudioProcess) return;
+
+    console.log("Stopping current audio playback");
+
+    try {
+        // Different process termination based on platform
+        if (process.platform === 'darwin') {  // macOS
+            exec(`kill ${currentAudioProcess.pid}`);
+        } else if (process.platform === 'win32') {  // Windows
+            exec(`taskkill /pid ${currentAudioProcess.pid} /f`);
+        } else {  // Linux and others
+            process.kill(currentAudioProcess.pid, 'SIGTERM');
+        }
+    } catch (err) {
+        console.error(`Error stopping audio: ${err.message}`);
+    }
+
+    currentAudioProcess = null;
+    isAudioPlaying = false;
+}
+
 // Play music for the given reader and UID
 function playMusicForReader(reader, uid) {
     const musicFile = getMusicFile(reader, uid);
 
-    // Stop any currently playing audio
-    if (currentAudioProcess) {
-        exec(`kill ${currentAudioProcess.pid}`);
+    // Verify file exists before playing
+    if (!fs.existsSync(musicFile)) {
+        console.error(`Audio file does not exist: ${musicFile}`);
+        return false;
     }
 
-    // Play the audio file using afplay (macOS) or another appropriate player
-    // For Windows, you might use 'start' command, for Linux 'aplay' or similar
-    const audioProcess = exec(`afplay "${musicFile}"`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error playing audio: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`Audio stderr: ${stderr}`);
-            return;
-        }
-        console.log("Audio playback completed");
+    // Stop any currently playing audio
+    stopAudio();
 
-        // Reset active reader when audio finishes naturally
-        if (currentActiveReader) {
-            currentActiveReader = null;
-            currentMusicFile = null;
-        }
-    });
+    // Wait a brief moment to ensure previous audio is fully stopped
+    setTimeout(() => {
+        startAudioPlayback(musicFile);
+    }, 100);
 
-    currentAudioProcess = audioProcess;
-    console.log(`Playing: ${musicFile}`);
-    return musicFile;
+    return true;
+}
+
+// Start audio playback with appropriate player for the platform
+function startAudioPlayback(musicFile) {
+    console.log(`Attempting to play: ${musicFile}`);
+
+    try {
+        let audioProcess;
+
+        // Choose appropriate audio player based on OS
+        if (process.platform === 'darwin') {  // macOS
+            audioProcess = spawn('afplay', [musicFile]);
+            console.log(`Started afplay with PID: ${audioProcess.pid}`);
+        } else if (process.platform === 'win32') {  // Windows
+            audioProcess = spawn('powershell', [
+                '-c',
+                `(New-Object Media.SoundPlayer "${musicFile}").PlaySync()`
+            ]);
+            console.log(`Started Windows Media.SoundPlayer with PID: ${audioProcess.pid}`);
+        } else {  // Linux and others
+            audioProcess = spawn('aplay', [musicFile]);
+            console.log(`Started aplay with PID: ${audioProcess.pid}`);
+        }
+
+        // Set up process event handlers
+        audioProcess.stdout.on('data', (data) => {
+            console.log(`Audio process stdout: ${data}`);
+        });
+
+        audioProcess.stderr.on('data', (data) => {
+            console.error(`Audio process stderr: ${data}`);
+        });
+
+        audioProcess.on('error', (err) => {
+            console.error(`Failed to start audio player: ${err.message}`);
+            isAudioPlaying = false;
+            currentAudioProcess = null;
+            audioStartTime = 0;
+            tryAlternativePlayer(musicFile);
+        });
+
+        audioProcess.on('close', (code, signal) => {
+            console.log(`Audio process closed with code ${code} and signal ${signal}`);
+            isAudioPlaying = false;
+            currentAudioProcess = null;
+            audioStartTime = 0;
+
+            // Reset active reader when audio finishes naturally
+            if (currentActiveReader && code === 0) {
+                console.log("Audio playback completed naturally");
+                currentActiveReader = null;
+                currentMusicFile = null;
+            }
+        });
+
+        currentAudioProcess = audioProcess;
+        isAudioPlaying = true;
+        currentMusicFile = musicFile;
+        audioStartTime = Date.now() / 1000; // Set audio start time
+        console.log(`Audio playback started at ${new Date().toISOString()}`);
+
+        return true;
+    } catch (err) {
+        console.error(`Failed to start audio playback: ${err.message}`);
+        isAudioPlaying = false;
+        currentAudioProcess = null;
+        audioStartTime = 0;
+        tryAlternativePlayer(musicFile);
+        return false;
+    }
+}
+
+// Try alternative audio players if default one fails
+function tryAlternativePlayer(musicFile) {
+    console.log("Trying alternative audio player...");
+
+    if (process.platform === 'darwin') {
+        // Try using 'play' from SoX if available on macOS
+        exec('which play', (error, stdout) => {
+            if (!error && stdout.trim()) {
+                console.log("Found 'play' command, trying to use it...");
+                const audioProcess = spawn('play', [musicFile]);
+                currentAudioProcess = audioProcess;
+                isAudioPlaying = true;
+            } else {
+                console.error("No alternative audio player found");
+            }
+        });
+    } else if (process.platform === 'win32') {
+        // On Windows, try using mplayer if available
+        exec('where mplayer', (error, stdout) => {
+            if (!error && stdout.trim()) {
+                console.log("Found 'mplayer' command, trying to use it...");
+                const audioProcess = spawn('mplayer', [musicFile]);
+                currentAudioProcess = audioProcess;
+                isAudioPlaying = true;
+            } else {
+                console.error("No alternative audio player found");
+            }
+        });
+    } else {
+        // On Linux, try using mplayer if available
+        exec('which mplayer', (error, stdout) => {
+            if (!error && stdout.trim()) {
+                console.log("Found 'mplayer' command, trying to use it...");
+                const audioProcess = spawn('mplayer', [musicFile]);
+                currentAudioProcess = audioProcess;
+                isAudioPlaying = true;
+            } else {
+                console.error("No alternative audio player found");
+            }
+        });
+    }
 }
 
 // Get the most recently active reader that still has a card
@@ -123,7 +263,7 @@ function handleCardRemoval(readerId) {
 
     // Debounce card removal signals
     if ((currentTime - readerStates[readerId].lastRemoval) > DEBOUNCE_THRESHOLD) {
-        console.log(`Reader ${readerId} - Card removed`);
+        console.log(`Reader ${readerId} - Card removed (explicit removal event)`);
         readerStates[readerId].active = false;
         readerStates[readerId].uid = null;
         readerStates[readerId].removalTime = currentTime;
@@ -131,12 +271,19 @@ function handleCardRemoval(readerId) {
 
         // If this was the current active reader, check if we should switch to another active reader
         if (readerId === currentActiveReader) {
+            console.log(`Active reader ${readerId} card was removed, handling audio change`);
             const mostRecentReader = getMostRecentActiveReader();
             if (mostRecentReader && mostRecentReader !== currentActiveReader) {
                 console.log(`Switching to most recent active reader: ${mostRecentReader}`);
-                currentMusicFile = playMusicForReader(mostRecentReader, readerStates[mostRecentReader].uid);
+                playMusicForReader(mostRecentReader, readerStates[mostRecentReader].uid);
                 currentActiveReader = mostRecentReader;
                 lastSwitchTime = currentTime;
+            } else {
+                // No other active readers, stop audio since we received an explicit removal event
+                console.log("No other active readers and received removal event, stopping audio");
+                stopAudio();
+                currentActiveReader = null;
+                currentMusicFile = null;
             }
         }
     }
@@ -167,86 +314,92 @@ function handleCardDetection(readerId, uid) {
 
     if (shouldSwitch) {
         console.log(`Switching playback to Reader ${readerId}`);
-        currentMusicFile = playMusicForReader(readerId, uid);
-        currentActiveReader = readerId;
-        lastSwitchTime = currentTime;
+        if (playMusicForReader(readerId, uid)) {
+            currentActiveReader = readerId;
+            lastSwitchTime = currentTime;
+        }
     } else {
         console.log(`Continuous card presence on Reader ${readerId}`);
     }
 }
 
-// Set up WebSocket connection
-console.log(`Connecting to WebSocket server: ${WS_SERVER}`);
-const ws = new WebSocket(WS_SERVER);
-
-ws.on('open', () => {
-    console.log('Connected to WebSocket server');
+// Set up Serial port connection
+console.log(`Opening serial port: ${SERIAL_PORT} at ${BAUD_RATE} baud`);
+const port = new SerialPort({
+    path: SERIAL_PORT,
+    baudRate: BAUD_RATE
 });
 
-ws.on('message', (data) => {
+const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+
+port.on('open', () => {
+    console.log('Serial port opened');
+    console.log('Waiting for RFID events...');
+});
+
+// Process serial data
+parser.on('data', (data) => {
+    // Parse the serial data from the ESP32
+    console.log('Raw data:', data);
+
     try {
-        const message = JSON.parse(data);
+        // Parse JSON data from the ESP32
+        const jsonData = JSON.parse(data);
+        console.log('Parsed JSON:', jsonData);
 
-        // Only process messages from our target device
-        if (message.deviceId === TARGET_DEVICE_ID) {
-            console.log('Received message from target device:', message);
+        // Check if this is from our target device
+        if (jsonData.deviceId === "esp32-003") {
+            const readerId = jsonData.readerId.toString();
+            console.log(`Processing event from device esp32-003, reader ${readerId}`);
 
-            if (message.type === 'rfid_scan') {
-                const readerId = message.readerId.toString();
-                const cardId = message.cardId;
-
-                // Handle the card detection
+            // Handle card detection
+            if (jsonData.type === "rfid_scan") {
+                console.log(`RFID scan detected on reader ${readerId} with card ID ${jsonData.cardId}`);
+                const cardId = jsonData.cardId;
                 handleCardDetection(readerId, cardId);
+                return;
             }
+
+            // Handle card removal - this is the ONLY place we stop audio based on card removal
+            if (jsonData.type === "rfid_removal") {
+                console.log(`RFID removal detected on reader ${readerId}`);
+                handleCardRemoval(readerId);
+                return;
+            }
+        } else {
+            console.log(`Ignoring message from unknown device: ${jsonData.deviceId}`);
         }
     } catch (error) {
         console.error('Error processing message:', error);
     }
 });
 
-ws.on('error', (error) => {
-    console.error('WebSocket error:', error);
+port.on('error', (error) => {
+    console.error('Serial port error:', error);
 });
 
-ws.on('close', () => {
-    console.log('Disconnected from WebSocket server');
-    console.log('Attempting to reconnect in 5 seconds...');
-    setTimeout(() => {
-        console.log('Reconnecting...');
-        ws.terminate();
-        const newWs = new WebSocket(WS_SERVER);
-        ws = newWs;
-    }, 5000);
-});
-
-// Main loop to check for card removal and manage audio playback
+// Main loop to check for card states
 setInterval(() => {
     const currentTime = Date.now() / 1000; // Current time in seconds
 
-    // Check if we should stop music due to card removal
-    if (currentActiveReader) {
-        const activeState = readerStates[currentActiveReader];
-        if (!activeState.active &&
-            (currentTime - activeState.removalTime) > CARD_REMOVAL_THRESHOLD) {
-            console.log(`Card removed for over ${CARD_REMOVAL_THRESHOLD} seconds, stopping music`);
+    // Update reader states based on timeouts, but DON'T stop audio
+    for (const [readerId, state] of Object.entries(readerStates)) {
+        if (state.active && (currentTime - state.lastTime) > CARD_REMOVAL_THRESHOLD) {
+            console.log(`Reader ${readerId} - Card timeout detected (no updates for ${Math.round(currentTime - state.lastTime)}s), marking inactive but NOT stopping audio`);
 
-            // Stop the audio playback
-            if (currentAudioProcess) {
-                exec(`kill ${currentAudioProcess.pid}`);
-                currentAudioProcess = null;
-            }
+            // Mark as inactive but don't call handleCardRemoval which would stop audio
+            state.active = false;
 
-            currentActiveReader = null;
-            currentMusicFile = null;
+            // Only log this once per timeout
+            state.lastTime = currentTime;
         }
     }
 
-    // Check for card timeouts (simulate card removal for readers that haven't sent updates)
-    for (const [readerId, state] of Object.entries(readerStates)) {
-        if (state.active && (currentTime - state.lastTime) > CARD_REMOVAL_THRESHOLD) {
-            console.log(`Reader ${readerId} - Card timeout (no updates received)`);
-            handleCardRemoval(readerId);
-        }
+    // Keep track of the current state by checking for any active readers
+    // This is just for logging/debugging and doesn't affect audio playback
+    const anyActive = Object.values(readerStates).some(state => state.active);
+    if (!anyActive && currentActiveReader !== null) {
+        console.log(`No active readers detected, but waiting for explicit removal event before stopping audio`);
     }
 }, LOOP_DELAY);
 
@@ -255,14 +408,13 @@ process.on('SIGINT', () => {
     console.log("Program terminated by user.");
 
     // Stop any playing audio
-    if (currentAudioProcess) {
-        exec(`kill ${currentAudioProcess.pid}`);
-    }
+    stopAudio();
 
-    // Close the WebSocket connection
-    if (ws.readyState === WebSocket.OPEN) {
-        ws.close();
-    }
+    // Close the serial port connection
+    port.close();
 
-    process.exit(0);
+    // Give a moment for cleanup before exiting
+    setTimeout(() => {
+        process.exit(0);
+    }, 200);
 });
