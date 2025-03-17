@@ -3,7 +3,10 @@ const { ReadlineParser } = require('@serialport/parser-readline');
 const { exec, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const fetch = require('node-fetch'); // node-fetch version 2 compatible with CommonJS
 
+// API configuration - update with your Xano API details
+const API_BASE_URL = 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA'; // Replace with your actual Xano API endpoint
 // Serial port configuration - update this to match your ESP32 port
 const SERIAL_PORT = '/dev/cu.usbserial-0001'; // Example: COM3 for Windows, /dev/ttyUSB0 for Linux
 const BAUD_RATE = 115200;
@@ -20,6 +23,10 @@ const MUSIC_FILES = {
     'football_default': path.join(AUDIO_DIR, 'Station3_Football_01A.wav'),
     'neighbor_correct': path.join(AUDIO_DIR, 'Station3_Neighbor_01.wav'),
     'neighbor_default': path.join(AUDIO_DIR, 'Station3_Neighbor_01A.wav'),
+    'intro_reminder': path.join(AUDIO_DIR, 'breaking-news-tape-before-game-reminder.mp3'),
+    'tony_intro': path.join(AUDIO_DIR, 'Station3_Tony_01.wav'),
+    'tony_second': path.join(AUDIO_DIR, 'Station3_Tony_02.wav'),
+    'session_end': path.join(AUDIO_DIR, 'timer-expired.wav'),
     'default': path.join(AUDIO_DIR, 'Station3_Neighbor_01A.wav') // Default music for unknown cards
 };
 
@@ -35,9 +42,16 @@ for (const [key, filePath] of Object.entries(MUSIC_FILES)) {
 
 // Define correct reader-UID matches and their associated music
 const CORRECT_MATCHES = {
-    '2|51E98F49': MUSIC_FILES['director_correct'], // Director card on Reader 2
-    '3|41EB8F49': MUSIC_FILES['football_correct'], // Football card on Reader 3
-    '1|21ED8F49': MUSIC_FILES['neighbor_correct']  // Neighbor card on Reader 1
+    '1|21ED8F49': MUSIC_FILES['neighbor_correct'],  // Reader 1 - Neighbor
+    '2|51E98F49': MUSIC_FILES['director_correct'],  // Reader 2 - Director
+    '3|41EB8F49': MUSIC_FILES['football_correct']   // Reader 3 - Football
+};
+
+// Map reader numbers to correct match indices
+const READER_TO_INDEX = {
+    '1': 1, // Reader 1 corresponds to index 1 in the array
+    '2': 2, // Reader 2 corresponds to index 2 in the array
+    '3': 3  // Reader 3 corresponds to index 3 in the array
 };
 
 // Define default music for specific UIDs when on wrong readers
@@ -55,12 +69,21 @@ const readerStates = {
     '4': { lastTime: 0, uid: null, active: false, removalTime: 0, lastRemoval: 0 }
 };
 
+// Game session state
 let currentActiveReader = null;
 let currentMusicFile = null;
 let lastSwitchTime = 0; // Track when we last switched readers
 let currentAudioProcess = null;
 let isAudioPlaying = false;
 let audioStartTime = 0; // Track when audio playback started
+let currentPlayer = null; // To store the current player data
+let gameSessionActive = false; // Flag to track if a game session is active
+let gameSessionStartTime = 0; // When the game session started
+let gameSessionEndTime = 0; // When the game session will end
+let correctMatchesTracked = []; // Array to track which readers had correct matches
+let audioQueue = []; // Queue for sequential audio playback
+let processingAudioQueue = false; // Flag to track if we're processing the audio queue
+const GAME_SESSION_DURATION = 120; // 2 minutes in seconds
 const AUDIO_GRACE_PERIOD = 5.0; // Grace period in seconds after audio starts before allowing interruption
 
 // Constants for timing - adjusted to match Arduino timing
@@ -69,12 +92,280 @@ const DEBOUNCE_THRESHOLD = 0.8; // Match Arduino's DEBOUNCE_DELAY (800ms)
 const READER_SWITCH_THRESHOLD = 1.0; // Minimum time between reader switches (1000ms)
 const LOOP_DELAY = 100; // Main loop delay (100ms, half of Arduino's 200ms)
 
+// API Functions
+
+// Find player by card ID
+async function findPlayerByCardId(cardId) {
+    try {
+        console.log(`Calling API to find player with card ID: ${cardId}`);
+        // Try both possible endpoint paths
+        let url = `${API_BASE_URL}/player_by_card_id/${encodeURIComponent(cardId)}`;
+        console.log(`Trying API URL: ${url}`);
+
+        let response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        // If the first endpoint fails, try an alternative format
+        if (!response.ok && response.status === 404) {
+            console.log('First endpoint attempt failed, trying alternative format');
+            url = `${API_BASE_URL}/players/by-card-id/${encodeURIComponent(cardId)}`;
+            console.log(`Trying alternate API URL: ${url}`);
+
+            response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+        }
+
+        // Handle response
+        if (!response.ok) {
+            // Try to get error details from the response
+            let errorDetails;
+            try {
+                errorDetails = await response.text();
+                console.error(`API error details: ${errorDetails}`);
+            } catch (e) {
+                errorDetails = 'No error details available';
+            }
+
+            throw new Error(`Player not found: ${response.status} ${response.statusText} - ${errorDetails}`);
+        }
+
+        const data = await response.json();
+        console.log('Found player data structure:', JSON.stringify(data, null, 2));
+
+        // Extract the player ID based on different possible structures
+        let playerId = null;
+        let playerData = null;
+
+        // Handle different possible API response structures
+        if (Array.isArray(data) && data.length > 0) {
+            // If response is an array, use the first item
+            playerData = data[0];
+            console.log('Using first player from array response');
+        } else if (typeof data === 'object') {
+            // If response is a single object
+            playerData = data;
+        }
+
+        // Check different possible ID field names
+        if (playerData) {
+            // Try different common ID field names
+            if (playerData.id !== undefined) {
+                playerId = playerData.id;
+            } else if (playerData._id !== undefined) {
+                playerId = playerData._id;
+            } else if (playerData.player_id !== undefined) {
+                playerId = playerData.player_id;
+            } else if (playerData.playerId !== undefined) {
+                playerId = playerData.playerId;
+            } else {
+                // If we can't find a standard ID field, log all keys
+                console.log('Unable to find ID field. Available fields:', Object.keys(playerData));
+
+                // As a fallback, use any field that contains "id" in its name
+                const possibleIdFields = Object.keys(playerData).filter(key =>
+                    key.toLowerCase().includes('id'));
+
+                if (possibleIdFields.length > 0) {
+                    playerId = playerData[possibleIdFields[0]];
+                    console.log(`Using ${possibleIdFields[0]} as ID field with value: ${playerId}`);
+                }
+            }
+        }
+
+        // Create a normalized player object with a guaranteed id field
+        const normalizedPlayer = {
+            id: playerId,
+            rawData: playerData
+        };
+
+        console.log('Normalized player:', JSON.stringify(normalizedPlayer, null, 2));
+        return normalizedPlayer;
+    } catch (error) {
+        console.error('Error finding player:', error.message);
+        return null;
+    }
+}
+
+// Update tape selection for a player
+async function updateTapeSelection(playerId, tapeIds) {
+    try {
+        console.log(`Updating tape selection for player ${playerId} with tapes: ${tapeIds}`);
+        let url = `${API_BASE_URL}/update-tape-selection/${playerId}`;
+        console.log(`Trying API URL: ${url}`);
+
+        let response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ tape: [...tapeIds] })
+        });
+
+        // If the first endpoint fails, try an alternative format
+        if (!response.ok && response.status === 404) {
+            console.log('First endpoint attempt failed, trying alternative format');
+            url = `${API_BASE_URL}/players/update-tape-selection/${playerId}`;
+            console.log(`Trying alternate API URL: ${url}`);
+
+            response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ tape: [...tapeIds] })
+            });
+        }
+
+        if (!response.ok) {
+            // Try to get error details from the response
+            let errorDetails;
+            try {
+                errorDetails = await response.text();
+                console.error(`API error details: ${errorDetails}`);
+            } catch (e) {
+                errorDetails = 'No error details available';
+            }
+
+            throw new Error(`Error updating tape selection: ${response.status} ${response.statusText} - ${errorDetails}`);
+        }
+
+        const data = await response.json();
+        console.log('Tape selection updated successfully:', JSON.stringify(data, null, 2));
+        return data;
+    } catch (error) {
+        console.error('Error updating tape selection:', error.message);
+        return null;
+    }
+}
+
+// Game session management
+
+// Start a new game session
+function startGameSession() {
+    gameSessionActive = true;
+    gameSessionStartTime = Date.now() / 1000;
+    gameSessionEndTime = gameSessionStartTime + GAME_SESSION_DURATION;
+    correctMatchesTracked = [];
+    console.log(`Game session started at ${new Date(gameSessionStartTime * 1000).toISOString()}`);
+    console.log(`Game session will end at ${new Date(gameSessionEndTime * 1000).toISOString()}`);
+}
+
+// End the current game session and update the player's tape selection
+async function endGameSession() {
+    if (!gameSessionActive) return;
+
+    gameSessionActive = false;
+    console.log(`Game session ended at ${new Date().toISOString()}`);
+    console.log(`Correct matches achieved: ${correctMatchesTracked.join(', ')}`);
+
+    // Clear audio queue and stop current audio before playing timer sound
+    audioQueue = [];
+    stopAudio();
+    console.log("Cleared audio queue and stopped current audio for session end sound");
+
+    if (currentPlayer && currentPlayer.id) {
+        // Send the tracked correct matches to the API
+        await updateTapeSelection(currentPlayer.id, correctMatchesTracked);
+    } else {
+        console.log("No player data available to update tape selection");
+    }
+
+    // Reset game state
+    currentPlayer = null;
+    correctMatchesTracked = [];
+
+    // Play the closing announcement
+    queueAudio(MUSIC_FILES['session_end']);
+}
+
+// Track a correct match
+function trackCorrectMatch(readerId) {
+    if (!gameSessionActive) return;
+
+    // Convert reader ID to its corresponding index
+    const matchIndex = READER_TO_INDEX[readerId];
+
+    if (matchIndex && !correctMatchesTracked.includes(matchIndex)) {
+        console.log(`Tracking correct match for reader ${readerId} as index ${matchIndex}`);
+        correctMatchesTracked.push(matchIndex);
+        // Sort the array to keep it in order
+        correctMatchesTracked.sort((a, b) => a - b);
+        console.log(`Updated correct matches: ${correctMatchesTracked.join(', ')}`);
+    }
+}
+
+// Audio management
+
+// Queue audio for sequential playback
+function queueAudio(audioFile) {
+    audioQueue.push(audioFile);
+    console.log(`Added ${audioFile} to audio queue. Queue length: ${audioQueue.length}`);
+
+    // Start processing the queue if not already processing
+    if (!processingAudioQueue && !isAudioPlaying) {
+        processAudioQueue();
+    }
+}
+
+// Process the audio queue
+async function processAudioQueue() {
+    if (audioQueue.length === 0 || isAudioPlaying || processingAudioQueue) {
+        return;
+    }
+
+    processingAudioQueue = true;
+
+    // Get the next audio file from the queue
+    const nextAudio = audioQueue.shift();
+    console.log(`Processing next audio in queue: ${nextAudio}`);
+
+    // Play the audio and wait for it to complete
+    return new Promise((resolve) => {
+        // Start playback
+        startAudioPlayback(nextAudio);
+
+        // Check if playback has completed every 500ms
+        const checkInterval = setInterval(() => {
+            if (!isAudioPlaying) {
+                clearInterval(checkInterval);
+                processingAudioQueue = false;
+                console.log(`Finished playing ${nextAudio}`);
+
+                // Process the next item in the queue
+                setTimeout(() => {
+                    processAudioQueue();
+                }, 500);
+
+                resolve();
+            }
+        }, 500);
+    });
+}
+
 // Helper function to determine the appropriate music file for a reader/UID combination
 function getMusicFile(reader, uid) {
     const key = `${reader}|${uid}`;
     console.log(`Checking key: ${key}`);
-    if (CORRECT_MATCHES[key]) {
-        console.log("Correct reader-UID match!");
+
+    // Only track correct matches during an active game session
+    if (gameSessionActive && CORRECT_MATCHES[key]) {
+        console.log("Correct reader-UID match during game session!");
+        trackCorrectMatch(reader);
+        return CORRECT_MATCHES[key];
+    } else if (CORRECT_MATCHES[key]) {
+        console.log("Correct reader-UID match, but no active game session");
         return CORRECT_MATCHES[key];
     } else if (UID_DEFAULT_MUSIC[uid]) {
         console.log("Known UID but wrong reader");
@@ -110,12 +401,24 @@ function stopAudio() {
 
 // Play music for the given reader and UID
 function playMusicForReader(reader, uid) {
+    // If not in a game session and this is not reader 4, don't play anything
+    if (!gameSessionActive && reader !== '4') {
+        console.log(`Reader ${reader} - No active game session, ignoring`);
+        return false;
+    }
+
     const musicFile = getMusicFile(reader, uid);
 
     // Verify file exists before playing
     if (!fs.existsSync(musicFile)) {
         console.error(`Audio file does not exist: ${musicFile}`);
         return false;
+    }
+
+    // If we're processing a queue, add this to the queue instead of playing immediately
+    if (processingAudioQueue || isAudioPlaying) {
+        queueAudio(musicFile);
+        return true;
     }
 
     // Stop any currently playing audio
@@ -174,11 +477,11 @@ function startAudioPlayback(musicFile) {
             currentAudioProcess = null;
             audioStartTime = 0;
 
-            // Reset active reader when audio finishes naturally
-            if (currentActiveReader && code === 0) {
-                console.log("Audio playback completed naturally");
-                currentActiveReader = null;
-                currentMusicFile = null;
+            // Process the next item in the audio queue if there is one
+            if (audioQueue.length > 0) {
+                setTimeout(() => {
+                    processAudioQueue();
+                }, 500);
             }
         });
 
@@ -257,6 +560,13 @@ function getMostRecentActiveReader() {
     return mostRecentReader;
 }
 
+// Function to clear audio queue
+function clearAudioQueue() {
+    const queueLength = audioQueue.length;
+    audioQueue = [];
+    console.log(`Cleared audio queue (${queueLength} items removed)`);
+}
+
 // Function to handle card removal
 function handleCardRemoval(readerId) {
     const currentTime = Date.now() / 1000; // Current time in seconds
@@ -273,19 +583,69 @@ function handleCardRemoval(readerId) {
         if (readerId === currentActiveReader) {
             console.log(`Active reader ${readerId} card was removed, handling audio change`);
             const mostRecentReader = getMostRecentActiveReader();
+
+            // Clear audio queue and stop current audio immediately on reader removal
+            clearAudioQueue();
+            stopAudio();
+
             if (mostRecentReader && mostRecentReader !== currentActiveReader) {
                 console.log(`Switching to most recent active reader: ${mostRecentReader}`);
+                // Immediately play the next reader's audio
                 playMusicForReader(mostRecentReader, readerStates[mostRecentReader].uid);
                 currentActiveReader = mostRecentReader;
                 lastSwitchTime = currentTime;
             } else {
-                // No other active readers, stop audio since we received an explicit removal event
-                console.log("No other active readers and received removal event, stopping audio");
-                stopAudio();
+                // No other active readers
+                console.log("No other active readers and received removal event, audio stopped");
                 currentActiveReader = null;
                 currentMusicFile = null;
             }
         }
+
+        // If Reader 4 card was removed and we have an active game session, don't end it
+        // The game session will end on its timer
+        if (readerId === '4' && gameSessionActive) {
+            console.log("Player ID card removed from Reader 4, but game session continues");
+        }
+    }
+}
+
+// Function to handle Reader 4 scan - player identification
+async function handlePlayerScan(cardId) {
+    // If we already have a player and game session is active, don't start a new one
+    if (currentPlayer && gameSessionActive) {
+        console.log(`Game session already active for player ${currentPlayer.id}`);
+        return;
+    }
+
+    console.log(`Processing player scan with card ID: ${cardId}`);
+
+    // Call the API to get player data
+    const playerData = await findPlayerByCardId(cardId);
+
+    if (playerData && playerData.id) {
+        currentPlayer = playerData;
+        console.log(`Player identified: ${currentPlayer.id}`);
+
+        // Queue up the intro audio sequence
+        queueAudio(MUSIC_FILES['intro_reminder']);
+        // queueAudio(MUSIC_FILES['tony_intro']);
+
+        // Start a new game session when the intro audio finishes
+        const checkForAudioCompletion = setInterval(() => {
+            if (audioQueue.length === 0 && !isAudioPlaying) {
+                clearInterval(checkForAudioCompletion);
+                startGameSession();
+
+                // Set a timer to end the game session after 2 minutes
+                setTimeout(() => {
+                    endGameSession();
+                }, GAME_SESSION_DURATION * 1000);
+            }
+        }, 1000);
+    } else {
+        const errorMessage = playerData ? "Player found but ID is missing" : "Player not found with that card ID";
+        console.log(errorMessage);
     }
 }
 
@@ -299,6 +659,18 @@ function handleCardDetection(readerId, uid) {
     readerStates[readerId].lastTime = currentTime;
     readerStates[readerId].active = true;
     readerStates[readerId].uid = uid;
+
+    // Special handling for Reader 4 - Player identification
+    if (readerId === '4') {
+        handlePlayerScan(uid);
+        return;
+    }
+
+    // For readers 1-3, only handle during active game session
+    if (!gameSessionActive) {
+        console.log(`Reader ${readerId} scan ignored - no active game session`);
+        return;
+    }
 
     // Check if this should become the active reader
     let shouldSwitch = false;
@@ -378,7 +750,10 @@ port.on('error', (error) => {
     console.error('Serial port error:', error);
 });
 
-// Main loop to check for card states
+// Main loop to check for card states and game session timer
+let lastTimerLogTime = 0;
+const TIMER_LOG_INTERVAL = 5; // Only log timer every 5 seconds
+
 setInterval(() => {
     const currentTime = Date.now() / 1000; // Current time in seconds
 
@@ -395,11 +770,30 @@ setInterval(() => {
         }
     }
 
+    // Check if game session has timed out
+    if (gameSessionActive) {
+        const remainingSeconds = Math.max(0, Math.round(gameSessionEndTime - currentTime));
+
+        // Only log time every TIMER_LOG_INTERVAL seconds to avoid flooding the console
+        if (currentTime - lastTimerLogTime >= TIMER_LOG_INTERVAL) {
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+            console.log(`Game session remaining time: ${minutes}:${seconds.toString().padStart(2, '0')} (${remainingSeconds} seconds)`);
+            lastTimerLogTime = currentTime;
+        }
+
+        if (currentTime >= gameSessionEndTime) {
+            console.log("Game session time limit reached");
+            endGameSession();
+        }
+    }
+
     // Keep track of the current state by checking for any active readers
     // This is just for logging/debugging and doesn't affect audio playback
     const anyActive = Object.values(readerStates).some(state => state.active);
     if (!anyActive && currentActiveReader !== null) {
-        console.log(`No active readers detected, but waiting for explicit removal event before stopping audio`);
+        // Removed noisy logging
+        // console.log(`No active readers detected, but waiting for explicit removal event before stopping audio`);
     }
 }, LOOP_DELAY);
 
@@ -409,6 +803,11 @@ process.on('SIGINT', () => {
 
     // Stop any playing audio
     stopAudio();
+
+    // If a game session is active, end it and save the data
+    if (gameSessionActive) {
+        endGameSession();
+    }
 
     // Close the serial port connection
     port.close();
