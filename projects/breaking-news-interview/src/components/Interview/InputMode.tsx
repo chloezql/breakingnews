@@ -129,7 +129,7 @@ const InputMode: React.FC<InputModeProps> = ({
               textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)'
             }}
           >
-            Available suspects: {availableSuspects.join(', ')}
+            {/* Available suspects: {availableSuspects.join(', ')} */}
           </Box>
         </Box>
       </Box>

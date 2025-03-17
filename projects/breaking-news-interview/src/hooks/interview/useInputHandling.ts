@@ -74,7 +74,7 @@ const useInputHandling = ({
           } 
           // Check if session is active
           else if (!isSessionActive) {
-            onShowError('Session not started. Press 9 to begin.');
+            onShowError('Session not started. Press 6 to begin.');
             onInputChange('');
           }
           else {

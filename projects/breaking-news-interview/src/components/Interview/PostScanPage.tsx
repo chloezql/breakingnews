@@ -76,7 +76,7 @@ const PostScanPage: React.FC<PostScanPageProps> = ({
             ? "Listening to intro..." 
             : isSessionActive 
               ? "Input code to call your suspect" 
-              : "Press 9 on the telephone to start"}
+              : "Pick up the phone and press 6 on the telephone to start"}
         </Box>
       </Box>
       
