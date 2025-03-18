@@ -24,9 +24,8 @@ const MUSIC_FILES = {
     'neighbor_correct': path.join(AUDIO_DIR, 'Station3_Neighbor_01.wav'),
     'neighbor_default': path.join(AUDIO_DIR, 'Station3_Neighbor_01A.wav'),
     'intro_reminder': path.join(AUDIO_DIR, 'breaking-news-tape-before-game-reminder.mp3'),
-    'tony_intro': path.join(AUDIO_DIR, 'Station3_Tony_01.wav'),
-    'tony_second': path.join(AUDIO_DIR, 'Station3_Tony_02.wav'),
-    'session_end': path.join(AUDIO_DIR, 'Station3_Tony_02A.wav'),
+    'tony_intro': path.join(AUDIO_DIR, 'game-intro.wav'),
+    'session_end': path.join(AUDIO_DIR, 'time-up-audio.wav'),
     'default': path.join(AUDIO_DIR, 'Station3_Neighbor_01A.wav') // Default music for unknown cards
 };
 
@@ -84,7 +83,7 @@ let correctMatchesTracked = []; // Array to track which readers had correct matc
 let audioQueue = []; // Queue for sequential audio playback
 let processingAudioQueue = false; // Flag to track if we're processing the audio queue
 let reader4Locked = false; // Flag to prevent multiple scans on reader 4
-const GAME_SESSION_DURATION = 20; // 2 minutes in seconds
+const GAME_SESSION_DURATION = 120; // 2 minutes in seconds
 const AUDIO_GRACE_PERIOD = 5.0; // Grace period in seconds after audio starts before allowing interruption
 
 // Constants for timing - adjusted to match Arduino timing
