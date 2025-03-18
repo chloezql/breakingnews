@@ -24,18 +24,6 @@ const LeaderboardEntry = ({ rank, entry }) => {
                 <i className="fas fa-eye"></i> {formatNumber(entry.view_count)}
             </div>
 
-            <div className="headline">
-                <h3>{entry.headline || "Untitled Headline"}</h3>
-                <div className="hashtags">
-                    {Array.isArray(hashtags) ?
-                        hashtags.slice(0, 3).map((tag, index) => (
-                            <span key={index} className="hashtag">{tag}</span>
-                        )) :
-                        <span className="hashtag">#BreakingNews</span>
-                    }
-                </div>
-            </div>
-
             <div className="reporter">
                 {entry.player_name || "Anonymous Reporter"}
             </div>

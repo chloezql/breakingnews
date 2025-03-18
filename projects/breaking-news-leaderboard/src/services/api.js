@@ -13,7 +13,7 @@ const FETCH_INTERVAL = parseInt(process.env.REACT_APP_FETCH_INTERVAL || '60000',
  */
 export const fetchLeaderboard = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/fetchLeaderboard`);
+        const response = await fetch(`${API_BASE_URL}/leaderboard`);
 
         if (!response.ok) {
             throw new Error(`API error: ${response.status}`);

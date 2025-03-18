@@ -180,7 +180,7 @@ const LeaderboardPage = () => {
             </div>
 
             {/* Control buttons */}
-            <div className="control-buttons">
+            {/* <div className="control-buttons">
                 <button
                     className={`log-toggle ${showLogs ? 'active' : ''}`}
                     onClick={toggleLogs}
@@ -197,7 +197,7 @@ const LeaderboardPage = () => {
                     <i className={`fas ${isAutoScrolling ? 'fa-pause' : 'fa-play'}`}></i>
                     {isAutoScrolling ? ' Pause Scroll' : ' Auto Scroll'}
                 </button>
-            </div>
+            </div> */}
 
             {/* Update Logs */}
             {showLogs && (
@@ -228,7 +228,6 @@ const LeaderboardPage = () => {
                 <div className="leaderboard-table-header">
                     <div className="rank-header">Rank</div>
                     <div className="views-header">Views</div>
-                    <div className="headline-header">Headline</div>
                     <div className="reporter-header">Reporter</div>
                 </div>
 
