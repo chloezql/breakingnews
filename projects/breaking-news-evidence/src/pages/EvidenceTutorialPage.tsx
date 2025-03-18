@@ -14,7 +14,7 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
   const [loginError, setLoginError] = useState<string | null>(null);
   const [lastCardId, setLastCardId] = useState<string | null>(null);
   const [wsConnected, setWsConnected] = useState(false);
-  const [idScanned, setIdScanned] = useState(false);
+  const [idScanned, setIdScanned] = useState(true);
   const [selectedItem, setSelectedItem] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [completedSteps, setCompletedSteps] = useState({
@@ -140,7 +140,14 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
 
   // Render login overlay for ID scan
   const renderLoginOverlay = () => (
+    // Add a Breaking news logo
     <div className="login-overlay">
+      <div className="breaking-news-logo">
+        <img 
+          src="/breaking-news-logo.png" 
+          alt="Breaking News Logo" 
+        />
+      </div>
       <div className="login-card">
         <h2>SCAN YOUR ID CARD TO START</h2>
         {isLoading && <div className="loading">CHECKING CARD...</div>}
@@ -226,9 +233,9 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
                 padding: '15px 20px',
                 borderRadius: '10px',
                 position: 'absolute',
-                top: '100px',
+                top: '0px',
                 right: '-220px',
-                width: '300px',
+                width: '350px',
                 boxShadow: '0 3px 15px rgba(0, 0, 0, 0.2)',
                 zIndex: 11,
                 textAlign: 'left'
@@ -239,7 +246,7 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
                 style={{
                   position: 'absolute',
                   left: '-15px',
-                  top: '30px',
+                  top: '200px',
                   width: 0,
                   height: 0,
                   borderTop: '15px solid transparent',
@@ -250,9 +257,18 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
               
               {!completedSteps.select && (
                 <>
-                  <h3 style={{ marginTop: 0, color: '#dc3545', fontWeight: 'bold' }}>Welcome, Reporter!</h3>
-                  <p style={{ marginBottom: 0, lineHeight: 1.5 }}>
-                    Get familiar with the evidence board by selecting one piece of evidence. Pick up the camera, hover over an item to see its details, and click to select when ready.
+                  <h3 style={{ marginTop: 0, color: '#dc3545', fontWeight: 'bold', fontSize: '40px' }}>Welcome, Reporter!</h3>
+                  <p style={{ marginBottom: 0, lineHeight: 1.5, fontSize: '25px', fontWeight: 'bold' }}>
+                    Let's practice by selecting one piece of evidence. 
+                    <br></br>
+                  
+                  </p>
+                  <p style={{ marginBottom: 0, lineHeight: 1.5, fontSize: '25px' }}>
+                  1. Pick up the camera. 
+                    <br></br>
+                    2. Hover over it to see details.
+                    <br></br>
+                    3. Click to select.
                   </p>
                 </>
               )}
