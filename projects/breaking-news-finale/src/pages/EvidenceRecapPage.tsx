@@ -38,7 +38,7 @@ export function EvidenceRecapPage() {
         
         <div className="window-content">
           <div className="evidence-container">
-            <h1>Your Collected Evidence</h1>
+            <h1>You snapped a few photos from the police office... </h1>
             
             {playerEvidence.length === 0 ? (
               <div className="no-evidence">

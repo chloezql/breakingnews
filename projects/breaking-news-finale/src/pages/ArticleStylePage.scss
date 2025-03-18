@@ -20,7 +20,7 @@
   }
 
   .window-title-bar {
-    background: linear-gradient(to right, #000080, #1084d0);
+    background: linear-gradient(to right, #771414, #dbdbdb);
     color: white;
     padding: 8px 12px;
     font-family: 'Pixelify Sans', cursive;
@@ -54,7 +54,7 @@
       font-size: 22px;
       margin-bottom: 15px;
       text-align: center;
-      color: #000080;
+      color: #000;
       font-weight: bold;
     }
   }
@@ -70,9 +70,9 @@
 
   .section-title {
     font-size: 28px;
-    color: #000080;
+    color: #fe2f0d;
     margin: 30px 0 15px;
-    border-bottom: 2px solid #000080;
+    border-bottom: 2px solid #fe2f0d;
     padding-bottom: 8px;
     text-align: center;
   }
@@ -111,10 +111,10 @@
     }
 
     &.selected {
-      background-color: #000080;
+      background-color: #fe2f0d;
       color: white;
-      border-color: #000080;
-      box-shadow: 0 3px 7px rgba(0, 0, 128, 0.4);
+      border-color: #fe2f0d;
+      box-shadow: 0 3px 7px rgba(128, 0, 0, 0.4);
       transform: translateY(-2px);
       font-weight: bold;
     }
@@ -127,7 +127,7 @@
   }
 
   .submit-button {
-    background-color: #000080;
+    background-color: #a91e09;
     color: white;
     padding: 15px 40px;
     font-size: 20px;
@@ -139,7 +139,7 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 
     &:hover {
-      background-color: #0000a0;
+      background-color: #fe2f0d;
       transform: translateY(-3px);
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
     }

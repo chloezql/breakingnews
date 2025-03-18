@@ -121,7 +121,7 @@ export function TapeRevealPage() {
         
         <div className="window-content">
           <div className="tape-container">
-            <h1>Witness Tape Results</h1>
+            <h1>Let's see if you matched any witness tapes... </h1>
             
             <div className="tape-matches">
               {tapeMatches.map((match, index) => (

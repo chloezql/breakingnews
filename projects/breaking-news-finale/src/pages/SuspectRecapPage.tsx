@@ -46,7 +46,7 @@ export function SuspectRecapPage() {
           <div className="window-content">
             <div className="error-container">
               <h1>No Suspect Selected</h1>
-              <p className="error-message">Sadly you didn't got the time to interview any suspects. But that's no big deal!</p>
+              <p className="error-message">Sadly you didn't got the time to talk to any suspects. But that's no big deal!</p>
               <button 
                 className="continue-button"
                 style={{ padding: '20px', fontSize:'20px' }}
@@ -85,8 +85,8 @@ export function SuspectRecapPage() {
         
         <div className="window-content">
           <div className="suspect-recap-container">
-            <h1> Suspects</h1>
-            <p className="subtitle">Suspect that you interrogated in Erin Carter's death case.</p>
+            <h1> These are the suspects you interrogated earlier...</h1>
+            <p className="subtitle"></p>
             
             <div className={`suspects-grid ${isAnimating ? 'animating' : ''}`}>
               {/* Dr. Eleanor Hart */}

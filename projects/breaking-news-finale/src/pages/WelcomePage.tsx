@@ -26,7 +26,7 @@ export function WelcomePage() {
           <div className="welcome-container">
             <div className="welcome-message">
               <h1>Welcome home {playerName},</h1>
-              <h2>Let's first recap the evidences you have collected.</h2>
+              <h2>Let's first recap all the evidences you have collected.</h2>
               
               <button 
                 className="continue-button"
