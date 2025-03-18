@@ -26,7 +26,7 @@ const MUSIC_FILES = {
     'intro_reminder': path.join(AUDIO_DIR, 'breaking-news-tape-before-game-reminder.mp3'),
     'tony_intro': path.join(AUDIO_DIR, 'Station3_Tony_01.wav'),
     'tony_second': path.join(AUDIO_DIR, 'Station3_Tony_02.wav'),
-    'session_end': path.join(AUDIO_DIR, 'timer-expired.wav'),
+    'session_end': path.join(AUDIO_DIR, 'Station3_Tony_02A.wav'),
     'default': path.join(AUDIO_DIR, 'Station3_Neighbor_01A.wav') // Default music for unknown cards
 };
 
@@ -655,7 +655,7 @@ async function handlePlayerScan(cardId) {
 
         // Queue up the intro audio sequence
         queueAudio(MUSIC_FILES['intro_reminder']);
-        // queueAudio(MUSIC_FILES['tony_intro']);
+        queueAudio(MUSIC_FILES['tony_intro']);
 
         // Start a new game session when the intro audio finishes
         const checkForAudioCompletion = setInterval(() => {
