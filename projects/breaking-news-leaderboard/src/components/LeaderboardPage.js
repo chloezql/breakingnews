@@ -3,6 +3,9 @@ import '../styles/LeaderboardPage.scss';
 import LeaderboardEntry from './LeaderboardEntry';
 import { fetchLeaderboard, formatDate } from '../services/api';
 
+// Get the refresh interval from environment variables or default to 60 seconds (60000ms)
+const REFRESH_INTERVAL = parseInt(process.env.REACT_APP_FETCH_INTERVAL) || 60000;
+
 const LeaderboardPage = () => {
     const [leaderboardEntries, setLeaderboardEntries] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -59,8 +62,8 @@ const LeaderboardPage = () => {
         // Initial fetch
         fetchData();
 
-        // Set up a polling interval to refresh data every minute
-        const intervalId = setInterval(fetchData, 60000);
+        // Set up a polling interval to refresh data
+        const intervalId = setInterval(fetchData, REFRESH_INTERVAL);
 
         // Clean up the interval on component unmount
         return () => clearInterval(intervalId);
@@ -177,7 +180,7 @@ const LeaderboardPage = () => {
             </div>
 
             {/* Control buttons */}
-            {/* <div className="control-buttons">
+            <div className="control-buttons">
                 <button
                     className={`log-toggle ${showLogs ? 'active' : ''}`}
                     onClick={toggleLogs}
@@ -194,7 +197,7 @@ const LeaderboardPage = () => {
                     <i className={`fas ${isAutoScrolling ? 'fa-pause' : 'fa-play'}`}></i>
                     {isAutoScrolling ? ' Pause Scroll' : ' Auto Scroll'}
                 </button>
-            </div> */}
+            </div>
 
             {/* Update Logs */}
             {showLogs && (

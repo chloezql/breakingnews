@@ -2,7 +2,7 @@
  * API Service for interacting with the Xano database
  */
 
-const API_BASE_URL = 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
 
 /**
  * Fetch leaderboard data
@@ -10,7 +10,7 @@ const API_BASE_URL = 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
  */
 export const fetchLeaderboard = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/leaderboard`);
+        const response = await fetch(`${API_BASE_URL}/fetchLeaderboard`);
 
         if (!response.ok) {
             throw new Error(`API error: ${response.status}`);

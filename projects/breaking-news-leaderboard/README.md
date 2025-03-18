@@ -1,64 +1,131 @@
 # Breaking News Leaderboard
 
-A leaderboard application for the Breaking News game that displays the most viral headlines and their performance metrics.
-
-## Overview
-
-The Breaking News Leaderboard is a React application that displays a leaderboard of breaking news headlines created by players in the Breaking News game. It shows metrics like view counts, trending status, and hashtags associated with each headline.
+A React application that displays a leaderboard of news articles ranked by view count. The leaderboard updates automatically every minute.
 
 ## Features
 
-- Display a list of headlines ranked by popularity/view count
-- Show trending status for each headline
-- Display relevant hashtags
-- Responsive design for mobile and desktop
-- Visual indicators for top performers (medals for top 3)
+- Auto-updating leaderboard that refreshes every minute
+- Displays top reporters ranked by article views
+- Auto-scrolling functionality with pause/resume control
+- Update logs showing data refresh history
+- Responsive design for various screen sizes
 
-## Getting Started
+## Setup Instructions
 
 ### Prerequisites
 
-- Node.js (v14 or later recommended)
+- Node.js (v14 or later)
 - npm or yarn
 
 ### Installation
 
-1. Clone the repository
+1. Clone the repository:
 
-```
-git clone <repository-url>
-cd breaking-news-leaderboard
-```
+   ```
+   git clone [repository-url]
+   cd breaking-news-leaderboard
+   ```
 
-2. Install dependencies
+2. Install dependencies:
 
-```
-npm install
-```
+   ```
+   npm install
+   ```
 
-3. Start the development server
+   or
+
+   ```
+   yarn install
+   ```
+
+3. Configure environment variables:
+
+   Create a `.env` file in the root directory with the following variables:
+
+   ```
+   REACT_APP_API_BASE_URL=https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA
+   REACT_APP_FETCH_INTERVAL=60000
+   ```
+
+### Running Locally
+
+Start the development server:
 
 ```
 npm start
 ```
 
-The application will be available at `http://localhost:3000`
+or
+
+```
+yarn start
+```
+
+The application will be available at http://localhost:3000
+
+### Building for Production
+
+Build the application for production:
+
+```
+npm run build
+```
+
+or
+
+```
+yarn build
+```
+
+This creates a `build` directory with optimized production files.
+
+## Deployment
+
+### Deploying to Vercel
+
+This project is configured for easy deployment to Vercel.
+
+1. Install Vercel CLI:
+
+   ```
+   npm install -g vercel
+   ```
+
+2. Login to Vercel:
+
+   ```
+   vercel login
+   ```
+
+3. Deploy:
+   ```
+   vercel
+   ```
+
+For production deployment:
+
+```
+vercel --prod
+```
+
+### Environment Variables on Vercel
+
+Make sure to configure the same environment variables on Vercel that you have in your `.env` file:
+
+- `REACT_APP_API_BASE_URL`: The base URL for the API
+- `REACT_APP_FETCH_INTERVAL`: Refresh interval in milliseconds
+
+## API Integration
+
+The application integrates with a Xano backend API. The leaderboard data is fetched from the `/fetchLeaderboard` endpoint.
 
 ## Project Structure
 
-- `/src/components` - React components
-- `/src/styles` - SCSS styling files
-- `/src/services` - API communication and services
-- `/src/types` - TypeScript type definitions
-
-## Future Enhancements
-
-- Live updating leaderboard with WebSockets
-- User authentication to view personal rankings
-- Filtering and sorting options
-- Detailed view of each headline's performance
-- Integration with social media platforms
+- `src/components/` - React components
+- `src/services/` - API services and utilities
+- `src/styles/` - SCSS stylesheets
+- `public/` - Static assets
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+© 2023 Breaking News
