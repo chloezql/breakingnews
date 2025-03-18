@@ -9,7 +9,8 @@
       "use": "@vercel/static-build",
       "config": {
         "distDir": "build",
-        "maxLambdaSize": "15mb"
+        "maxLambdaSize": "15mb",
+        "installCommand": "npm install --legacy-peer-deps"
       }
     }
   ],
