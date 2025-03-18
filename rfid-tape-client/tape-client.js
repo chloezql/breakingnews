@@ -49,9 +49,9 @@ const CORRECT_MATCHES = {
 
 // Map reader numbers to correct match indices
 const READER_TO_INDEX = {
-    '1': 1, // Reader 1 corresponds to index 1 in the array
+    '1': 3, // Reader 1 corresponds to index 1 in the array
     '2': 2, // Reader 2 corresponds to index 2 in the array
-    '3': 3  // Reader 3 corresponds to index 3 in the array
+    '3': 1  // Reader 3 corresponds to index 3 in the array
 };
 
 // Define default music for specific UIDs when on wrong readers
@@ -83,7 +83,7 @@ let gameSessionEndTime = 0; // When the game session will end
 let correctMatchesTracked = []; // Array to track which readers had correct matches
 let audioQueue = []; // Queue for sequential audio playback
 let processingAudioQueue = false; // Flag to track if we're processing the audio queue
-const GAME_SESSION_DURATION = 120; // 2 minutes in seconds
+const GAME_SESSION_DURATION = 20; // 2 minutes in seconds
 const AUDIO_GRACE_PERIOD = 5.0; // Grace period in seconds after audio starts before allowing interruption
 
 // Constants for timing - adjusted to match Arduino timing
@@ -270,6 +270,13 @@ async function endGameSession() {
     console.log(`Game session ended at ${new Date().toISOString()}`);
     console.log(`Correct matches achieved: ${correctMatchesTracked.join(', ')}`);
 
+    // Block all readers
+    const blockedReaders = {};
+    for (const readerId in readerStates) {
+        blockedReaders[readerId] = true;
+        console.log(`Blocking reader ${readerId} at end of session`);
+    }
+
     // Clear audio queue and stop current audio before playing timer sound
     audioQueue = [];
     stopAudio();
@@ -285,9 +292,12 @@ async function endGameSession() {
     // Reset game state
     currentPlayer = null;
     correctMatchesTracked = [];
+    currentActiveReader = null;
+    currentMusicFile = null;
 
-    // Play the closing announcement
-    queueAudio(MUSIC_FILES['session_end']);
+    // Play the closing announcement with direct approach to ensure it plays
+    // Try using an MP3 player first which might have better compatibility
+    playSessionEndSound();
 }
 
 // Track a correct match
@@ -579,12 +589,12 @@ function handleCardRemoval(readerId) {
         readerStates[readerId].removalTime = currentTime;
         readerStates[readerId].lastRemoval = currentTime;
 
-        // If this was the current active reader, check if we should switch to another active reader
+        // Only stop audio if this was the current active reader
         if (readerId === currentActiveReader) {
             console.log(`Active reader ${readerId} card was removed, handling audio change`);
             const mostRecentReader = getMostRecentActiveReader();
 
-            // Clear audio queue and stop current audio immediately on reader removal
+            // Clear audio queue and stop current audio immediately on active reader removal
             clearAudioQueue();
             stopAudio();
 
@@ -596,10 +606,12 @@ function handleCardRemoval(readerId) {
                 lastSwitchTime = currentTime;
             } else {
                 // No other active readers
-                console.log("No other active readers and received removal event, audio stopped");
+                console.log("No other active readers and active reader removed, audio stopped");
                 currentActiveReader = null;
                 currentMusicFile = null;
             }
+        } else {
+            console.log(`Non-active reader ${readerId} card was removed, keeping current audio playing`);
         }
 
         // If Reader 4 card was removed and we have an active game session, don't end it
@@ -672,26 +684,98 @@ function handleCardDetection(readerId, uid) {
         return;
     }
 
-    // Check if this should become the active reader
-    let shouldSwitch = false;
-    if (currentActiveReader === null) {
-        shouldSwitch = true;
-    } else if (readerId !== currentActiveReader) {
-        // Only switch if this is the most recent reader and enough time has passed
-        if (currentTime - lastSwitchTime > READER_SWITCH_THRESHOLD) {
-            shouldSwitch = true;
-            console.log(`Reader switch threshold passed, allowing switch to Reader ${readerId}`);
-        }
+    // ALWAYS stop current audio when a new card is detected on any reader
+    if (isAudioPlaying) {
+        console.log(`New card detected on Reader ${readerId} - stopping current audio from Reader ${currentActiveReader}`);
+        clearAudioQueue();
+        stopAudio();
     }
 
-    if (shouldSwitch) {
-        console.log(`Switching playback to Reader ${readerId}`);
-        if (playMusicForReader(readerId, uid)) {
-            currentActiveReader = readerId;
-            lastSwitchTime = currentTime;
+    // Always switch to the new reader when a card is detected
+    console.log(`Switching playback to Reader ${readerId}`);
+    if (playMusicForReader(readerId, uid)) {
+        currentActiveReader = readerId;
+        lastSwitchTime = currentTime;
+    }
+}
+
+// New function to play session end sound with better compatibility
+function playSessionEndSound() {
+    const sessionEndFile = MUSIC_FILES['session_end'];
+
+    console.log(`Attempting to play session end sound: ${sessionEndFile}`);
+
+    // Try to convert WAV to MP3 if possible (for better compatibility)
+    if (process.platform === 'darwin') {
+        // For macOS: Try playing directly with afplay first
+        try {
+            stopAudio(); // Make sure any previous audio is stopped
+
+            console.log("Playing session end sound with afplay");
+            const audioProcess = spawn('afplay', [sessionEndFile]);
+
+            audioProcess.stderr.on('data', (data) => {
+                console.error(`Session end audio stderr: ${data}`);
+
+                // If afplay fails, try alternative approach
+                if (data.toString().includes('Error')) {
+                    console.log("afplay failed, trying alternative player...");
+
+                    // Try using the 'play' command from SoX as an alternative
+                    exec('which play', (error, stdout) => {
+                        if (!error && stdout.trim()) {
+                            console.log("Using 'play' command for session end sound");
+                            const altProcess = spawn('play', [sessionEndFile]);
+                            currentAudioProcess = altProcess;
+                            isAudioPlaying = true;
+                        } else {
+                            // If neither works, try a system alert sound
+                            console.log("Using system 'say' command as last resort");
+                            exec('say "Game session ended"');
+                        }
+                    });
+                }
+            });
+
+            audioProcess.on('close', (code) => {
+                console.log(`Session end sound playback ended with code ${code}`);
+                isAudioPlaying = false;
+                currentAudioProcess = null;
+            });
+
+            currentAudioProcess = audioProcess;
+            isAudioPlaying = true;
+
+        } catch (error) {
+            console.error(`Error playing session end sound: ${error.message}`);
+            // Fallback to system notification
+            exec('say "Game session ended"');
+        }
+    } else if (process.platform === 'win32') {
+        // Windows fallback to PowerShell alert
+        try {
+            const audioProcess = spawn('powershell', [
+                '-c',
+                `(New-Object Media.SoundPlayer "${sessionEndFile}").PlaySync()`
+            ]);
+            currentAudioProcess = audioProcess;
+            isAudioPlaying = true;
+        } catch (error) {
+            console.error(`Error playing session end sound: ${error.message}`);
+            // Try PowerShell beep as fallback
+            exec('powershell -c "[Console]::Beep(800,1000)"');
         }
     } else {
-        console.log(`Continuous card presence on Reader ${readerId}`);
+        // Linux fallback
+        try {
+            const audioProcess = spawn('aplay', [sessionEndFile]);
+            currentAudioProcess = audioProcess;
+            isAudioPlaying = true;
+        } catch (error) {
+            console.error(`Error playing session end sound: ${error.message}`);
+            // Try system bell on Linux
+            process.stdout.write('\x07');
+        }
     }
 }
 
@@ -784,6 +868,8 @@ setInterval(() => {
 
         if (currentTime >= gameSessionEndTime) {
             console.log("Game session time limit reached");
+
+            // Force end the game session which will stop all readers and audio
             endGameSession();
         }
     }
