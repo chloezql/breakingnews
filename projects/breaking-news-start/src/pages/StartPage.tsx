@@ -95,7 +95,7 @@ export function StartPage() {
   // Start scanning when the button is clicked
   const startScanning = () => {
     setIsScanning(true);
-    setScanMessage('Scanning... Please place your ID card on the reader');
+    setScanMessage(`Scan your ID card to begin.`);
   };
   
   return (
@@ -108,16 +108,38 @@ export function StartPage() {
       </div>
       
       {!isScanning ? (
-        <button 
-          className="play-button"
-          onClick={startScanning}
-          disabled={isProcessing}
-        >
-          <div className="play-text">PLAY</div>
-        </button>
+        <>
+          <button 
+            className="play-button"
+            onClick={startScanning}
+            disabled={isProcessing}
+          >
+            <div className="play-text">PLAY</div>
+          </button>
+          
+          <div className="newspaper-container">
+            <img 
+              src="/GDC_newspaper_images.png" 
+              alt="Newspaper" 
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                maxWidth: '100%',
+                width: 'auto',
+                height: 'auto',
+                zIndex: 1
+              }}
+            />
+          </div>
+        </>
       ) : (
         <div className="scan-container">
-          <div className="scan-message">{scanMessage}</div>
+          <div className="scan-message">
+            <h3>Welcome to Breaking News!</h3>
+            <p>Scan your ID card to begin.</p>
+            </div>
           {isProcessing && <div className="loading-spinner"></div>}
         </div>
       )}
