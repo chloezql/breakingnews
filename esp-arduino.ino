@@ -2,25 +2,25 @@
 #include <MFRC522DriverSPI.h>
 #include <MFRC522DriverPinSimple.h>
 #include <MFRC522Debug.h>
-#include <WiFi.h>              // Built-in WiFi library
-#include <WebSocketsClient.h>  // Install from Library Manager: "WebSocket Client" by Markus Sattler
-#include <ArduinoJson.h>       // Install from Library Manager: "ArduinoJson" by Benoit Blanchon
+#include <WiFi.h>
+#include <WebSocketsClient.h>
+#include <ArduinoJson.h>
 
 // WiFi credentials
 const char* ssid = "Chillin Cave";
 const char* password = "mimamima";
 
-// WebSocket server details
-const char* websocket_server = "192.168.4.100";  // Replace with your computer's IP address
-const int websocket_port = 8080;
+// WebSocket server details - UPDATED FOR RAILWAY
+const char* websocket_server = "breaking-news-ws-server-production.up.railway.app";
+const int websocket_port = 443; // Use port 443 for secure connections
 
 // Define the pin for the buzzer
 #define BUZZER_PIN 4
 
 // RFID reader pins
 MFRC522DriverPinSimple ss_pin(5);
-MFRC522DriverSPI driver{ss_pin}; // Create SPI driver
-MFRC522 mfrc522{driver};         // Create MFRC522 instance
+MFRC522DriverSPI driver{ss_pin};
+MFRC522 mfrc522{driver};
 
 // WebSocket client instance
 WebSocketsClient webSocket;
@@ -41,7 +41,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         // Send device info
         StaticJsonDocument<200> doc;
         doc["type"] = "device_connect";
-        doc["deviceId"] = "esp32-rfid-reader";
+        doc["deviceId"] = "esp32-rfid-reader-001";
         doc["deviceType"] = "rfid_reader";
         
         String jsonString;
@@ -51,6 +51,18 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       break;
     case WStype_TEXT:
       Serial.printf("[WebSocket] Received text: %s\n", payload);
+      break;
+    case WStype_ERROR:
+      Serial.printf("[WebSocket] Error: %u\n", length);
+      break;
+    case WStype_BIN:
+      Serial.printf("[WebSocket] Binary data received\n");
+      break;
+    case WStype_PING:
+      Serial.println("[WebSocket] Ping received");
+      break;
+    case WStype_PONG:
+      Serial.println("[WebSocket] Pong received");
       break;
   }
 }
@@ -76,7 +88,11 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   // Configure and connect WebSocket client
-  webSocket.begin(websocket_server, websocket_port, "/");
+  Serial.print("Connecting to WebSocket server: ");
+  Serial.println(websocket_server);
+  
+  // Use beginSSL for secure connection
+  webSocket.beginSSL(websocket_server, websocket_port, "/");
   webSocket.onEvent(webSocketEvent);
   webSocket.setReconnectInterval(5000);
   
@@ -121,7 +137,7 @@ void loop() {
       StaticJsonDocument<200> doc;
       doc["type"] = "rfid_scan";
       doc["cardId"] = uidString;
-      doc["deviceId"] = "esp32-rfid-reader";
+      doc["deviceId"] = "esp32-001";
 
       String jsonString;
       serializeJson(doc, jsonString);

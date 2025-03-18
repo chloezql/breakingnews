@@ -116,7 +116,7 @@ vercel
 ## Usage Instructions
 
 1. Scan your reporter ID card
-2. Press 9 to start the interview session
+2. Press 6 to start the interview session
 3. Enter a suspect ID followed by a dot (e.g., "7298.")
 4. Interview the suspect
 5. Press 0 to end the call
