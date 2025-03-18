@@ -50,7 +50,7 @@ function EvidenceBoardIntroPage({ onComplete, playerId }: EvidenceBoardIntroPage
     const setupAudio = () => {
       if (playerId && mounted) {
         // Create audio element
-        audio = new Audio('/Station2_Tony_01.wav');
+        audio = new Audio('/Station2_Tony_01_Alt.wav');
         audioRef.current = audio;
         
         // Set up event listener for when audio finishes playing

@@ -441,8 +441,8 @@ const InterviewPage: React.FC = () => {
   const playEndingAudio = useCallback(() => {
     // Determine which audio to play
     const audioFile = allSuspectsCalled() 
-        ? '/guard-audios/Station4_Tony_03A.wav' // All suspects interviewed
-        : '/guard-audios/Station4_Tony_03.wav';  // Time's up
+        ? '/guard-audios/Station4_Tony_03A_Alt.wav' // All suspects interviewed
+        : '/guard-audios/Station4_Tony_03_Alt.wav';  // Time's up
     
     // Set up audio with onended callback to reset state
     const endAudio = new Audio(audioFile);

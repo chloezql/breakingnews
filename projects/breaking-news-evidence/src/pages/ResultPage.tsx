@@ -20,7 +20,7 @@ function ResultPage({ onComplete, onReset, playerId, isTimeout, hadSelectedEvide
     let mounted = true;
     const audioFile = isTimeout 
       ? (hadSelectedEvidence ? 'Station2_Tony_03.wav' : 'Station2_Tony_03A.wav')
-      : 'Station2_Tony_02.wav';
+      : 'Station2_Tony_02_Alt.wav';
       
     const audio = new Audio(`${process.env.PUBLIC_URL}/${audioFile}`);
     audioRef.current = audio;
