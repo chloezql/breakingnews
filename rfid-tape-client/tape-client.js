@@ -83,6 +83,7 @@ let gameSessionEndTime = 0; // When the game session will end
 let correctMatchesTracked = []; // Array to track which readers had correct matches
 let audioQueue = []; // Queue for sequential audio playback
 let processingAudioQueue = false; // Flag to track if we're processing the audio queue
+let reader4Locked = false; // Flag to prevent multiple scans on reader 4
 const GAME_SESSION_DURATION = 20; // 2 minutes in seconds
 const AUDIO_GRACE_PERIOD = 5.0; // Grace period in seconds after audio starts before allowing interruption
 
@@ -294,6 +295,10 @@ async function endGameSession() {
     correctMatchesTracked = [];
     currentActiveReader = null;
     currentMusicFile = null;
+
+    // Unlock reader 4 after game session ends
+    reader4Locked = false;
+    console.log("Reader 4 unlocked - ready for new player scans");
 
     // Play the closing announcement with direct approach to ensure it plays
     // Try using an MP3 player first which might have better compatibility
@@ -614,21 +619,30 @@ function handleCardRemoval(readerId) {
             console.log(`Non-active reader ${readerId} card was removed, keeping current audio playing`);
         }
 
-        // If Reader 4 card was removed and we have an active game session, don't end it
-        // The game session will end on its timer
-        if (readerId === '4' && gameSessionActive) {
-            console.log("Player ID card removed from Reader 4, but game session continues");
+        // For Reader 4, never unlock on card removal
+        if (readerId === '4') {
+            console.log("Player ID card removed from Reader 4, but reader remains locked until game session ends");
         }
     }
 }
 
 // Function to handle Reader 4 scan - player identification
 async function handlePlayerScan(cardId) {
+    // Check if reader 4 is locked - don't process new scans while locked
+    if (reader4Locked) {
+        console.log("Reader 4 is locked - ignoring new player scan");
+        return;
+    }
+
     // If we already have a player and game session is active, don't start a new one
     if (currentPlayer && gameSessionActive) {
         console.log(`Game session already active for player ${currentPlayer.id}`);
         return;
     }
+
+    // Lock reader 4 to prevent multiple scans
+    reader4Locked = true;
+    console.log("Reader 4 locked - preventing additional scans");
 
     console.log(`Processing player scan with card ID: ${cardId}`);
 
@@ -649,7 +663,7 @@ async function handlePlayerScan(cardId) {
                 clearInterval(checkForAudioCompletion);
                 startGameSession();
 
-                // Set a timer to end the game session after 2 minutes
+                // Set a timer to end the game session after the duration
                 setTimeout(() => {
                     endGameSession();
                 }, GAME_SESSION_DURATION * 1000);
@@ -658,6 +672,10 @@ async function handlePlayerScan(cardId) {
     } else {
         const errorMessage = playerData ? "Player found but ID is missing" : "Player not found with that card ID";
         console.log(errorMessage);
+
+        // Unlock reader 4 if player identification fails
+        reader4Locked = false;
+        console.log("Reader 4 unlocked after failed player identification");
     }
 }
 

@@ -44,7 +44,7 @@ export function App() {
   const goToNextPage = () => {
     switch (currentPage) {
       case AppPage.TUTORIAL:
-        setCurrentPage(AppPage.INTRO);
+        setCurrentPage(AppPage.EVIDENCE_SELECTION);
         break;
       case AppPage.INTRO:
         setCurrentPage(AppPage.EVIDENCE_SELECTION);

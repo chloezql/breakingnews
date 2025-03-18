@@ -42,6 +42,9 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
   const [isTimedOut, setIsTimedOut] = useState(false);
   const [guardAudioPlayed, setGuardAudioPlayed] = useState(false);
 
+  // Add BGM audio ref
+  const bgmRef = useRef<HTMLAudioElement | null>(null);
+
   // Define suspects with their related evidence
   const suspects: SuspectEvidence[] = [
     {
@@ -88,6 +91,16 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
     if (initialPlayerId) {
       setPlayerId(initialPlayerId);
       setTimerStarted(true);
+      
+      // Start playing BGM
+      if (!bgmRef.current) {
+        bgmRef.current = new Audio(`${process.env.PUBLIC_URL}/evidence-selection-bgm.wav`);
+        bgmRef.current.loop = true; // Loop the BGM
+        bgmRef.current.volume = 0.3; // Set volume to 30%
+        bgmRef.current.play().catch(error => {
+          console.error('Error playing BGM:', error);
+        });
+      }
     }
   }, [initialPlayerId]);
   
@@ -111,6 +124,24 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
       if (timerInterval) clearInterval(timerInterval);
     };
   }, [timerStarted, timeRemaining, isTimedOut]);
+
+  // Clean up BGM when component unmounts or timer ends
+  useEffect(() => {
+    return () => {
+      if (bgmRef.current) {
+        bgmRef.current.pause();
+        bgmRef.current = null;
+      }
+    };
+  }, []);
+
+  // Stop BGM when timer runs out
+  useEffect(() => {
+    if (isTimedOut && bgmRef.current) {
+      bgmRef.current.pause();
+      bgmRef.current = null;
+    }
+  }, [isTimedOut]);
 
   // Add helper function to get random evidence
   const getRandomEvidence = () => {
@@ -391,33 +422,36 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
 
   // Updated render general evidence function
   const renderGeneralEvidence = () => (
-    <div className="general-evidence">
-      {EVIDENCE_ITEMS
-        .filter(item => item.id <= 7) // First 7 items are general evidence
-        .map(evidence => {
-          const position = evidencePositions.get(evidence.id);
-          
-          return position ? (
-            <div
-              key={evidence.id}
-              className={`evidence-item ${selectedEvidence.includes(evidence.id) ? 'selected' : ''}`}
-              onClick={() => toggleEvidence(evidence.id)}
-            >
-              <div className="evidence-wrapper">
-                <img
-                  src={`${process.env.PUBLIC_URL}/${evidence.image}`}
-                  alt={evidence.name}
-                />
-                {selectedEvidence.includes(evidence.id) && 
-                  <div className="selected-indicator">✓</div>
-                }
-                <div className="evidence-description">
-                  {evidence.description}
+    <div className="general-evidence-section">
+      <div className="section-label">Public Evidence</div>
+      <div className="general-evidence">
+        {EVIDENCE_ITEMS
+          .filter(item => item.id <= 7) // First 7 items are general evidence
+          .map(evidence => {
+            const position = evidencePositions.get(evidence.id);
+            
+            return position ? (
+              <div
+                key={evidence.id}
+                className={`evidence-item ${selectedEvidence.includes(evidence.id) ? 'selected' : ''}`}
+                onClick={() => toggleEvidence(evidence.id)}
+              >
+                <div className="evidence-wrapper">
+                  <img
+                    src={`${process.env.PUBLIC_URL}/${evidence.image}`}
+                    alt={evidence.name}
+                  />
+                  {selectedEvidence.includes(evidence.id) && 
+                    <div className="selected-indicator">✓</div>
+                  }
+                  <div className="evidence-description">
+                    {evidence.description}
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : null;
-        })}
+            ) : null;
+          })}
+      </div>
     </div>
   );
 

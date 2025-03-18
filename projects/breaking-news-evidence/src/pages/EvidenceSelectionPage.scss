@@ -434,22 +434,43 @@
       justify-content: center;
       gap: 15px;
       border-top: 2px dashed rgba(0, 0, 0, 0.3);
-      overflow: visible;
+      padding-top: 15px;
+      width: 100%;
+      margin-top: 10px;
+      position: relative;
+      
+      .section-label {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 4px 10px;
+        font-size: 0.9em;
+        font-weight: bold;
+        color: #fff;
+        background-color: rgba(254, 47, 13, 0.9);
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-align: left;
+        width: fit-content;
+        z-index: 1;
+      }
       
       // Special style only for general evidence descriptions
       .evidence-item .evidence-wrapper .evidence-description {
         position: absolute;
-        top: 0; // Start from the top of the wrapper
-        transform: translateY(-100%) translateX(-50%); // Move up by 100% of its own height 
+        top: 0;
+        transform: translateY(-100%) translateX(-50%);
         left: 50%;
-        width: 120px; // Slightly wider for better readability
-        margin-bottom: 5px; // Small gap between description and evidence
+        width: 120px;
+        margin-bottom: 5px;
         
         &::before {
-          bottom: -6px; // Point down instead of up
-          top: auto; // Remove top positioning
-          border-width: 6px 6px 0 6px; // Flip the triangle to point down
-          border-color: rgba(0, 0, 0, 0.95) transparent transparent transparent; // Adjust colors for downward triangle
+          bottom: -6px;
+          top: auto;
+          border-width: 6px 6px 0 6px;
+          border-color: rgba(0, 0, 0, 0.95) transparent transparent transparent;
         }
       }
     }
@@ -806,6 +827,39 @@
       transform: none;
       box-shadow: none;
       animation: none;
+    }
+  }
+
+  .general-evidence-section {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    margin-top: 20px;
+    width: 100%;
+    position: relative;
+    
+    .section-label {
+      padding: 8px 15px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #fff;
+      background-color: rgba(254, 47, 13, 0.9);
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: left;
+      width: fit-content;
+      margin-right: 15px;
+      height: fit-content;
+    }
+
+    .general-evidence {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      flex: 1;
+      padding: 0 15px;
     }
   }
 }
