@@ -423,8 +423,8 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
   // Updated render general evidence function
   const renderGeneralEvidence = () => (
     <div className="general-evidence-section">
-      <div className="section-label">Public Evidence</div>
       <div className="general-evidence">
+        <div className="section-label">Public Evidence</div>
         {EVIDENCE_ITEMS
           .filter(item => item.id <= 7) // First 7 items are general evidence
           .map(evidence => {

@@ -14,7 +14,7 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
   const [loginError, setLoginError] = useState<string | null>(null);
   const [lastCardId, setLastCardId] = useState<string | null>(null);
   const [wsConnected, setWsConnected] = useState(false);
-  const [idScanned, setIdScanned] = useState(true);
+  const [idScanned, setIdScanned] = useState(false);
   const [selectedItem, setSelectedItem] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [completedSteps, setCompletedSteps] = useState({
@@ -246,7 +246,7 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
                 style={{
                   position: 'absolute',
                   left: '-15px',
-                  top: '200px',
+                  top: '100px',
                   width: 0,
                   height: 0,
                   borderTop: '15px solid transparent',
@@ -275,17 +275,17 @@ export function EvidenceTutorialPage({ onComplete, onLogin }: EvidenceTutorialPa
               
               {completedSteps.select && !completedSteps.confirm && (
                 <>
-                  <h3 style={{ marginTop: 0, color: '#dc3545', fontWeight: 'bold' }}>Good job!</h3>
-                  <p style={{ marginBottom: 0, lineHeight: 1.5 }}>
-                    Now, click the "Confirm Selection" button at the bottom to proceed.
+                  <h3 style={{ marginTop: 0, color: '#dc3545', fontWeight: 'bold', fontSize: '40px' }}>Good job!</h3>
+                  <p style={{ marginBottom: 0, lineHeight: 1.5, fontSize: '25px' }}>
+                    Click the <span style={{ fontWeight: 'bold' }}>[Confirm Selection]</span> button at the bottom to proceed.
                   </p>
                 </>
               )}
               
               {completedSteps.confirm && (
                 <>
-                  <h3 style={{ marginTop: 0, color: '#dc3545', fontWeight: 'bold' }}>Excellent!</h3>
-                  <p style={{ marginBottom: 0, lineHeight: 1.5 }}>
+                  <h3 style={{ marginTop: 0, color: '#dc3545', fontWeight: 'bold', fontSize: '40px' }}>Excellent!</h3>
+                  <p style={{ marginBottom: 0, lineHeight: 1.5, fontSize: '25px' }}>
                     Now you're ready to investigate the real evidence. Let's go!
                   </p>
                 </>

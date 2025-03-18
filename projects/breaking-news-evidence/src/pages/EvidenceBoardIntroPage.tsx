@@ -246,7 +246,7 @@ function EvidenceBoardIntroPage({ onComplete, playerId }: EvidenceBoardIntroPage
   );
 
   if (!playerId) {
-    return <div className="loading-screen">Loading...</div>;
+    return <div className="loading-screen">No player ID found. Please contact support.</div>;
   }
 
   return (
