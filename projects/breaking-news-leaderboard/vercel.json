@@ -3,17 +3,11 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install --legacy-peer-deps",
   "framework": "create-react-app",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build",
-        "maxLambdaSize": "15mb",
-        "installCommand": "npm install --legacy-peer-deps"
-      }
-    }
-  ],
+  "outputDirectory": "build",
+  "env": {
+    "REACT_APP_API_BASE_URL": "https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA",
+    "REACT_APP_FETCH_INTERVAL": "60000"
+  },
   "routes": [
     {
       "src": "/static/(.*)",
@@ -22,29 +16,7 @@
       },
       "dest": "/static/$1"
     },
-    {
-      "src": "/favicon.ico",
-      "dest": "/favicon.ico"
-    },
-    {
-      "src": "/logo192.png",
-      "dest": "/logo192.png"
-    },
-    {
-      "src": "/logo512.png",
-      "dest": "/logo512.png"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/manifest.json"
-    },
-    {
-      "src": "/robots.txt",
-      "dest": "/robots.txt"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
   ]
 } 

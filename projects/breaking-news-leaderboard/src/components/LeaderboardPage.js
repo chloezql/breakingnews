@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import '../styles/LeaderboardPage.scss';
 import LeaderboardEntry from './LeaderboardEntry';
-import { fetchLeaderboard, formatDate } from '../services/api';
+import { fetchLeaderboard, formatDate, getFetchInterval } from '../services/api';
 
-// Get the refresh interval from environment variables or default to 60 seconds (60000ms)
-const REFRESH_INTERVAL = parseInt(process.env.REACT_APP_FETCH_INTERVAL) || 60000;
+// Get the refresh interval from the API service
+const REFRESH_INTERVAL = getFetchInterval();
 
 const LeaderboardPage = () => {
     const [leaderboardEntries, setLeaderboardEntries] = useState([]);

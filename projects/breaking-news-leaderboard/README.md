@@ -1,6 +1,6 @@
 # Breaking News Leaderboard
 
-A React application that displays a leaderboard of news articles ranked by view count. The leaderboard updates automatically every minute.
+This is a React application that displays a leaderboard for the Breaking News game.
 
 ## Features
 
@@ -10,121 +10,114 @@ A React application that displays a leaderboard of news articles ranked by view 
 - Update logs showing data refresh history
 - Responsive design for various screen sizes
 
-## Setup Instructions
-
-### Prerequisites
-
-- Node.js (v14 or later)
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-
-   ```
-   git clone [repository-url]
-   cd breaking-news-leaderboard
-   ```
-
-2. Install dependencies:
-
-   ```
-   npm install
-   ```
-
-   or
-
-   ```
-   yarn install
-   ```
-
-3. Configure environment variables:
-
-   Create a `.env` file in the root directory with the following variables:
-
-   ```
-   REACT_APP_API_BASE_URL=https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA
-   REACT_APP_FETCH_INTERVAL=60000
-   ```
-
-### Running Locally
-
-Start the development server:
-
-```
-npm start
-```
-
-or
-
-```
-yarn start
-```
-
-The application will be available at http://localhost:3000
-
-### Building for Production
-
-Build the application for production:
-
-```
-npm run build
-```
-
-or
-
-```
-yarn build
-```
-
-This creates a `build` directory with optimized production files.
-
-## Deployment
+## Deployment Instructions
 
 ### Deploying to Vercel
 
-This project is configured for easy deployment to Vercel.
+1. **Create a Vercel Account**
 
-1. Install Vercel CLI:
+   - If you don't have one already, create an account at [vercel.com](https://vercel.com)
+
+2. **Install Vercel CLI** (optional, for command-line deployment)
 
    ```
    npm install -g vercel
    ```
 
-2. Login to Vercel:
+3. **Deploy from the Dashboard**
+
+   - Log in to your Vercel account
+   - Click "Add New..." > "Project"
+   - Import your Git repository or deploy from a local directory
+   - Select the "breaking-news-leaderboard" directory
+   - Configure the project with these settings:
+     - Framework Preset: Create React App
+     - Build Command: `npm run build`
+     - Output Directory: `build`
+     - Install Command: `npm install --legacy-peer-deps`
+   - Add Environment Variables:
+     - `REACT_APP_API_BASE_URL` = `https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA`
+     - `REACT_APP_FETCH_INTERVAL` = `60000`
+   - Click "Deploy"
+
+4. **Deploy using Vercel CLI** (alternative to dashboard)
+
+   - Navigate to the project directory:
+     ```
+     cd projects/breaking-news-leaderboard
+     ```
+   - Run the deployment command:
+     ```
+     vercel
+     ```
+   - Follow the CLI prompts to complete deployment
+
+5. **Verify Deployment**
+   - Once deployment is complete, Vercel will provide a URL
+   - Open the URL in your browser to verify the application is working correctly
+
+### Troubleshooting Deployment Issues
+
+If you encounter deployment issues, check the following:
+
+1. **Build Errors**
+
+   - Check Vercel's build logs for specific error messages
+   - Ensure all dependencies are properly installed
+
+2. **Environment Variables**
+
+   - Verify that all required environment variables are set correctly in Vercel
+   - Double-check that the API_BASE_URL is accessible from the deployed application
+
+3. **API Connections**
+
+   - Confirm that the Xano API endpoint is accessible and responding correctly
+   - Test API calls directly using tools like Postman or cURL
+
+4. **CORS Issues**
+   - If you see CORS errors, ensure the API is configured to allow requests from your Vercel domain
+
+## Development Setup
+
+To run the project locally:
+
+1. **Install dependencies**
 
    ```
-   vercel login
+   npm install --legacy-peer-deps
    ```
 
-3. Deploy:
+2. **Set up environment variables**
+
+   - Create a `.env` file in the project root with:
+     ```
+     REACT_APP_API_BASE_URL=https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA
+     REACT_APP_FETCH_INTERVAL=60000
+     ```
+
+3. **Start the development server**
+
    ```
-   vercel
+   npm start
    ```
 
-For production deployment:
-
-```
-vercel --prod
-```
-
-### Environment Variables on Vercel
-
-Make sure to configure the same environment variables on Vercel that you have in your `.env` file:
-
-- `REACT_APP_API_BASE_URL`: The base URL for the API
-- `REACT_APP_FETCH_INTERVAL`: Refresh interval in milliseconds
-
-## API Integration
-
-The application integrates with a Xano backend API. The leaderboard data is fetched from the `/fetchLeaderboard` endpoint.
+4. **Build for production**
+   ```
+   npm run build
+   ```
 
 ## Project Structure
 
 - `src/components/` - React components
-- `src/services/` - API services and utilities
+- `src/services/` - API and utility services
 - `src/styles/` - SCSS stylesheets
+- `src/types/` - TypeScript type definitions
 - `public/` - Static assets
+
+## API Integration
+
+The application connects to a Xano backend API to fetch leaderboard data. The API endpoint is configured via environment variables.
 
 ## License
 

@@ -2,7 +2,10 @@
  * API Service for interacting with the Xano database
  */
 
+// Get base URL from environment variables or use default
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://x26n-hsrb-jurx.n7d.xano.io/api:uO-MKMoA';
+// Get fetch interval from environment variables or use default (60 seconds)
+const FETCH_INTERVAL = parseInt(process.env.REACT_APP_FETCH_INTERVAL || '60000', 10);
 
 /**
  * Fetch leaderboard data
@@ -23,6 +26,12 @@ export const fetchLeaderboard = async () => {
         return [];
     }
 };
+
+/**
+ * Get the configured fetch interval in milliseconds
+ * @returns {number} Fetch interval in milliseconds
+ */
+export const getFetchInterval = () => FETCH_INTERVAL;
 
 /**
  * Format a number with commas for thousands
