@@ -60,6 +60,8 @@ export function ResultPage() {
   // Add refs to store the latest values for view count and hashtags
   const viewCountRef = useRef<number>(0);
   const hashtagsRef = useRef<string[]>([]);
+  // Add audio ref for sound effects
+  const resultSoundRef = useRef<HTMLAudioElement | null>(null);
 
   // Log the full game state for debugging
   useEffect(() => {
@@ -67,6 +69,21 @@ export function ResultPage() {
     
     // Set a random joke when the component mounts
     setDailyJoke(getRandomJoke());
+  }, []);
+
+  // Initialize audio
+  useEffect(() => {
+    // Create and configure audio element
+    resultSoundRef.current = new Audio('/Station5_Result.wav');
+    resultSoundRef.current.preload = 'auto';
+    
+    return () => {
+      // Cleanup audio when component unmounts
+      if (resultSoundRef.current) {
+        resultSoundRef.current.pause();
+        resultSoundRef.current = null;
+      }
+    };
   }, []);
 
   // Generate the news story when the component mounts
@@ -896,6 +913,11 @@ export function ResultPage() {
             }
           }, delay);
         };
+        
+        // Play sound effect when starting the digit reveal
+        if (resultSoundRef.current) {
+          resultSoundRef.current.play().catch(err => console.error('Error playing sound:', err));
+        }
         
         // Reveal digits from right to left
         revealDigit(4, digits[4], 300);  // Last digit
