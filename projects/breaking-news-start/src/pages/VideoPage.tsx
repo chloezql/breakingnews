@@ -36,7 +36,7 @@ export function VideoPage() {
       <div className="video-container">
         <video 
           ref={videoRef}
-          src="/banana.mp4"
+          src="/final-intro.mp4"
           controls={false}
           autoPlay
           onEnded={handleVideoEnd}
