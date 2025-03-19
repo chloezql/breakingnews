@@ -22,6 +22,7 @@ const EndingPage: React.FC<EndingPageProps> = ({ allSuspectsCalled }) => {
       height: '100%',
       width: '100%',
       position: 'relative',
+      top: '70%',
       zIndex: 10,
     }}>
       

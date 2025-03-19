@@ -141,3 +141,33 @@ When making changes:
 ## Credits
 
 Developed by the Breaking News team.
+
+## Troubleshooting
+
+### Missing hoist-non-react-statics Dependency
+
+If you encounter this error when building or starting the application:
+
+```
+Module not found: Error: Can't resolve 'hoist-non-react-statics' in '/path/to/node_modules/@emotion/react/dist'
+```
+
+This is a common issue with @emotion/react dependency resolution. Here's how to fix it:
+
+1. Install the missing dependency at the root level:
+
+   ```bash
+   npm install hoist-non-react-statics@3.3.2
+   ```
+
+2. If that doesn't work, you may need to manually install the package in the specific directory where it's needed:
+   ```bash
+   mkdir -p node_modules/@emotion/react/_isolated-hnrs/dist/node_modules
+   mkdir -p node_modules/@emotion/react/dist/node_modules
+   cd node_modules/@emotion/react/_isolated-hnrs/dist/node_modules
+   npm install hoist-non-react-statics@3.3.2
+   cd ../../../dist/node_modules
+   npm install hoist-non-react-statics@3.3.2
+   ```
+
+This ensures that the dependency is available where @emotion/react is looking for it.

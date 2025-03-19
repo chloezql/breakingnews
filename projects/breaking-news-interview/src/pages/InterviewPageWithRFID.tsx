@@ -531,7 +531,7 @@ const InterviewPage: React.FC = () => {
       backgroundRepeat: 'no-repeat',
     }}>
       {/* Using our DebugInfo component */}
-      <DebugInfo
+      {/* <DebugInfo
         appState={interviewStage}
         scanMode={interactionMode}
         sessionStarted={isSessionActive}
@@ -540,7 +540,7 @@ const InterviewPage: React.FC = () => {
         audioPlaying={isIntroAudioPlaying}
         playerId={playerId}
         isSessionActive={isCallActive}
-      />
+      /> */}
 
       {/* Using our SessionTimer component */}
       {(interviewStage === 'post-scan' || interviewStage === 'interview') && isSessionActive && (
@@ -555,7 +555,7 @@ const InterviewPage: React.FC = () => {
       {/* Error display component used for all states */}
       <ErrorDisplay 
         error={loginError} 
-        position="timer-adjacent" 
+        position="center" 
         autoDismiss={true} 
       />
 

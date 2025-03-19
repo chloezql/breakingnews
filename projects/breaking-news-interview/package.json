@@ -16,6 +16,7 @@
     "@types/react": "^18.2.22",
     "@types/react-dom": "^18.2.7",
     "cross-env": "^7.0.3",
+    "hoist-non-react-statics": "3.3.2",
     "openai": "^4.28.0",
     "react": "^18.2.0",
     "react-countdown-circle-timer": "^3.2.1",
@@ -29,6 +30,12 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+  },
+  "resolutions": {
+    "hoist-non-react-statics": "3.3.2"
+  },
+  "overrides": {
+    "hoist-non-react-statics": "3.3.2"
   },
   "scripts": {
     "start": "react-scripts start",

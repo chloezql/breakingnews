@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "hoist-non-react-statics": "^3.3.2",
     "ws": "^8.18.1"
   },
   "devDependencies": {

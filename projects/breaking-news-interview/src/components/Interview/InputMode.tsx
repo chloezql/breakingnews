@@ -80,15 +80,15 @@ const InputMode: React.FC<InputModeProps> = ({
             textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)'
           }}
         >
-          Enter suspect ID followed [call] key
+          Enter suspect code followed by [call] key
         </Box>
         <input
-          type="text"
+          type="password"
           value={suspectId}
           onChange={onInputChange}
           className="suspect-input"
           autoFocus
-          placeholder="Suspect ID..."
+          placeholder="Enter suspect code..."
           ref={inputRef}
           onBlur={() => inputRef.current?.focus()} // Re-focus if it loses focus
           onKeyDown={(e) => {
