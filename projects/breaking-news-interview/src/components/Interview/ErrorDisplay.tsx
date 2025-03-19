@@ -44,7 +44,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       right: '200px',
     },
     'center': {
-      top: '50%',
+      top: '70%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
     },
@@ -65,7 +65,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       border: '1px solid #F44336',
       zIndex: 999
     }}>
-      <Typography variant="body2" sx={{ color: '#F44336' }}>
+      <Typography variant="body2" sx={{ color: '#F44336', fontSize: '30px' }}>
         Error: {localError}
       </Typography>
     </Box>

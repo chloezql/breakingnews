@@ -24,8 +24,8 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
   return (
     <Box className="session-timer" sx={{
       position: 'absolute',
-      top: '20px',
-      right: '20px',
+      top: '400px',
+      right: '400px',
       zIndex: 20
     }}>
       <CountdownCircleTimer
@@ -44,7 +44,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
           const seconds = remainingTime % 60;
           return (
             <Typography className="timer-text" sx={{ 
-              fontSize: '28px',
+              fontSize: '38px',
               fontWeight: 'bold'
             }}>
               {`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`}

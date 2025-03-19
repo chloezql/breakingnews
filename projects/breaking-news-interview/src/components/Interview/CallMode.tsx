@@ -57,7 +57,7 @@ const CallMode: React.FC<CallModeProps> = ({
         <Box 
           sx={{
             position: 'absolute',
-            bottom: '20px',
+            bottom: '120px',
             padding: '5px 10px',
             backgroundColor: 'rgba(244, 67, 54, 0.2)',
             borderRadius: '5px',

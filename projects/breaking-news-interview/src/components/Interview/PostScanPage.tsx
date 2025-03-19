@@ -68,8 +68,23 @@ const PostScanPage: React.FC<PostScanPageProps> = ({
             padding: '20px',
             position: 'absolute',
             width: '100%',
-            bottom: isIntroAudioPlaying ? '10%' : '20%',
-            fontSize: '2.5rem'
+            // For intro audio and session active, keep bottom positioning
+            // For the "Pick up the phone" instruction, center it vertically
+            ...(isIntroAudioPlaying 
+              ? { bottom: '10%' } 
+              : isSessionActive 
+                ? { bottom: '20%' }
+                : { 
+                    top: '70%', 
+                    transform: 'translateY(-50%)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderRadius: '10px',
+                    maxWidth: '80%',
+                    left: '10%',
+                    margin: 'auto',
+                  }),
+            fontSize: '2.5rem',
+            zIndex: 20
           }}
         >
           {isIntroAudioPlaying 
@@ -108,7 +123,10 @@ const PostScanPage: React.FC<PostScanPageProps> = ({
       style={{ 
         maxHeight: '80vh',
         maxWidth: '100%',
-        bottom: '-100px'
+        bottom: '-100px',
+        position: 'absolute', 
+        left: '50%',
+        transform: 'translateX(-50%)'
       }}
     />
    </>

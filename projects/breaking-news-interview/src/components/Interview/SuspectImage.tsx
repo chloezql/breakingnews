@@ -40,7 +40,7 @@ const SuspectImage: React.FC<SuspectImageProps> = ({
       sx={{
         position: 'absolute',
         left: '50%',
-        top: '40%',
+        top: '50%',
         transform: 'translate(-50%, -50%)',
         maxHeight: '40vh',
         maxWidth: '35vw',
