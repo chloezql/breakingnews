@@ -96,7 +96,7 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
       if (!bgmRef.current) {
         bgmRef.current = new Audio(`${process.env.PUBLIC_URL}/evidence-selection-bgm.wav`);
         bgmRef.current.loop = true; // Loop the BGM
-        bgmRef.current.volume = 0.3; // Set volume to 30%
+        bgmRef.current.volume = 1; // Set volume to 30%
         bgmRef.current.play().catch(error => {
           console.error('Error playing BGM:', error);
         });
@@ -460,7 +460,7 @@ export function EvidenceSelectionPage({ initialPlayerId, onEvidenceConfirm }: Ev
     <div className="timeout-overlay">
       <div className="guard-container">
         <img 
-          src={`/placeholder-guard.png`}
+          src={`/security.png`}
           alt="Security Guard"
           className="guard-image"
         />

@@ -775,7 +775,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(237, 46, 46, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -786,13 +786,13 @@
   .guard-container {
     position: fixed;
     display: flex;
-    bottom: 0px;
+    bottom: -150px;
     justify-content: center;
     align-items: center;
     animation: slideUp 0.8s ease-out forwards;
     
     .guard-image {
-      max-height: 80vh;
+      max-height: 90vh;
       max-width: 90vw;
       object-fit: contain;
     }
