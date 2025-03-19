@@ -285,7 +285,7 @@ body.no-scroll {
       position: absolute;
       bottom: 20px;
       color: #fff;
-      font-size: 16px;
+      font-size: 20px;
       text-align: center;
       margin-top: 20px;
       animation: fade-in 1s ease-out;
@@ -525,8 +525,8 @@ body.no-scroll {
       
       .main-image {
         float: left;
-        width: 75%;
-        margin: 0 0 12px 0;
+        width: 50%;
+        margin: 0 10px 12px 0;
         break-inside: avoid;
         
         img {

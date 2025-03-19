@@ -262,13 +262,13 @@ export function ResultPage() {
   // Function to generate a news story based on the user's input
   const generateNewsStory = async () => {
     setIsGenerating(true);
-    console.log('Generating news story...');
+    console.log('Please wait. Generating news story...');
     
     try {
       // Prepare all the data needed for generation
       const articleData = prepareArticleData();
       const prompt = createArticlePrompt(articleData);
-      console.log('Article generation prompt created');
+      console.log(`Article generation prompt created, ${prompt}`);
       
       let generatedStory = '';
       let generatedHashtags: string[] = [];
@@ -487,7 +487,7 @@ export function ResultPage() {
     - Include at least one direct quote from a witness if available
     - Focus on the most impactful details that support the headline
     - Do not include the headline in the article text
-    - Aim for 250-300 words total
+    - Aim for about 350 words total
     
     # IMPORTANT
     - This is a breaking news story about a death at an art academy
@@ -501,7 +501,7 @@ export function ResultPage() {
       messages: [{ role: "user", content: prompt }],
       model: "gpt-4",
       temperature: 0.7,
-      max_tokens: 1000,
+      max_tokens: 3000,
     });
 
     console.log('OpenAI API response received:', {
@@ -1007,7 +1007,7 @@ export function ResultPage() {
           playsInline
           className="newspaper-video"
         />
-        <div className="loading-text">Generating your article...</div>
+        <div className="loading-text">Please wait. AI is generating your article...</div>
       </div>
 
       {/* Article content */}
@@ -1121,6 +1121,7 @@ export function ResultPage() {
                       src={`/images/evidence/${evidenceImages[0]}`} 
                       alt="Evidence" 
                       className="evidence-img"
+                      style={{ border: 'none' }}
                       onError={(e) => {
                         if (e.currentTarget.parentElement) {
                           e.currentTarget.parentElement.classList.add('no-image');
