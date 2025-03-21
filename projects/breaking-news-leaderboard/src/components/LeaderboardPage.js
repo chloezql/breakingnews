@@ -83,7 +83,7 @@ const LeaderboardPage = () => {
             const clientHeight = entriesContainer.clientHeight;
 
             // Calculate new scroll position (add 1px every 50ms)
-            let newScrollTop = scrollTop + 1;
+            let newScrollTop = scrollTop + 10;
 
             // Reset to top when reaching bottom (with a 20px buffer)
             if (scrollTop + clientHeight >= scrollHeight - 20) {
